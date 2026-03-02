@@ -1,0 +1,775 @@
+import 'package:flutter/foundation.dart';
+import 'package:ed_sentre_techer_and_parent/features/auth/provider/auth_provider.dart';
+import 'package:ed_sentre_techer_and_parent/features/teacher/assignments/teacher_assignments_screen.dart';
+import 'package:ed_sentre_techer_and_parent/features/teacher/materials/teacher_materials_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import 'shared/widgets/app_drawer.dart';
+
+import 'core/utils/app_logger.dart';
+import 'shared/models/enums.dart';
+
+// Screens
+import 'features/auth/screens/splash_screen.dart';
+import 'features/auth/screens/login_screen.dart';
+import 'features/auth/screens/invitation_code_screen.dart';
+import 'shared/widgets/log_viewer_screen.dart';
+
+// Teacher Screens
+import 'features/teacher/dashboard/teacher_home_screen.dart';
+import 'features/teacher/schedule/teacher_schedule_screen.dart';
+import 'features/teacher/attendance/teacher_attendance_screen.dart';
+import 'features/teacher/students/teacher_students_screen.dart';
+import 'features/teacher/screens/groups/teacher_groups_screen.dart';
+import 'features/teacher/groups/teacher_group_details_screen.dart';
+
+import 'features/teacher/messages/teacher_messages_screen.dart';
+import 'features/teacher/profile/teacher_profile_screen.dart';
+import 'features/teacher/reports/teacher_reports_screen.dart';
+import 'features/teacher/payments/teacher_payments_screen.dart';
+import 'features/ai/screens/ai_assistant_screen.dart';
+
+// Parent Screens
+import 'features/parent/dashboard/parent_home_screen.dart';
+import 'features/parent/attendance/parent_attendance_screen.dart';
+import 'features/parent/grades/parent_grades_screen.dart';
+import 'features/parent/payments/parent_payments_screen.dart';
+import 'features/parent/messages/parent_messages_screen.dart';
+import 'features/parent/notifications/parent_notifications_screen.dart';
+import 'features/parent/profile/parent_profile_screen.dart';
+import 'features/parent/schedule/parent_schedule_screen.dart';
+
+/// App Router Configuration using GoRouter
+class AppRouter {
+  static final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
+  static final GoRouter router = GoRouter(
+    navigatorKey: _rootNavigatorKey,
+    initialLocation: '/splash',
+    debugLogDiagnostics: kDebugMode,
+
+    // Redirect logic based on auth state
+    redirect: (context, state) {
+      final authProvider = context.read<AuthProvider>();
+      final isLoading = authProvider.isLoading;
+      final isAuthenticated = authProvider.isAuthenticated;
+      final userRole = authProvider.userRole;
+      final needsInvitationCode = authProvider.needsInvitationCode;
+
+      final isOnSplash = state.matchedLocation == '/splash';
+      final isOnLogin = state.matchedLocation == '/login';
+      final isOnInvitationCode = state.matchedLocation == '/invitation-code';
+      final isOnTeacherRoute = state.matchedLocation.startsWith('/teacher');
+      final isOnParentRoute = state.matchedLocation.startsWith('/parent');
+
+      log.ui(
+        'Router Redirect Check',
+        data: {
+          'location': state.matchedLocation,
+          'isAuthenticated': isAuthenticated,
+          'userRole': userRole?.name,
+          'isLoading': isLoading,
+        },
+      );
+
+      // Still loading, stay on splash
+      if (isLoading && isOnSplash) {
+        return null;
+      }
+
+      // Not authenticated, go to login (allow invitation-code for new registration)
+      if (!isAuthenticated &&
+          !isOnLogin &&
+          !isOnSplash &&
+          !isOnInvitationCode) {
+        return '/login';
+      }
+
+      // المستخدم مسجل لكن يحتاج إدخال كود
+      if (isAuthenticated && needsInvitationCode && !isOnInvitationCode) {
+        return '/invitation-code';
+      }
+
+      // المستخدم مسجل بدون دور محدد (يحتاج كود)
+      if (isAuthenticated &&
+          userRole == null &&
+          !isOnInvitationCode &&
+          !isOnLogin) {
+        return '/invitation-code';
+      }
+
+      // Authenticated, redirect based on role
+      if (isAuthenticated &&
+          !needsInvitationCode &&
+          (isOnLogin || isOnSplash || isOnInvitationCode)) {
+        if (userRole == UserRole.teacher) {
+          return '/teacher';
+        } else if (userRole == UserRole.parent) {
+          return '/parent';
+        }
+      }
+
+      // Role-based route protection
+      if (isAuthenticated && userRole != null) {
+        if (userRole == UserRole.teacher && isOnParentRoute) {
+          return '/teacher';
+        }
+        if (userRole == UserRole.parent && isOnTeacherRoute) {
+          return '/parent';
+        }
+      }
+
+      return null;
+    },
+
+    // Routes
+    routes: [
+      // Splash Screen
+      GoRoute(
+        path: '/splash',
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+
+      // Log Viewer
+      GoRoute(
+        path: '/logs',
+        name: 'logs',
+        builder: (context, state) => const LogViewerScreen(),
+      ),
+
+      // Login Screen
+      GoRoute(
+        path: '/login',
+        name: 'login',
+        builder: (context, state) => const LoginScreen(),
+      ),
+
+      // Invitation Code Screen
+      GoRoute(
+        path: '/invitation-code',
+        name: 'invitation-code',
+        builder: (context, state) => const InvitationCodeScreen(),
+      ),
+
+      // Teacher Routes
+      ShellRoute(
+        builder: (context, state, child) {
+          return TeacherShellScreen(child: child);
+        },
+        routes: [
+          GoRoute(
+            path: '/teacher',
+            name: 'teacher-home',
+            builder: (context, state) => const TeacherHomeScreen(),
+            routes: [
+              GoRoute(
+                path: 'groups',
+                name: 'teacher-groups',
+                builder: (context, state) => const TeacherGroupsScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':groupId',
+                    name: 'teacher-group-details',
+                    builder: (context, state) {
+                      final groupId = state.pathParameters['groupId']!;
+                      return TeacherGroupDetailsScreen(groupId: groupId);
+                    },
+                  ),
+                ],
+              ),
+              GoRoute(
+                path: 'schedule',
+                name: 'teacher-schedule',
+                builder: (context, state) => const TeacherScheduleScreen(),
+              ),
+              GoRoute(
+                path: 'attendance',
+                name: 'teacher-attendance',
+                builder: (context, state) => const TeacherAttendanceScreen(),
+              ),
+              GoRoute(
+                path: 'attendance/:groupId',
+                name: 'teacher-attendance-group',
+                builder: (context, state) {
+                  final groupId = state.pathParameters['groupId']!;
+                  return TeacherAttendanceScreen(groupId: groupId);
+                },
+              ),
+              GoRoute(
+                path: 'students',
+                name: 'teacher-students',
+                builder: (context, state) => const TeacherStudentsScreen(),
+              ),
+              GoRoute(
+                path: 'assignments',
+                name: 'teacher-assignments',
+                builder: (context, state) => const TeacherAssignmentsScreen(),
+              ),
+              GoRoute(
+                path: 'materials',
+                name: 'teacher-materials',
+                parentNavigatorKey: _rootNavigatorKey,
+                builder: (context, state) => const TeacherMaterialsScreen(),
+              ),
+              GoRoute(
+                path: 'reports',
+                name: 'teacher-reports',
+                builder: (context, state) => const TeacherReportsScreen(),
+              ),
+              GoRoute(
+                path: 'payments',
+                name: 'teacher-payments',
+                builder: (context, state) => const TeacherPaymentsScreen(),
+              ),
+              GoRoute(
+                path: 'ai-assistant',
+                name: 'teacher-ai-assistant',
+                builder: (context, state) => const AIAssistantScreen(),
+              ),
+              GoRoute(
+                path: 'messages',
+                name: 'teacher-messages',
+                builder: (context, state) => const TeacherMessagesScreen(),
+              ),
+              GoRoute(
+                path: 'profile',
+                name: 'teacher-profile',
+                builder: (context, state) => const TeacherProfileScreen(),
+              ),
+            ],
+          ),
+        ],
+      ),
+
+      // Parent Routes
+      ShellRoute(
+        builder: (context, state, child) {
+          return ParentShellScreen(child: child);
+        },
+        routes: [
+          GoRoute(
+            path: '/parent',
+            name: 'parent-home',
+            builder: (context, state) => const ParentHomeScreen(),
+            routes: [
+              GoRoute(
+                path: 'attendance',
+                name: 'parent-attendance',
+                builder: (context, state) => const ParentAttendanceScreen(),
+              ),
+              GoRoute(
+                path: 'grades',
+                name: 'parent-grades',
+                builder: (context, state) => const ParentGradesScreen(),
+              ),
+              GoRoute(
+                path: 'payments',
+                name: 'parent-payments',
+                builder: (context, state) => const ParentPaymentsScreen(),
+              ),
+              GoRoute(
+                path: 'messages',
+                name: 'parent-messages',
+                builder: (context, state) => const ParentMessagesScreen(),
+              ),
+              GoRoute(
+                path: 'notifications',
+                name: 'parent-notifications',
+                builder: (context, state) => const ParentNotificationsScreen(),
+              ),
+              GoRoute(
+                path: 'schedule',
+                name: 'parent-schedule',
+                builder: (context, state) => const ParentScheduleScreen(),
+              ),
+              GoRoute(
+                path: 'profile',
+                name: 'parent-profile',
+                builder: (context, state) => const ParentProfileScreen(),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+
+    // Error page
+    errorBuilder: (context, state) => Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(
+              'صفحة غير موجودة',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              state.error?.message ?? 'حدث خطأ',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => context.go('/'),
+              child: const Text('العودة للرئيسية'),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// Teacher Shell Screen with Premium Bottom Navigation
+class TeacherShellScreen extends StatefulWidget {
+  final Widget child;
+
+  const TeacherShellScreen({super.key, required this.child});
+
+  @override
+  State<TeacherShellScreen> createState() => _TeacherShellScreenState();
+}
+
+class _TeacherShellScreenState extends State<TeacherShellScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+
+  // Teacher premium gradient - dark blue to purple
+  static const _teacherGradient = [Color(0xFF3B82F6), Color(0xFF8B5CF6)];
+
+  // Navigation items
+  static const List<_TeacherNavItem> _navItems = [
+    _TeacherNavItem(
+      icon: Icons.home_outlined,
+      activeIcon: Icons.home_rounded,
+      label: 'الرئيسية',
+      route: '/teacher',
+    ),
+    _TeacherNavItem(
+      icon: Icons.calendar_today_outlined,
+      activeIcon: Icons.calendar_today_rounded,
+      label: 'الجدول',
+      route: '/teacher/schedule',
+    ),
+    _TeacherNavItem(
+      icon: Icons.fact_check_outlined,
+      activeIcon: Icons.fact_check_rounded,
+      label: 'الحضور',
+      route: '/teacher/attendance',
+    ),
+    _TeacherNavItem(
+      icon: Icons.message_outlined,
+      activeIcon: Icons.message_rounded,
+      label: 'الرسائل',
+      route: '/teacher/messages',
+    ),
+    _TeacherNavItem(
+      icon: Icons.person_outline_rounded,
+      activeIcon: Icons.person_rounded,
+      label: 'حسابي',
+      route: '/teacher/profile',
+    ),
+  ];
+
+  // Routes where bottom nav bar should be visible
+  static const _mainRoutes = [
+    '/teacher',
+    '/teacher/groups',
+    '/teacher/schedule',
+    '/teacher/attendance',
+    '/teacher/messages',
+    '/teacher/profile',
+  ];
+
+  bool _shouldShowBottomNav(String location) {
+    return _mainRoutes.contains(location) ||
+        location.startsWith('/teacher/attendance/');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final location = GoRouterState.of(context).matchedLocation;
+    final showBottomNav = _shouldShowBottomNav(location);
+
+    return Scaffold(
+      key: teacherScaffoldKey,
+      drawer: const TeacherAppDrawer(),
+      extendBody: true,
+      body: widget.child,
+      bottomNavigationBar: showBottomNav
+          ? Container(
+              margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1A25).withValues(alpha: 0.95),
+                borderRadius: BorderRadius.circular(28.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: _teacherGradient[0].withValues(alpha: 0.15),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  width: 1,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(28.r),
+                child: SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 10.h,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: List.generate(_navItems.length, (index) {
+                        return _buildNavItem(index, context);
+                      }),
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : null,
+    );
+  }
+
+  Widget _buildNavItem(int index, BuildContext context) {
+    final item = _navItems[index];
+    final isSelected = _calculateSelectedIndex(context) == index;
+
+    return GestureDetector(
+      onTap: () => _onItemTapped(index, context),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 16.w : 12.w,
+          vertical: 8.h,
+        ),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: _teacherGradient,
+                )
+              : null,
+          borderRadius: BorderRadius.circular(20.r),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: _teacherGradient[0].withValues(alpha: 0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                isSelected ? item.activeIcon : item.icon,
+                key: ValueKey(isSelected),
+                color: isSelected ? Colors.white : const Color(0xFF64748B),
+                size: 24.sp,
+              ),
+            ),
+            if (isSelected) ...[
+              SizedBox(width: 6.w),
+              AnimatedOpacity(
+                opacity: isSelected ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 200),
+                child: Text(
+                  item.label,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  int _calculateSelectedIndex(BuildContext context) {
+    final location = GoRouterState.of(context).matchedLocation;
+    if (location.startsWith('/teacher/schedule')) return 1;
+    if (location.startsWith('/teacher/attendance')) return 2;
+    if (location.startsWith('/teacher/messages')) return 3;
+    if (location.startsWith('/teacher/profile')) return 4;
+    return 0;
+  }
+
+  void _onItemTapped(int index, BuildContext context) {
+    context.go(_navItems[index].route);
+  }
+}
+
+class _TeacherNavItem {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final String route;
+
+  const _TeacherNavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    required this.route,
+  });
+}
+
+/// Parent Shell Screen with Premium Bottom Navigation
+// ─────────────────────────────────────────────────────────────────────────────
+
+class ParentShellScreen extends StatefulWidget {
+  final Widget child;
+
+  const ParentShellScreen({super.key, required this.child});
+
+  @override
+  State<ParentShellScreen> createState() => _ParentShellScreenState();
+}
+
+class _ParentShellScreenState extends State<ParentShellScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+
+  // Premium gradient colors
+  static const _primaryGradient = [Color(0xFF667EEA), Color(0xFF764BA2)];
+
+  // Smart navigation items - الشاشات الأهم لولي الأمر
+  static const List<_NavItem> _navItems = [
+    _NavItem(
+      icon: Icons.home_outlined,
+      activeIcon: Icons.home_rounded,
+      label: 'الرئيسية',
+      route: '/parent',
+    ),
+    _NavItem(
+      icon: Icons.calendar_today_outlined,
+      activeIcon: Icons.calendar_today_rounded,
+      label: 'الجدول',
+      route: '/parent/schedule',
+    ),
+    _NavItem(
+      icon: Icons.school_outlined,
+      activeIcon: Icons.school_rounded,
+      label: 'الدرجات',
+      route: '/parent/grades',
+    ),
+    _NavItem(
+      icon: Icons.notifications_outlined,
+      activeIcon: Icons.notifications_rounded,
+      label: 'الإشعارات',
+      route: '/parent/notifications',
+    ),
+    _NavItem(
+      icon: Icons.person_outline_rounded,
+      activeIcon: Icons.person_rounded,
+      label: 'حسابي',
+      route: '/parent/profile',
+    ),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      key: parentScaffoldKey,
+      drawer: const ParentAppDrawer(),
+      extendBody: true,
+      body: widget.child,
+      bottomNavigationBar: Container(
+        margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.95),
+              Colors.white.withValues(alpha: 0.85),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(28.r),
+          boxShadow: [
+            BoxShadow(
+              color: _primaryGradient[0].withValues(alpha: 0.15),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.5),
+            width: 1.5,
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28.r),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: List.generate(_navItems.length, (index) {
+                  return _buildNavItem(index, context);
+                }),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index, BuildContext context) {
+    final item = _navItems[index];
+    final isSelected = _calculateSelectedIndex(context) == index;
+
+    return GestureDetector(
+      onTap: () => _onItemTapped(index, context),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 16.w : 12.w,
+          vertical: 8.h,
+        ),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: _primaryGradient,
+                )
+              : null,
+          borderRadius: BorderRadius.circular(20.r),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: _primaryGradient[0].withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                isSelected ? item.activeIcon : item.icon,
+                key: ValueKey(isSelected),
+                color: isSelected ? Colors.white : const Color(0xFF6B7280),
+                size: 24.sp,
+              ),
+            ),
+            if (isSelected) ...[
+              SizedBox(width: 6.w),
+              AnimatedOpacity(
+                opacity: isSelected ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 200),
+                child: Text(
+                  item.label,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  int _calculateSelectedIndex(BuildContext context) {
+    final location = GoRouterState.of(context).matchedLocation;
+    if (location.startsWith('/parent/schedule')) return 1;
+    if (location.startsWith('/parent/grades')) return 2;
+    if (location.startsWith('/parent/notifications')) return 3;
+    if (location.startsWith('/parent/profile')) return 4;
+    return 0;
+  }
+
+  void _onItemTapped(int index, BuildContext context) {
+    context.go(_navItems[index].route);
+  }
+}
+
+class _NavItem {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final String route;
+
+  const _NavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    required this.route,
+  });
+}
