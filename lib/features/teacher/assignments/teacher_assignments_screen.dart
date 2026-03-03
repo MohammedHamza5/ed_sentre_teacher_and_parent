@@ -11,6 +11,7 @@ import '../../../shared/models/models.dart';
 import '../../../shared/widgets/premium_widgets.dart';
 import '../../../shared/widgets/premium_plus_widgets.dart';
 import 'create_assignment_screen.dart';
+import 'submissions_screen.dart';
 
 /// Teacher Assignments Screen - Premium Dark Mode
 class TeacherAssignmentsScreen extends StatefulWidget {
@@ -607,7 +608,14 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
     final publishDate = _getPublishDate(assignment);
     final isArchived = _isArchived(assignment);
     final maxScore = assignment['max_score'] ?? 0;
-    final subCount = assignment['submissions_count'] ?? 0;
+    // Extract submissions count from Supabase aggregate
+    int subCount = 0;
+    final subData = assignment['assignment_submissions'];
+    if (subData is List && subData.isNotEmpty) {
+      subCount = (subData[0]['count'] as num?)?.toInt() ?? 0;
+    } else {
+      subCount = (assignment['submissions_count'] as num?)?.toInt() ?? 0;
+    }
 
     final isEnded = dueDate != null && DateTime.now().isAfter(dueDate);
     final isScheduled =
@@ -978,9 +986,12 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
   }
 
   void _viewSubmissions(Map<String, dynamic> assignment) {
-    ScaffoldMessenger.of(
+    Navigator.push(
       context,
-    ).showSnackBar(const SnackBar(content: Text('جاري تحميل التسليمات...')));
+      MaterialPageRoute(
+        builder: (_) => SubmissionsScreen(assignment: assignment),
+      ),
+    ).then((_) => _loadData(reset: true));
   }
 
   void _showMoreOptions(Map<String, dynamic> assignment) {
