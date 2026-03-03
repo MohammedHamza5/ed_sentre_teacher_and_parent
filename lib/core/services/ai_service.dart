@@ -11,7 +11,7 @@ class AiService {
 
   late final AiRouterService router = AiRouterService(this);
 
-  /// Send a task-based request to the AI Router (Edge Function)
+  /// Send a task-based request to the AI Teacher Edge Function
   Future<String?> sendTaskRequest({
     required String task,
     required String content,
@@ -20,10 +20,10 @@ class AiService {
   }) async {
     try {
       if (kDebugMode) {
-        print('🧠 AI Task: $task | model=$model');
+        print('🧠 AI Teacher Task: $task | model=${model ?? "auto"}');
       }
       final response = await _client.functions.invoke(
-        'ai-tutor',
+        'ai-teacher',
         body: {
           'task': task,
           'content': content,
@@ -34,12 +34,11 @@ class AiService {
 
       if (response.data != null && response.data is Map) {
         final data = response.data as Map<String, dynamic>;
-        final content = data['content'] as String?;
-        return content;
+        return data['content'] as String?;
       }
       return null;
     } catch (e) {
-      debugPrint('❌ Supabase AI Task Error: $e');
+      debugPrint('❌ AI Teacher Task Error: $e');
       return null;
     }
   }
@@ -60,12 +59,13 @@ class AiRouterService {
   }) async {
     final jsonRequired = expectsJson ?? _defaultJsonForTask(task);
     final keys = requiredKeys ?? _requiredKeysForTask(task);
+    final model = AiConfig.resolveModelForTask(task);
 
     final raw = await _aiService.sendTaskRequest(
       task: task.name,
       content: content,
       params: params,
-      model: null, // Let server decide
+      model: model,
     );
 
     final validation = _validator.validate(
@@ -77,7 +77,7 @@ class AiRouterService {
     return AiRouterResponse(
       raw: raw,
       json: validation.json,
-      model: 'auto',
+      model: model,
       usedLongContext: false,
       isValid: validation.isValid,
       error: validation.error,
@@ -90,8 +90,6 @@ class AiRouterService {
       case EdSentreTask.teacherGenerateAssignment:
       case EdSentreTask.teacherAnalyzeClassPerformance:
       case EdSentreTask.teacherExtractConceptsFromBook:
-      case EdSentreTask.systemIndexDocument:
-      case EdSentreTask.systemClassifyContent:
         return true;
       default:
         return false;
@@ -108,8 +106,6 @@ class AiRouterService {
         return ['insights'];
       case EdSentreTask.teacherExtractConceptsFromBook:
         return ['concepts'];
-      case EdSentreTask.systemIndexDocument:
-        return ['sections'];
       default:
         return const [];
     }

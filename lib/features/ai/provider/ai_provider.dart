@@ -1,35 +1,47 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/ai_service.dart';
 import '../../../core/config/ai_config.dart';
 import '../services/ai_weakness_detector.dart';
 import '../../../shared/data/supabase_repository.dart';
 
-/// مزود AI للمساعد الذكي
+/// مزود AI للمساعد الذكي — تطبيق المعلم
 class AIProvider extends ChangeNotifier {
   final SupabaseRepository _repository;
   late final AiService _aiService;
   late final AIWeaknessDetector _weaknessDetector;
 
-  // ... (State variables)
-  // حالة الرصيد
+  // ═══════════════════════════════════════════════════════════════════════
+  // State
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // Credits
   int _freeCredits = 0;
   int _paidCredits = 0;
   bool _isLoadingCredits = false;
 
-  // حالة قاعدة المعرفة
+  // Knowledge Base
   List<Map<String, dynamic>> _knowledgeBase = [];
   bool _isLoadingKnowledge = false;
 
-  // حالة الإنشاء
+  // Generation
   bool _isGenerating = false;
   String? _generationError;
+
+  // Conversations
+  List<Map<String, dynamic>> _conversations = [];
+  bool _isLoadingConversations = false;
 
   AIProvider(this._repository) {
     _aiService = AiService(_repository.client);
     _weaknessDetector = AIWeaknessDetector(_repository, _aiService);
   }
 
+  // ═══════════════════════════════════════════════════════════════════════
   // Getters
+  // ═══════════════════════════════════════════════════════════════════════
+
   int get freeCredits => _freeCredits;
   int get paidCredits => _paidCredits;
   int get totalCredits => _freeCredits + _paidCredits;
@@ -39,6 +51,8 @@ class AIProvider extends ChangeNotifier {
   bool get hasKnowledgeBase => _knowledgeBase.isNotEmpty;
   bool get isGenerating => _isGenerating;
   String? get generationError => _generationError;
+  List<Map<String, dynamic>> get conversations => _conversations;
+  bool get isLoadingConversations => _isLoadingConversations;
 
   // ═══════════════════════════════════════════════════════════════════════
   // إدارة الرصيد
@@ -70,8 +84,9 @@ class AIProvider extends ChangeNotifier {
     }
   }
 
-  /// استخدام رصيد
+  /// خصم رصيد (يتم أولاً قبل الطلب)
   Future<bool> useCredits(int amount) async {
+    if (amount <= 0) return true;
     try {
       final userId = _repository.client.auth.currentUser?.id;
       if (userId == null) return false;
@@ -88,6 +103,189 @@ class AIProvider extends ChangeNotifier {
       return false;
     } catch (e) {
       debugPrint('Error using credits: $e');
+      return false;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // إدارة المحادثات
+  // ═══════════════════════════════════════════════════════════════════════
+
+  /// جلب قائمة محادثات المعلم
+  Future<void> loadConversations() async {
+    _isLoadingConversations = true;
+    notifyListeners();
+
+    try {
+      final userId = _repository.client.auth.currentUser?.id;
+      if (userId == null) return;
+
+      final response = await _repository.client
+          .from('teacher_ai_conversations')
+          .select()
+          .eq('teacher_id', userId)
+          .order('last_message_at', ascending: false);
+
+      _conversations = List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      debugPrint('Error loading conversations: $e');
+    } finally {
+      _isLoadingConversations = false;
+      notifyListeners();
+    }
+  }
+
+  /// إنشاء محادثة جديدة
+  Future<String?> createConversation() async {
+    try {
+      final userId = _repository.client.auth.currentUser?.id;
+      if (userId == null) return null;
+
+      final response = await _repository.client
+          .from('teacher_ai_conversations')
+          .insert({'teacher_id': userId, 'title': 'محادثة جديدة'})
+          .select('id')
+          .single();
+
+      await loadConversations();
+      return response['id'] as String;
+    } catch (e) {
+      debugPrint('Error creating conversation: $e');
+      return null;
+    }
+  }
+
+  /// جلب رسائل محادثة
+  Future<List<Map<String, dynamic>>> loadMessages(String conversationId) async {
+    try {
+      final response = await _repository.client
+          .from('teacher_ai_messages')
+          .select()
+          .eq('conversation_id', conversationId)
+          .order('created_at', ascending: true);
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      debugPrint('Error loading messages: $e');
+      return [];
+    }
+  }
+
+  /// إرسال رسالة في المحادثة (مع خصم الرصيد أولاً)
+  Future<String?> sendChatMessage({
+    required String conversationId,
+    required String content,
+    required List<Map<String, dynamic>> history,
+    String? filePath,
+  }) async {
+    final cost = AiConfig.getCost(EdSentreTask.teacherChatAssistant);
+
+    // خصم الرصيد أولاً
+    if (cost > 0) {
+      final deducted = await useCredits(cost);
+      if (!deducted) return null;
+    }
+
+    try {
+      // حفظ رسالة المستخدم
+      await _repository.client.from('teacher_ai_messages').insert({
+        'conversation_id': conversationId,
+        'role': 'user',
+        'content': content,
+      });
+
+      // بناء سياق المحادثة
+      final historyMessages = history
+          .map(
+            (m) => {
+              'role': m['role'] as String,
+              'content': m['content'] as String,
+            },
+          )
+          .toList();
+
+      // إرسال إلى AI
+      final response = await _aiService.router.executeTask(
+        task: EdSentreTask.teacherChatAssistant,
+        content: content,
+        params: {
+          'messages': historyMessages,
+          if (filePath != null) 'file_path': filePath,
+        },
+      );
+
+      final aiReply = response.raw ?? 'عذراً، لم أستطع الرد. حاول مرة أخرى.';
+
+      // حفظ رد AI
+      await _repository.client.from('teacher_ai_messages').insert({
+        'conversation_id': conversationId,
+        'role': 'assistant',
+        'content': aiReply,
+      });
+
+      // تحديث المحادثة
+      await _repository.client
+          .from('teacher_ai_conversations')
+          .update({
+            'last_message_at': DateTime.now().toIso8601String(),
+            'message_count': history.length + 2,
+          })
+          .eq('id', conversationId);
+
+      // تسجيل الاستخدام
+      await _logUsage(actionType: 'chat', creditsUsed: cost);
+
+      return aiReply;
+    } catch (e) {
+      debugPrint('Error sending chat message: $e');
+      // لا نسترد الرصيد — Edge Function قد تكون استجابت
+      return null;
+    }
+  }
+
+  /// تسمية المحادثة تلقائياً بعد أول رسالة
+  Future<void> autoNameConversation(
+    String conversationId,
+    String firstMessage,
+  ) async {
+    try {
+      final response = await _aiService.router.executeTask(
+        task: EdSentreTask.autoNameConversation,
+        content: firstMessage,
+      );
+
+      var title = response.raw?.trim() ?? '';
+      // تنظيف العنوان
+      title = title.replaceAll('"', '').replaceAll("'", '');
+      if (title.isEmpty || title.length > 50) {
+        title = firstMessage.length > 30
+            ? '${firstMessage.substring(0, 30)}...'
+            : firstMessage;
+      }
+
+      await _repository.client
+          .from('teacher_ai_conversations')
+          .update({'title': title})
+          .eq('id', conversationId);
+
+      await loadConversations();
+    } catch (e) {
+      debugPrint('Error auto-naming conversation: $e');
+    }
+  }
+
+  /// حذف محادثة
+  Future<bool> deleteConversation(String conversationId) async {
+    try {
+      await _repository.client
+          .from('teacher_ai_conversations')
+          .delete()
+          .eq('id', conversationId);
+
+      await loadConversations();
+      return true;
+    } catch (e) {
+      debugPrint('Error deleting conversation: $e');
       return false;
     }
   }
@@ -138,7 +336,6 @@ class AIProvider extends ChangeNotifier {
       final userId = _repository.client.auth.currentUser?.id;
       if (userId == null) return null;
 
-      // تقسيم النص إلى أجزاء للبحث
       final chunks = _splitIntoChunks(extractedText, 1000);
 
       final response = await _repository.client
@@ -185,20 +382,45 @@ class AIProvider extends ChangeNotifier {
     }
   }
 
+  /// تحميل ملف PDF مباشرة إلى Supabase Storage
+  Future<String?> uploadDocumentToStorage(File pdfFile) async {
+    try {
+      final userId = _repository.client.auth.currentUser?.id;
+      if (userId == null) return null;
+
+      final fileName =
+          '${DateTime.now().millisecondsSinceEpoch}_${pdfFile.uri.pathSegments.last}';
+      final filePath = '$userId/$fileName';
+
+      await _repository.client.storage
+          .from('ai_documents')
+          .upload(
+            filePath,
+            pdfFile,
+            fileOptions: const FileOptions(contentType: 'application/pdf'),
+          );
+
+      return filePath;
+    } catch (e) {
+      debugPrint('Error uploading PDF document: $e');
+      return null;
+    }
+  }
+
   // ═══════════════════════════════════════════════════════════════════════
   // إنشاء المحتوى بـ AI
   // ═══════════════════════════════════════════════════════════════════════
 
   /// إنشاء امتحان
   Future<Map<String, dynamic>?> generateExam({
-    required String knowledgeBaseId,
+    String? knowledgeBaseId,
     required String difficulty,
     required int questionCount,
     required String examType,
+    String? filePath,
     List<String>? targetChapters,
   }) async {
-    // التحقق من الرصيد
-    final cost = 15; // Fixed cost or derive from config
+    final cost = AiConfig.getCost(EdSentreTask.teacherGenerateExam);
     if (totalCredits < cost) {
       _generationError = 'رصيد غير كافٍ. تحتاج $cost رصيد';
       notifyListeners();
@@ -210,22 +432,36 @@ class AIProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // جلب المحتوى من قاعدة المعرفة
-      final knowledge = _knowledgeBase.firstWhere(
-        (k) => k['id'] == knowledgeBaseId,
-        orElse: () => {},
-      );
-
-      if (knowledge.isEmpty) {
-        _generationError = 'لم يتم العثور على المحتوى';
+      // خصم الرصيد أولاً
+      final deducted = await useCredits(cost);
+      if (!deducted) {
+        _generationError = 'فشل خصم الرصيد';
         return null;
       }
 
-      final content = knowledge['extracted_text'] as String? ?? '';
-      final subject = knowledge['subject_name'] as String? ?? '';
-      final grade = knowledge['grade_level'] as String? ?? '';
+      String content = '';
+      String subject = '';
+      String grade = '';
 
-      // استدعاء AI عبر Router الجديد
+      if (knowledgeBaseId != null) {
+        final knowledge = _knowledgeBase.firstWhere(
+          (k) => k['id'] == knowledgeBaseId,
+          orElse: () => {},
+        );
+
+        if (knowledge.isEmpty) {
+          _generationError = 'لم يتم العثور على المحتوى';
+          return null;
+        }
+
+        content = knowledge['extracted_text'] as String? ?? '';
+        subject = knowledge['subject_name'] as String? ?? '';
+        grade = knowledge['grade_level'] as String? ?? '';
+      } else if (filePath == null) {
+        _generationError = 'يجب توفير ملف أو محتوى للامتحان';
+        return null;
+      }
+
       final response = await _aiService.router.executeTask(
         task: EdSentreTask.teacherGenerateExam,
         content: content,
@@ -235,15 +471,12 @@ class AIProvider extends ChangeNotifier {
           'difficulty': difficulty,
           'questionCount': questionCount,
           'examType': examType,
+          'file_path': filePath,
           'targetChapters': targetChapters,
         },
       );
 
       if (response.isValid && response.json != null) {
-        // خصم الرصيد
-        await useCredits(cost);
-
-        // تسجيل الاستخدام
         await _logUsage(
           actionType: 'generate_exam',
           creditsUsed: cost,
@@ -254,7 +487,6 @@ class AIProvider extends ChangeNotifier {
           },
           outputData: response.json,
         );
-
         return response.json;
       } else {
         _generationError = response.error ?? 'فشل في إنشاء الامتحان';
@@ -275,7 +507,7 @@ class AIProvider extends ChangeNotifier {
     required String topic,
     required int questionCount,
   }) async {
-    final cost = 10;
+    final cost = AiConfig.getCost(EdSentreTask.teacherGenerateAssignment);
     if (totalCredits < cost) {
       _generationError = 'رصيد غير كافٍ';
       notifyListeners();
@@ -287,6 +519,13 @@ class AIProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // خصم الرصيد أولاً
+      final deducted = await useCredits(cost);
+      if (!deducted) {
+        _generationError = 'فشل خصم الرصيد';
+        return null;
+      }
+
       final knowledge = _knowledgeBase.firstWhere(
         (k) => k['id'] == knowledgeBaseId,
         orElse: () => {},
@@ -311,7 +550,6 @@ class AIProvider extends ChangeNotifier {
       );
 
       if (response.isValid && response.json != null) {
-        await useCredits(cost);
         await _logUsage(
           actionType: 'generate_assignment',
           creditsUsed: cost,
@@ -335,7 +573,7 @@ class AIProvider extends ChangeNotifier {
   /// حفظ الامتحان المُنشأ
   Future<String?> saveGeneratedExam({
     required String centerId,
-    required String knowledgeBaseId,
+    String? knowledgeBaseId,
     required String title,
     required String examType,
     required String difficulty,
@@ -382,14 +620,12 @@ class AIProvider extends ChangeNotifier {
       final userId = _repository.client.auth.currentUser?.id;
       if (userId == null) return null;
 
-      // جلب الامتحان
       final exam = await _repository.client
           .from('ai_generated_exams')
           .select()
           .eq('id', examId)
           .single();
 
-      // إنشاء Assignment
       final assignmentResponse = await _repository.client
           .from('assignments')
           .insert({
@@ -406,7 +642,6 @@ class AIProvider extends ChangeNotifier {
 
       final assignmentId = assignmentResponse['id'] as String;
 
-      // تحديث الامتحان بالربط
       await _repository.client
           .from('ai_generated_exams')
           .update({
@@ -420,6 +655,22 @@ class AIProvider extends ChangeNotifier {
       debugPrint('Error publishing exam: $e');
       return null;
     }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // تحليل الطلاب (AI العميق)
+  // ═══════════════════════════════════════════════════════════════════════
+
+  /// تحليل نقاط ضعف الطالب بالذكاء الاصطناعي
+  Future<List<WeaknessInsight>> analyzeStudentWeaknesses({
+    required String studentId,
+    required String centerId,
+  }) async {
+    // استخدام التحليل بالذكاء الاصطناعي العميق
+    return await _weaknessDetector.analyzeStudentWithAI(
+      studentId: studentId,
+      centerId: centerId,
+    );
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -471,20 +722,5 @@ class AIProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('Error logging usage: $e');
     }
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // The Seer (Weakness Detector)
-  // ═══════════════════════════════════════════════════════════════════════
-
-  /// تحليل نقاط ضعف الطالب
-  Future<List<WeaknessInsight>> analyzeStudentWeaknesses({
-    required String studentId,
-    required String centerId,
-  }) async {
-    return await _weaknessDetector.analyzeStudent(
-      studentId: studentId,
-      centerId: centerId,
-    );
   }
 }

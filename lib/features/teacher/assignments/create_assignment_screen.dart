@@ -1246,20 +1246,20 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
           'time_limit_minutes': widget.type == 'exam' || widget.type == 'quiz'
               ? int.tryParse(_durationController.text)
               : null,
-          'questions': _questions
-              .map(
-                (q) => {
-                  'id': DateTime.now().millisecondsSinceEpoch.toString(),
-                  'text': q['question'],
-                  'options': q['options'] ?? [],
-                  'correct_option_index': q['correct'] ?? 0,
-                  'correct_answer': q['correct_answer'],
-                  'points': q['marks'],
-                  'type': q['type'] ?? 'mcq',
-                  'difficulty': q['difficulty'],
-                },
-              )
-              .toList(),
+          'questions': _questions.asMap().entries.map((entry) {
+            final i = entry.key;
+            final q = entry.value;
+            return {
+              'id': '${DateTime.now().millisecondsSinceEpoch}_$i',
+              'text': q['question'],
+              'options': q['options'] ?? [],
+              'correct_option_index': q['correct'] ?? 0,
+              'correct_answer': q['correct_answer'],
+              'points': q['marks'],
+              'type': q['type'] ?? 'mcq',
+              'difficulty': q['difficulty'],
+            };
+          }).toList(),
         };
         await repository.addAssignment(data);
       }
@@ -1976,9 +1976,8 @@ class _QuestionDialogState extends State<_QuestionDialog> {
                       child: TextField(
                         controller: _options[i],
                         onChanged: (_) {
-                          if (_errorText != null) {
+                          if (_errorText != null)
                             setState(() => _errorText = null);
-                          }
                         },
                         style: TextStyle(color: AppColors.textOnDark),
                         decoration: InputDecoration(

@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../../core/config/app_colors.dart';
 import '../../ai/provider/ai_provider.dart';
 import '../../../core/providers/center_provider.dart';
@@ -8,14 +10,14 @@ import '../../teacher/assignments/create_assignment_screen.dart';
 
 /// شاشة إنشاء امتحان بـ AI
 class AIGenerateExamScreen extends StatefulWidget {
-  final String knowledgeBaseId;
-  final String knowledgeTitle;
+  final String? knowledgeBaseId;
+  final String? knowledgeTitle;
   final String examType;
 
   const AIGenerateExamScreen({
     super.key,
-    required this.knowledgeBaseId,
-    required this.knowledgeTitle,
+    this.knowledgeBaseId,
+    this.knowledgeTitle,
     this.examType = 'exam',
   });
 
@@ -27,6 +29,9 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
   String _difficulty = 'medium';
   int _questionCount = 10;
   String _examType = 'exam';
+
+  File? _selectedFile;
+  bool _isUploading = false;
 
   Map<String, dynamic>? _generatedExam;
   bool _isGenerated = false;
@@ -113,8 +118,10 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
               ],
             ),
             child: ElevatedButton.icon(
-              onPressed: aiProvider.isGenerating ? null : _generate,
-              icon: aiProvider.isGenerating
+              onPressed: (aiProvider.isGenerating || _isUploading)
+                  ? null
+                  : _generate,
+              icon: (aiProvider.isGenerating || _isUploading)
                   ? SizedBox(
                       width: 20.w,
                       height: 20.w,
@@ -125,9 +132,11 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
                     )
                   : const Icon(Icons.auto_awesome),
               label: Text(
-                aiProvider.isGenerating
-                    ? 'جاري الإنشاء...'
-                    : 'إنشاء الامتحان 🪄',
+                _isUploading
+                    ? 'جاري رفع الملف...'
+                    : (aiProvider.isGenerating
+                          ? 'جاري الإنشاء...'
+                          : 'إنشاء الامتحان 🪄'),
                 style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
               ),
               style: ElevatedButton.styleFrom(
@@ -173,6 +182,10 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
   }
 
   Widget _buildSelectedContent() {
+    final hasKnowledge =
+        widget.knowledgeBaseId != null && widget.knowledgeTitle != null;
+    final hasFile = _selectedFile != null;
+
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -180,43 +193,103 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(Icons.menu_book, color: AppColors.primary, size: 28.sp),
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(
+                  Icons.menu_book,
+                  color: AppColors.primary,
+                  size: 28.sp,
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      hasKnowledge
+                          ? 'المحتوى المحدد من القاعدة'
+                          : (hasFile ? 'ملف PDF المرفق' : 'لم يتم تحديد محتوى'),
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: AppColors.textOnDarkSecondary,
+                      ),
+                    ),
+                    Text(
+                      hasKnowledge
+                          ? widget.knowledgeTitle!
+                          : (hasFile
+                                ? _selectedFile!.uri.pathSegments.last
+                                : 'ارفق ملف PDF لإنشاء امتحان'),
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textOnDark,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              if (hasKnowledge || hasFile)
+                Icon(Icons.check_circle, color: AppColors.success, size: 24.sp),
+            ],
           ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'المحتوى المحدد',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: AppColors.textOnDarkSecondary,
+          if (!hasKnowledge) ...[
+            SizedBox(height: 16.h),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _pickPdfFile,
+                icon: Icon(
+                  hasFile ? Icons.edit : Icons.upload_file,
+                  color: AppColors.primary,
+                ),
+                label: Text(
+                  hasFile ? 'تغيير الملف' : 'إرفاق ملف PDF',
+                  style: TextStyle(color: AppColors.primary),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(
+                    color: AppColors.primary.withValues(alpha: 0.5),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                 ),
-                Text(
-                  widget.knowledgeTitle,
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textOnDark,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-          Icon(Icons.check_circle, color: AppColors.success, size: 24.sp),
+          ],
         ],
       ),
     );
+  }
+
+  Future<void> _pickPdfFile() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        setState(() {
+          _selectedFile = File(result.files.single.path!);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error picking file: $e');
+    }
   }
 
   Widget _buildSectionTitle(String title) {
@@ -604,7 +677,15 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
   Widget _buildQuestionPreview(int num, Map<String, dynamic> question) {
     final type = question['type'] as String? ?? 'multiple_choice';
     final text = question['question'] as String? ?? '';
-    final options = question['options'] as List? ?? [];
+
+    // Safely parse options since AI might return String instead of List
+    final optionsRaw = question['options'];
+    List<dynamic> options = [];
+    if (optionsRaw is List) {
+      options = optionsRaw;
+    } else if (optionsRaw is String && optionsRaw.isNotEmpty) {
+      options = [optionsRaw];
+    }
     final correct = question['correct_answer'] as int? ?? 0;
     final difficulty = question['difficulty'] as String? ?? 'medium';
     final marks = question['marks'] ?? 2;
@@ -809,16 +890,49 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
   // ═══════════════════════════════════════════════════════════════════════
 
   Future<void> _generate() async {
+    if (widget.knowledgeBaseId == null && _selectedFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'الرجاء اختيار محتوى من قاعدة المعرفة أو إرفاق ملف PDF',
+          ),
+        ),
+      );
+      return;
+    }
+
     final aiProvider = context.read<AIProvider>();
+    String? filePath;
+
+    // Upload file if selected
+    if (_selectedFile != null && widget.knowledgeBaseId == null) {
+      setState(() => _isUploading = true);
+
+      filePath = await aiProvider.uploadDocumentToStorage(_selectedFile!);
+
+      setState(() => _isUploading = false);
+
+      if (filePath == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('فشل رفع الملف. الرجاء المحاولة مرة أخرى.'),
+            ),
+          );
+        }
+        return;
+      }
+    }
 
     final result = await aiProvider.generateExam(
       knowledgeBaseId: widget.knowledgeBaseId,
       difficulty: _difficulty,
       questionCount: _questionCount,
       examType: _examType,
+      filePath: filePath,
     );
 
-    if (result != null) {
+    if (result != null && mounted) {
       setState(() {
         _generatedExam = result;
         _isGenerated = true;

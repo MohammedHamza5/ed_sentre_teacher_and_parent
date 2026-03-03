@@ -1,91 +1,48 @@
 enum EdSentreTask {
-  studentCreateFlashcards,
-  studentCreateStudySchedule,
-  studentChatTutor,
-  studentSummarizeLesson,
-  studentGradeMCQ,
-  studentGradeEssay,
   teacherGenerateExam,
   teacherGenerateAssignment,
   teacherGradeEssay,
   teacherAnalyzeClassPerformance,
   teacherExtractConceptsFromBook,
   teacherChatAssistant,
-  systemIndexDocument,
-  systemClassifyContent,
-  systemCleanAndFormatText,
+  autoNameConversation,
 }
 
 class AiConfig {
   static const String modelMax = 'qwen-max';
   static const String modelSmart = 'qwen-plus';
-  static const String modelFast = 'qwen-flash';
-  static const String modelLongDoc = 'qwen-long';
+  static const String modelFast = 'qwen-turbo';
   static const String defaultModel = modelSmart;
 
-  static bool get useSupabaseAiProxy => true;
+  /// Task costs in credits
+  static const Map<EdSentreTask, int> taskCosts = {
+    EdSentreTask.teacherChatAssistant: 2,
+    EdSentreTask.teacherGenerateExam: 15,
+    EdSentreTask.teacherGenerateAssignment: 10,
+    EdSentreTask.teacherGradeEssay: 5,
+    EdSentreTask.teacherAnalyzeClassPerformance: 10,
+    EdSentreTask.teacherExtractConceptsFromBook: 5,
+    EdSentreTask.autoNameConversation: 0, // Free — lightweight task
+  };
 
-  // Note: System Prompt is now handled server-side in Edge Function ai-tutor
+  static int getCost(EdSentreTask task) => taskCosts[task] ?? 2;
 
-  static String resolveModel({required String taskType, int? contentLength}) {
-    switch (taskType) {
-      case 'chat':
-        return modelFast;
-      case 'flashcards':
-      case 'summarize':
-      case 'document':
-        if (contentLength != null && contentLength > 4000) {
-          return modelLongDoc;
-        }
-        if (contentLength != null && contentLength < 800) {
-          return modelFast;
-        }
-        return modelSmart;
-      case 'exam_analysis':
-      case 'exam_generation':
-      case 'oral_exam':
-        return modelMax;
-      default:
-        return modelSmart;
-    }
-  }
-
-  static String resolveModelForTask(
-    EdSentreTask task, {
-    int? contentLength,
-    bool isComplex = false,
-  }) {
+  static String resolveModelForTask(EdSentreTask task) {
     switch (task) {
-      // --- Qwen-Long (The Reader) ---
-      case EdSentreTask.studentCreateFlashcards: // If long content
-      case EdSentreTask.studentSummarizeLesson: // If long content
-      case EdSentreTask.teacherExtractConceptsFromBook:
-      case EdSentreTask.systemIndexDocument:
-        if (contentLength != null && contentLength > 4000) {
-          return modelLongDoc;
-        }
-        return modelSmart; // Fallback to Plus if content is short
-
-      // --- Qwen-Max (The Expert) ---
-      case EdSentreTask.studentGradeEssay:
+      // Qwen-Max — complex generation & analysis
       case EdSentreTask.teacherGenerateExam:
       case EdSentreTask.teacherGradeEssay:
       case EdSentreTask.teacherAnalyzeClassPerformance:
         return modelMax;
 
-      case EdSentreTask.studentChatTutor:
-        return isComplex ? modelMax : modelSmart;
-
-      // --- Qwen-Plus (The Tutor) ---
-      case EdSentreTask.studentCreateStudySchedule:
+      // Qwen-Plus — balanced tasks
       case EdSentreTask.teacherGenerateAssignment:
-      case EdSentreTask.teacherChatAssistant: // New Teacher Chat
+      case EdSentreTask.teacherExtractConceptsFromBook:
+      case EdSentreTask.teacherChatAssistant:
         return modelSmart;
 
-      // --- Qwen-Flash (The Fast Worker) ---
-      case EdSentreTask.studentGradeMCQ:
-      case EdSentreTask.systemClassifyContent:
-      case EdSentreTask.systemCleanAndFormatText:
+      // Qwen-Turbo — fast & cheap
+      case EdSentreTask.autoNameConversation:
         return modelFast;
     }
   }

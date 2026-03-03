@@ -130,8 +130,6 @@ class EdSentreApp extends StatelessWidget {
             builder: (context, child) {
               return MaterialApp.router(
                 title: 'EdSentre',
-                // ✅ debugShowCheckedModeBanner يتبع kDebugMode تلقائياً
-                debugShowCheckedModeBanner: kDebugMode,
 
                 // ✅ ThemeMode ديناميكي بدلاً من ThemeMode.dark الثابت
                 theme: AppTheme.lightTheme,
