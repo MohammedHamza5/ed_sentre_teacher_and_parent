@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../core/config/app_colors.dart';
+// Removed AppColors import
 
 class SmartMaterialTile extends StatelessWidget {
   final Map<String, dynamic> material;
@@ -107,7 +107,7 @@ class SmartMaterialTile extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                         SizedBox(height: 2.h),
@@ -115,7 +115,7 @@ class SmartMaterialTile extends StatelessWidget {
                           course,
                           style: TextStyle(
                             fontSize: 11.sp,
-                            color: AppColors.textSecondary,
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                           ),
                         ),
                       ],
@@ -129,14 +129,14 @@ class SmartMaterialTile extends StatelessWidget {
                             Icon(
                               Icons.remove_red_eye_outlined,
                               size: 12.sp,
-                              color: AppColors.textHint,
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                             ),
                             SizedBox(width: 4.w),
                             Text(
                               '$views',
                               style: TextStyle(
                                 fontSize: 11.sp,
-                                color: AppColors.textHint,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                               ),
                             ),
                           ],
@@ -150,7 +150,7 @@ class SmartMaterialTile extends StatelessWidget {
                             icon: Icon(
                               Icons.more_horiz,
                               size: 18.sp,
-                              color: AppColors.textHint,
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                             ),
                             onSelected: onMenuAction,
                             itemBuilder: (c) => [

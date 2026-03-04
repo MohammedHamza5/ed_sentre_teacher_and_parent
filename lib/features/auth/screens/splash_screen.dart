@@ -91,47 +91,53 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final gradient = const BoxDecoration(
-      gradient: AppColors.sunsetGradient,
-    );
+    final gradient = const BoxDecoration(gradient: AppColors.sunsetGradient);
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
           Container(decoration: gradient),
           Positioned(
             right: -40.w,
             top: -40.h,
-            child: Container(
-              width: 160.w,
-              height: 160.w,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.07),
-                shape: BoxShape.circle,
-              ),
-            ).animate(onPlay: (c) => c.repeat()).fadeIn(duration: 600.ms).scale(
-                  begin: const Offset(0.95, 0.95),
-                  end: const Offset(1.0, 1.0),
-                  duration: 2000.ms,
-                  curve: Curves.easeInOut,
-                ),
+            child:
+                Container(
+                      width: 160.w,
+                      height: 160.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.07),
+                        shape: BoxShape.circle,
+                      ),
+                    )
+                    .animate(onPlay: (c) => c.repeat())
+                    .fadeIn(duration: 600.ms)
+                    .scale(
+                      begin: const Offset(0.95, 0.95),
+                      end: const Offset(1.0, 1.0),
+                      duration: 2000.ms,
+                      curve: Curves.easeInOut,
+                    ),
           ),
           Positioned(
             left: -50.w,
             bottom: -50.h,
-            child: Container(
-              width: 200.w,
-              height: 200.w,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.06),
-                shape: BoxShape.circle,
-              ),
-            ).animate(onPlay: (c) => c.repeat()).fadeIn(duration: 800.ms).scale(
-                  begin: const Offset(0.9, 0.9),
-                  end: const Offset(1.0, 1.0),
-                  duration: 2200.ms,
-                  curve: Curves.easeInOut,
-                ),
+            child:
+                Container(
+                      width: 200.w,
+                      height: 200.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.06),
+                        shape: BoxShape.circle,
+                      ),
+                    )
+                    .animate(onPlay: (c) => c.repeat())
+                    .fadeIn(duration: 800.ms)
+                    .scale(
+                      begin: const Offset(0.9, 0.9),
+                      end: const Offset(1.0, 1.0),
+                      duration: 2200.ms,
+                      curve: Curves.easeInOut,
+                    ),
           ),
           Center(
             child: AnimatedBuilder(
@@ -159,24 +165,34 @@ class _SplashScreenState extends State<SplashScreen>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Container(
-                                width: 120.w,
-                                height: 120.w,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(24.r),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.25),
-                                      blurRadius: 24,
-                                      offset: const Offset(0, 10),
+                                    width: 120.w,
+                                    height: 120.w,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(24.r),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.25,
+                                          ),
+                                          blurRadius: 24,
+                                          offset: const Offset(0, 10),
+                                        ),
+                                      ],
+                                      color: Colors.white.withValues(
+                                        alpha: 0.95,
+                                      ),
                                     ),
-                                  ],
-                                  color: Colors.white.withValues(alpha: 0.95),
-                                ),
-                                child: _buildLogo(),
-                              )
+                                    child: _buildLogo(),
+                                  )
                                   .animate()
-                                  .fadeIn(duration: 600.ms, curve: Curves.easeOut)
-                                  .scale(begin: const Offset(0.9, 0.9), end: const Offset(1, 1)),
+                                  .fadeIn(
+                                    duration: 600.ms,
+                                    curve: Curves.easeOut,
+                                  )
+                                  .scale(
+                                    begin: const Offset(0.9, 0.9),
+                                    end: const Offset(1, 1),
+                                  ),
                               SizedBox(height: 20.h),
                               _buildGradientText('EdSentre'),
                               SizedBox(height: 8.h),
@@ -187,9 +203,15 @@ class _SplashScreenState extends State<SplashScreen>
                                   color: Colors.white.withValues(alpha: 0.9),
                                   letterSpacing: 0.5,
                                 ),
-                              ).animate().fadeIn(duration: 500.ms, delay: 250.ms),
+                              ).animate().fadeIn(
+                                duration: 500.ms,
+                                delay: 250.ms,
+                              ),
                               SizedBox(height: 24.h),
-                              _buildLoader().animate().fadeIn(duration: 400.ms, delay: 450.ms),
+                              _buildLoader().animate().fadeIn(
+                                duration: 400.ms,
+                                delay: 450.ms,
+                              ),
                             ],
                           ),
                         ),
@@ -244,23 +266,26 @@ class _SplashScreenState extends State<SplashScreen>
         Builder(
           builder: (context) {
             return SvgPicture.asset(
-              'assets/icons/app_logo.svg',
-              width: 72.w,
-              height: 72.w,
-              placeholderBuilder: (ctx) => Image.asset(
-                'assets/icons/app_logo.png',
-                width: 72.w,
-                height: 72.w,
-                errorBuilder: (c, e, s) => Icon(
-                  Icons.school,
-                  size: 56.sp,
-                  color: AppColors.primary,
-                ),
-              ),
-            )
+                  'assets/icons/app_logo.svg',
+                  width: 72.w,
+                  height: 72.w,
+                  placeholderBuilder: (ctx) => Image.asset(
+                    'assets/icons/app_logo.png',
+                    width: 72.w,
+                    height: 72.w,
+                    errorBuilder: (c, e, s) => Icon(
+                      Icons.school,
+                      size: 56.sp,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                )
                 .animate()
                 .fadeIn(duration: 500.ms)
-                .scale(begin: const Offset(0.95, 0.95), end: const Offset(1, 1));
+                .scale(
+                  begin: const Offset(0.95, 0.95),
+                  end: const Offset(1, 1),
+                );
           },
         ),
       ],
@@ -269,10 +294,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   Widget _buildGradientText(String text) {
     final gradient = LinearGradient(
-      colors: [
-        Colors.white,
-        Colors.white.withValues(alpha: 0.85),
-      ],
+      colors: [Colors.white, Colors.white.withValues(alpha: 0.85)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     );
@@ -291,14 +313,19 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Widget _buildLoader() {
-    dot(int i) => Container(
-          width: 8.w,
-          height: 8.w,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-        ).animate(onPlay: (c) => c.repeat()).fadeIn(duration: 400.ms).then(delay: (i * 200).ms).scale(
+    dot(int i) =>
+        Container(
+              width: 8.w,
+              height: 8.w,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            )
+            .animate(onPlay: (c) => c.repeat())
+            .fadeIn(duration: 400.ms)
+            .then(delay: (i * 200).ms)
+            .scale(
               begin: const Offset(0.8, 0.8),
               end: const Offset(1.1, 1.1),
               duration: 800.ms,

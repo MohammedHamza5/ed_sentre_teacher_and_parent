@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import '../../../core/config/app_colors.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../core/providers/center_provider.dart';
 import '../../auth/provider/auth_provider.dart';
 import '../../../shared/data/supabase_repository.dart';
@@ -144,7 +144,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: DefaultTabController(
         length: 3,
         child: NestedScrollView(
@@ -154,11 +154,20 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                 expandedHeight: 180.h,
                 floating: false,
                 pinned: true,
-                backgroundColor: AppColors.darkSurface,
+                backgroundColor:
+                    Theme.of(context).cardTheme.color ??
+                    Theme.of(context).colorScheme.surface,
                 flexibleSpace: FlexibleSpaceBar(
                   background: Container(
-                    decoration: const BoxDecoration(
-                      gradient: AppColors.sunsetGradient,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.8),
+                        ],
+                      ),
                     ),
                     child: Stack(
                       children: [
@@ -285,14 +294,16 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                     icon: const Icon(Icons.refresh, color: Colors.white),
                     onPressed: () => _loadData(reset: true),
                   ),
+                  Padding(
+                    padding: EdgeInsets.only(left: 8.w),
+                    child: const DrawerMenuButton(isTeacher: true),
+                  ),
                 ],
               ),
             ];
           },
           body: _isLoading
-              ? Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                )
+              ? _buildLoadingSkeleton()
               : _error != null
               ? _buildErrorWidget()
               : TabBarView(
@@ -308,7 +319,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCreateOptions(context),
-        backgroundColor: AppColors.accent,
+        backgroundColor: Theme.of(context).colorScheme.secondary,
         elevation: 0,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
@@ -316,6 +327,105 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ).animate().scale(delay: 300.ms),
+    );
+  }
+
+  Widget _buildLoadingSkeleton() {
+    return ListView.builder(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      itemCount: 5,
+      itemBuilder: (context, index) {
+        return Container(
+          margin: EdgeInsets.only(bottom: 16.h),
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color:
+                Theme.of(context).cardTheme.color ??
+                Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+            ),
+          ),
+          child: Shimmer.fromColors(
+            baseColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+            highlightColor: Theme.of(
+              context,
+            ).colorScheme.onSurface.withOpacity(0.05),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 42.w,
+                      height: 42.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            height: 14.h,
+                            color: Colors.white,
+                            margin: EdgeInsets.only(right: 40.w),
+                          ),
+                          SizedBox(height: 8.h),
+                          Container(
+                            width: 100.w,
+                            height: 10.h,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                Container(height: 1, color: Colors.white),
+                SizedBox(height: 12.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(width: 60.w, height: 12.h, color: Colors.white),
+                    Container(width: 60.w, height: 12.h, color: Colors.white),
+                    Container(width: 60.w, height: 12.h, color: Colors.white),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 32.h,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Container(
+                      width: 36.w,
+                      height: 32.h,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -355,19 +465,21 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
           Container(
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
-              color: AppColors.errorSoft,
+              color: Theme.of(context).colorScheme.error.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.error_outline,
               size: 40.sp,
-              color: AppColors.error,
+              color: Theme.of(context).colorScheme.error,
             ),
           ),
           SizedBox(height: 12.h),
           Text(
             _error ?? 'حدث خطأ',
-            style: TextStyle(color: AppColors.textOnDarkSecondary),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            ),
           ),
           SizedBox(height: 12.h),
           GradientButton(
@@ -446,7 +558,9 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
             return Padding(
               padding: EdgeInsets.symmetric(vertical: 12.h),
               child: Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
             );
           }
@@ -468,22 +582,31 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color:
+            Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+        ),
       ),
       child: Column(
         children: [
           TextField(
             controller: _searchController,
             onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
-            style: TextStyle(color: AppColors.textOnDark, fontSize: 14.sp),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 14.sp,
+            ),
             decoration: InputDecoration(
               hintText: 'ابحث عن واجب أو مادة...',
-              hintStyle: TextStyle(color: AppColors.textOnDarkHint),
+              hintStyle: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+              ),
               prefixIcon: Icon(
                 Icons.search_rounded,
-                color: AppColors.textOnDarkSecondary,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                 size: 20.sp,
               ),
               suffixIcon: _searchQuery.isNotEmpty
@@ -494,24 +617,34 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                       },
                       icon: Icon(
                         Icons.close_rounded,
-                        color: AppColors.textOnDarkHint,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.3),
                         size: 18.sp,
                       ),
                     )
                   : null,
               filled: true,
-              fillColor: AppColors.darkSurface,
+              fillColor:
+                  Theme.of(context).cardTheme.color ??
+                  Theme.of(context).colorScheme.surface,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: AppColors.darkBorder),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+                ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: AppColors.darkBorder),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: AppColors.primary),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
             ),
           ),
@@ -542,16 +675,23 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
         duration: const Duration(milliseconds: 200),
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.darkSurface,
+          color: isSelected
+              ? Theme.of(context).colorScheme.primary
+              : (Theme.of(context).cardTheme.color ??
+                    Theme.of(context).colorScheme.surface),
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.darkBorder,
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.outline.withOpacity(0.5),
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : AppColors.textOnDarkSecondary,
+            color: isSelected
+                ? Colors.white
+                : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             fontSize: 12.sp,
             fontWeight: FontWeight.w600,
           ),
@@ -568,21 +708,25 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: AppColors.darkCard,
+              color:
+                  Theme.of(context).cardTheme.color ??
+                  Theme.of(context).colorScheme.surface,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.darkBorder),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+              ),
             ),
             child: Icon(
               Icons.assignment_outlined,
               size: 52.sp,
-              color: AppColors.textOnDarkHint,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
             ),
           ),
           SizedBox(height: 16.h),
           Text(
             'لا توجد بيانات',
             style: TextStyle(
-              color: AppColors.textOnDark,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.bold,
               fontSize: 16.sp,
             ),
@@ -590,7 +734,10 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
           SizedBox(height: 4.h),
           Text(
             'اضغط على "إنشاء جديد" للبدء',
-            style: TextStyle(color: AppColors.textOnDarkHint, fontSize: 12.sp),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+              fontSize: 12.sp,
+            ),
           ),
         ],
       ),
@@ -627,7 +774,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
 
     switch (type) {
       case 'exam':
-        typeColor = AppColors.warning;
+        typeColor = Colors.orange;
         typeIcon = Icons.quiz_outlined;
         typeName = 'امتحان';
         break;
@@ -637,7 +784,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
         typeName = 'كويز';
         break;
       default:
-        typeColor = AppColors.primary;
+        typeColor = Theme.of(context).colorScheme.primary;
         typeIcon = Icons.assignment_outlined;
         typeName = 'واجب';
     }
@@ -647,7 +794,9 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
       padding: EdgeInsets.all(16.w),
       margin: EdgeInsets.only(bottom: 16.h),
       hasNeonBorder: !isEnded && !isArchived,
-      neonColor: isScheduled ? AppColors.warning : AppColors.primary,
+      neonColor: isScheduled
+          ? Colors.orange
+          : Theme.of(context).colorScheme.primary,
       animationDelay: 60 * index,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -674,8 +823,10 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                         fontSize: 15.sp,
                         fontWeight: FontWeight.bold,
                         color: isEnded
-                            ? AppColors.textOnDarkHint
-                            : AppColors.textOnDark,
+                            ? Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.3)
+                            : Theme.of(context).colorScheme.onSurface,
                         fontFamily: 'Cairo',
                       ),
                     ),
@@ -684,7 +835,9 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                       '$typeName • $courseName',
                       style: TextStyle(
                         fontSize: 11.sp,
-                        color: AppColors.textOnDarkSecondary,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.7),
                         fontFamily: 'Cairo',
                       ),
                     ),
@@ -695,17 +848,21 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryLight.withOpacity(0.15),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(20.r),
                     border: Border.all(
-                      color: AppColors.primaryLight.withOpacity(0.3),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.3),
                     ),
                   ),
                   child: Text(
                     'مؤرشف',
                     style: TextStyle(
                       fontSize: 10.sp,
-                      color: AppColors.primaryLight,
+                      color: Theme.of(context).colorScheme.primary,
                       fontFamily: 'Cairo',
                     ),
                   ),
@@ -715,17 +872,15 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: AppColors.warning.withOpacity(0.15),
+                    color: Colors.orange.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(20.r),
-                    border: Border.all(
-                      color: AppColors.warning.withOpacity(0.3),
-                    ),
+                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
                   ),
                   child: Text(
                     'مجدول',
                     style: TextStyle(
                       fontSize: 10.sp,
-                      color: AppColors.warning,
+                      color: Colors.orange,
                       fontFamily: 'Cairo',
                     ),
                   ),
@@ -735,14 +890,18 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: AppColors.textOnDarkHint.withOpacity(0.15),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Text(
                     'منتهي',
                     style: TextStyle(
                       fontSize: 10.sp,
-                      color: AppColors.textOnDarkHint,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.5),
                       fontFamily: 'Cairo',
                     ),
                   ),
@@ -750,26 +909,29 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
             ],
           ),
           SizedBox(height: 14.h),
-          Container(height: 1, color: AppColors.darkBorder.withOpacity(0.5)),
+          Container(
+            height: 1,
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+          ),
           SizedBox(height: 12.h),
           Row(
             children: [
               _buildIconText(
                 Icons.people_outline,
                 '$subCount تسليم',
-                AppColors.textOnDarkSecondary,
+                Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
               ),
               const Spacer(),
               _buildIconText(
                 Icons.grade_outlined,
                 '$maxScore درجة',
-                AppColors.textOnDarkSecondary,
+                Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
               ),
               const Spacer(),
               _buildIconText(
                 Icons.calendar_today_outlined,
                 _formatDate(dueDate),
-                isEnded ? AppColors.error : AppColors.success,
+                isEnded ? Theme.of(context).colorScheme.error : Colors.green,
               ),
             ],
           ),
@@ -781,15 +943,17 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                   onTap: () => _viewSubmissions(assignment),
                   padding: EdgeInsets.symmetric(vertical: 8.h),
                   borderRadius: 10.r,
-                  backgroundColor: AppColors.primary.withOpacity(0.1),
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.primary.withOpacity(0.1),
                   hasNeonBorder: true,
-                  neonColor: AppColors.primary,
+                  neonColor: Theme.of(context).colorScheme.primary,
                   child: Center(
                     child: Text(
                       'التصحيح',
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: AppColors.primaryLight,
+                        color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Cairo',
                       ),
@@ -806,7 +970,9 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                 child: Icon(
                   Icons.more_horiz,
                   size: 18.sp,
-                  color: AppColors.textOnDarkHint,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.3),
                 ),
               ),
             ],
@@ -865,7 +1031,9 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
   void _showCreateOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.darkElevated,
+      backgroundColor:
+          Theme.of(context).cardTheme.color ??
+          Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
@@ -878,7 +1046,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
               width: 40.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: AppColors.darkBorder,
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(2.r),
               ),
             ),
@@ -888,7 +1056,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textOnDark,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             SizedBox(height: 20.h),
@@ -898,7 +1066,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                   child: _buildCreateOption(
                     icon: Icons.assignment,
                     label: 'واجب',
-                    color: AppColors.primary,
+                    color: Theme.of(context).colorScheme.primary,
                     onTap: () {
                       Navigator.pop(context);
                       _navigateToCreate('assignment');
@@ -910,7 +1078,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                   child: _buildCreateOption(
                     icon: Icons.quiz,
                     label: 'امتحان',
-                    color: AppColors.warning,
+                    color: Colors.orange,
                     onTap: () {
                       Navigator.pop(context);
                       _navigateToCreate('exam');
@@ -998,7 +1166,9 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
     final isArchived = _isArchived(assignment);
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.darkElevated,
+      backgroundColor:
+          Theme.of(context).cardTheme.color ??
+          Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
@@ -1012,18 +1182,22 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                 height: 4.h,
                 margin: EdgeInsets.only(top: 12.h),
                 decoration: BoxDecoration(
-                  color: AppColors.darkBorder,
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
               ListTile(
                 leading: Icon(
                   Icons.group_add,
-                  color: AppColors.textOnDarkSecondary,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.7),
                 ),
                 title: Text(
                   'نشر لمجموعات إضافية',
-                  style: TextStyle(color: AppColors.textOnDark),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -1031,32 +1205,47 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                 },
               ),
               ListTile(
-                leading: Icon(Icons.copy, color: AppColors.textOnDarkSecondary),
+                leading: Icon(
+                  Icons.copy,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.7),
+                ),
                 title: Text(
                   'نسخ',
-                  style: TextStyle(color: AppColors.textOnDark),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
                 onTap: () => Navigator.pop(context),
               ),
               ListTile(
                 leading: Icon(
                   Icons.share,
-                  color: AppColors.textOnDarkSecondary,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.7),
                 ),
                 title: Text(
                   'مشاركة',
-                  style: TextStyle(color: AppColors.textOnDark),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
                 onTap: () => Navigator.pop(context),
               ),
               ListTile(
                 leading: Icon(
                   Icons.schedule,
-                  color: AppColors.textOnDarkSecondary,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.7),
                 ),
                 title: Text(
                   'تعديل موعد الظهور',
-                  style: TextStyle(color: AppColors.textOnDark),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -1066,11 +1255,15 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
               ListTile(
                 leading: Icon(
                   isArchived ? Icons.unarchive : Icons.archive,
-                  color: AppColors.textOnDarkSecondary,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.7),
                 ),
                 title: Text(
                   isArchived ? 'إلغاء الأرشفة' : 'أرشفة',
-                  style: TextStyle(color: AppColors.textOnDark),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -1078,8 +1271,14 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                 },
               ),
               ListTile(
-                leading: Icon(Icons.delete, color: AppColors.error),
-                title: Text('حذف', style: TextStyle(color: AppColors.error)),
+                leading: Icon(
+                  Icons.delete,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                title: Text(
+                  'حذف',
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   _deleteAssignment(assignment);
@@ -1198,7 +1397,9 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
     final selectedIds = <String>{};
     final result = await showModalBottomSheet<Set<String>>(
       context: context,
-      backgroundColor: AppColors.darkElevated,
+      backgroundColor:
+          Theme.of(context).cardTheme.color ??
+          Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
@@ -1218,7 +1419,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                       Text(
                         'اختيار المجموعات',
                         style: TextStyle(
-                          color: AppColors.textOnDark,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                         ),
@@ -1241,7 +1442,9 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                           selectedIds.length == availableGroups.length
                               ? 'إلغاء الكل'
                               : 'تحديد الكل',
-                          style: TextStyle(color: AppColors.primaryLight),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
                         ),
                       ),
                     ],
@@ -1254,7 +1457,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                         final isChecked = selectedIds.contains(group.id);
                         return CheckboxListTile(
                           value: isChecked,
-                          activeColor: AppColors.primaryLight,
+                          activeColor: Theme.of(context).colorScheme.primary,
                           onChanged: (v) {
                             if (v == true) {
                               selectedIds.add(group.id);
@@ -1265,7 +1468,9 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                           },
                           title: Text(
                             group.groupName,
-                            style: TextStyle(color: AppColors.textOnDark),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                           ),
                         );
                       }).toList(),
@@ -1277,7 +1482,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                     child: ElevatedButton(
                       onPressed: () => Navigator.pop(context, selectedIds),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryLight,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                         padding: EdgeInsets.symmetric(vertical: 12.h),
                       ),
                       child: const Text(
@@ -1384,26 +1589,34 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkElevated,
+        backgroundColor:
+            Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface,
         title: Text(
           'حذف الواجب',
-          style: TextStyle(color: AppColors.textOnDark),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
         content: Text(
           'هل أنت متأكد من حذف "${assignment['title']}"؟',
-          style: TextStyle(color: AppColors.textOnDarkSecondary),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               'إلغاء',
-              style: TextStyle(color: AppColors.textOnDarkSecondary),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
             child: const Text('حذف'),
           ),
         ],
@@ -1431,7 +1644,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('تم حذف الواجب'),
-            backgroundColor: AppColors.success,
+            backgroundColor: Colors.green,
           ),
         );
         _loadData(reset: true);

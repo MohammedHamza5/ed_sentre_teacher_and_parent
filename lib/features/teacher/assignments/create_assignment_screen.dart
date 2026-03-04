@@ -1,10 +1,11 @@
 import 'dart:io';
+import 'package:ed_sentre_techer_and_parent/core/config/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/config/app_colors.dart';
+// Removed AppColors import
 import '../../../core/providers/center_provider.dart';
 import '../../auth/provider/auth_provider.dart';
 import '../../../shared/data/supabase_repository.dart';
@@ -172,18 +173,24 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
 
   Widget _buildSimpleScreen() {
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           'إنشاء $_typeLabel',
-          style: TextStyle(color: AppColors.textOnDark),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
-        backgroundColor: AppColors.darkCard,
-        foregroundColor: AppColors.textOnDark,
+        backgroundColor:
+            (Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface),
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         elevation: 0,
       ),
       body: _isLoadingGroups
-          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            )
           : _groups.isEmpty
           ? _buildNoGroupsState()
           : Form(
@@ -322,9 +329,13 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color:
+            (Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -336,7 +347,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
               Text(
                 'المجموعات *',
                 style: TextStyle(
-                  color: AppColors.textOnDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.bold,
                   fontSize: 14.sp,
                 ),
@@ -352,7 +363,9 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
           if (selectedNames.isEmpty)
             Text(
               'لم يتم اختيار مجموعة',
-              style: TextStyle(color: AppColors.textOnDarkSecondary),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
             )
           else
             Wrap(
@@ -392,7 +405,9 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
     final selectedIds = _selectedGroups.map((e) => e.id).toSet();
     final result = await showModalBottomSheet<Set<String>>(
       context: context,
-      backgroundColor: AppColors.darkCard,
+      backgroundColor:
+          (Theme.of(context).cardTheme.color ??
+          Theme.of(context).colorScheme.surface),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
@@ -410,7 +425,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                       Text(
                         'اختيار المجموعات',
                         style: TextStyle(
-                          color: AppColors.textOnDark,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                         ),
@@ -453,7 +468,9 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                           },
                           title: Text(
                             group.groupName,
-                            style: TextStyle(color: AppColors.textOnDark),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                           ),
                         );
                       }).toList(),
@@ -500,29 +517,44 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color:
+            (Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+        ),
       ),
       child: TextFormField(
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboardType,
-        style: TextStyle(color: AppColors.textOnDark, fontSize: 14.sp),
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onSurface,
+          fontSize: 14.sp,
+        ),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: AppColors.textOnDarkSecondary),
+          labelStyle: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+          ),
           hintText: hint,
-          hintStyle: TextStyle(color: AppColors.textOnDarkSecondary),
+          hintStyle: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+          ),
           prefixIcon: Icon(icon, color: _typeColor),
           suffixText: suffix,
-          suffixStyle: TextStyle(color: AppColors.textOnDarkSecondary),
+          suffixStyle: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.r),
             borderSide: BorderSide.none,
           ),
           filled: true,
-          fillColor: AppColors.darkCard,
+          fillColor:
+              (Theme.of(context).cardTheme.color ??
+              Theme.of(context).colorScheme.surface),
         ),
         validator: validator,
       ),
@@ -535,10 +567,14 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color:
+            (Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: _attachmentName != null ? _typeColor : AppColors.darkBorder,
+          color: _attachmentName != null
+              ? _typeColor
+              : Theme.of(context).colorScheme.outline.withOpacity(0.5),
           width: _attachmentName != null ? 2 : 1,
         ),
       ),
@@ -554,7 +590,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textOnDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -577,13 +613,16 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                       _attachmentName!,
                       style: TextStyle(
                         fontSize: 13.sp,
-                        color: AppColors.textOnDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.close, color: AppColors.error),
+                    icon: Icon(
+                      Icons.close,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                     onPressed: () => setState(() {
                       _attachmentName = null;
                       _attachmentPath = null;
@@ -636,9 +675,13 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color:
+            (Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -652,7 +695,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textOnDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -675,12 +718,13 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
               decoration: BoxDecoration(
                 color: _publishDate != null
                     ? _typeColor.withValues(alpha: 0.1)
-                    : AppColors.darkSurface,
+                    : (Theme.of(context).cardTheme.color ??
+                          Theme.of(context).colorScheme.surface),
                 borderRadius: BorderRadius.circular(8.r),
                 border: Border.all(
                   color: _publishDate != null
                       ? _typeColor
-                      : AppColors.darkBorder,
+                      : Theme.of(context).colorScheme.outline.withOpacity(0.5),
                 ),
               ),
               child: Row(
@@ -689,7 +733,9 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                     Icons.schedule,
                     color: _publishDate != null
                         ? _typeColor
-                        : AppColors.textOnDarkSecondary,
+                        : Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.7),
                     size: 20.sp,
                   ),
                   SizedBox(width: 12.w),
@@ -701,8 +747,10 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: _publishDate != null
-                            ? AppColors.textOnDark
-                            : AppColors.textOnDarkSecondary,
+                            ? Theme.of(context).colorScheme.onSurface
+                            : Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.7),
                       ),
                     ),
                   ),
@@ -741,9 +789,13 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color:
+            (Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+        ),
       ),
       child: SwitchListTile(
         value: _startArchived,
@@ -752,7 +804,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
         title: Text(
           'أرشفة عند الإنشاء',
           style: TextStyle(
-            color: AppColors.textOnDark,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
             fontSize: 14.sp,
           ),
@@ -760,7 +812,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
         subtitle: Text(
           'لن يظهر للطلاب إلا بعد إلغاء الأرشفة',
           style: TextStyle(
-            color: AppColors.textOnDarkSecondary,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             fontSize: 12.sp,
           ),
         ),
@@ -772,9 +824,13 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color:
+            (Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -788,7 +844,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textOnDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -815,10 +871,13 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
               decoration: BoxDecoration(
                 color: _dueDate != null
                     ? _typeColor.withValues(alpha: 0.1)
-                    : AppColors.darkSurface,
+                    : (Theme.of(context).cardTheme.color ??
+                          Theme.of(context).colorScheme.surface),
                 borderRadius: BorderRadius.circular(8.r),
                 border: Border.all(
-                  color: _dueDate != null ? _typeColor : AppColors.darkBorder,
+                  color: _dueDate != null
+                      ? _typeColor
+                      : Theme.of(context).colorScheme.outline.withOpacity(0.5),
                 ),
               ),
               child: Row(
@@ -827,7 +886,9 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                     Icons.calendar_today,
                     color: _dueDate != null
                         ? _typeColor
-                        : AppColors.textOnDarkSecondary,
+                        : Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.7),
                     size: 20.sp,
                   ),
                   SizedBox(width: 12.w),
@@ -839,8 +900,10 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: _dueDate != null
-                            ? AppColors.textOnDark
-                            : AppColors.textOnDarkSecondary,
+                            ? Theme.of(context).colorScheme.onSurface
+                            : Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.7),
                       ),
                     ),
                   ),
@@ -892,10 +955,18 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
         });
       },
       selectedColor: _typeColor.withValues(alpha: 0.2),
-      backgroundColor: AppColors.darkSurface,
-      side: BorderSide(color: isSelected ? _typeColor : AppColors.darkBorder),
+      backgroundColor:
+          (Theme.of(context).cardTheme.color ??
+          Theme.of(context).colorScheme.surface),
+      side: BorderSide(
+        color: isSelected
+            ? _typeColor
+            : Theme.of(context).colorScheme.outline.withOpacity(0.5),
+      ),
       labelStyle: TextStyle(
-        color: isSelected ? _typeColor : AppColors.textOnDarkSecondary,
+        color: isSelected
+            ? _typeColor
+            : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
     );
@@ -905,9 +976,13 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color:
+            (Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -921,7 +996,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textOnDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -951,21 +1026,37 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                   controller: _durationController,
                   keyboardType: TextInputType.number,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.textOnDark),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                   decoration: InputDecoration(
                     hintText: 'أو أدخل عدد مخصص',
-                    hintStyle: TextStyle(color: AppColors.textOnDarkSecondary),
+                    hintStyle: TextStyle(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.7),
+                    ),
                     suffixText: 'دقيقة',
                     suffixStyle: TextStyle(
-                      color: AppColors.textOnDarkSecondary,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.7),
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8.r),
-                      borderSide: BorderSide(color: AppColors.darkBorder),
+                      borderSide: BorderSide(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.outline.withOpacity(0.5),
+                      ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8.r),
-                      borderSide: BorderSide(color: AppColors.darkBorder),
+                      borderSide: BorderSide(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.outline.withOpacity(0.5),
+                      ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8.r),
@@ -995,10 +1086,18 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
         setState(() => _durationController.text = minutes.toString());
       },
       selectedColor: _typeColor.withValues(alpha: 0.2),
-      backgroundColor: AppColors.darkSurface,
-      side: BorderSide(color: isSelected ? _typeColor : AppColors.darkBorder),
+      backgroundColor:
+          (Theme.of(context).cardTheme.color ??
+          Theme.of(context).colorScheme.surface),
+      side: BorderSide(
+        color: isSelected
+            ? _typeColor
+            : Theme.of(context).colorScheme.outline.withOpacity(0.5),
+      ),
       labelStyle: TextStyle(
-        color: isSelected ? _typeColor : AppColors.textOnDarkSecondary,
+        color: isSelected
+            ? _typeColor
+            : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
       ),
     );
   }
@@ -1052,19 +1151,22 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
           Icon(
             Icons.group_off,
             size: 64.sp,
-            color: AppColors.textOnDarkSecondary,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
           ),
           SizedBox(height: 16.h),
           Text(
             'لا توجد مجموعات',
-            style: TextStyle(fontSize: 16.sp, color: AppColors.textOnDark),
+            style: TextStyle(
+              fontSize: 16.sp,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
           ),
           SizedBox(height: 8.h),
           Text(
             'تأكد من إضافة مجموعات أولاً',
             style: TextStyle(
               fontSize: 12.sp,
-              color: AppColors.textOnDarkSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
         ],
@@ -1118,10 +1220,18 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
         });
       },
       selectedColor: _typeColor.withValues(alpha: 0.2),
-      backgroundColor: AppColors.darkSurface,
-      side: BorderSide(color: isSelected ? _typeColor : AppColors.darkBorder),
+      backgroundColor:
+          (Theme.of(context).cardTheme.color ??
+          Theme.of(context).colorScheme.surface),
+      side: BorderSide(
+        color: isSelected
+            ? _typeColor
+            : Theme.of(context).colorScheme.outline.withOpacity(0.5),
+      ),
       labelStyle: TextStyle(
-        color: isSelected ? _typeColor : AppColors.textOnDarkSecondary,
+        color: isSelected
+            ? _typeColor
+            : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
     );
@@ -1268,7 +1378,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('تم نشر $_typeLabel بنجاح! 🎉'),
-            backgroundColor: AppColors.success,
+            backgroundColor: Colors.green,
           ),
         );
         Navigator.pop(context, true);
@@ -1285,7 +1395,10 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: AppColors.error),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ),
     );
   }
 
@@ -1295,18 +1408,24 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
 
   Widget _buildQuizScreen() {
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           _currentStep == 0 ? 'إنشاء كويز - المعلومات' : 'إنشاء كويز - الأسئلة',
-          style: TextStyle(color: AppColors.textOnDark),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
-        backgroundColor: AppColors.darkCard,
-        foregroundColor: AppColors.textOnDark,
+        backgroundColor:
+            (Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface),
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         elevation: 0,
       ),
       body: _isLoadingGroups
-          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            )
           : _groups.isEmpty
           ? _buildNoGroupsState()
           : _currentStep == 0
@@ -1447,7 +1566,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textOnDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const Spacer(),
@@ -1455,7 +1574,9 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                 'الدرجة لكل سؤال: ${_questions.isNotEmpty ? ((int.tryParse(_maxScoreController.text) ?? 20) / _questions.length).toStringAsFixed(1) : '—'}',
                 style: TextStyle(
                   fontSize: 12.sp,
-                  color: AppColors.textOnDarkSecondary,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.7),
                 ),
               ),
             ],
@@ -1468,23 +1589,29 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
           Container(
             padding: EdgeInsets.all(32.w),
             decoration: BoxDecoration(
-              color: AppColors.darkCard,
+              color:
+                  (Theme.of(context).cardTheme.color ??
+                  Theme.of(context).colorScheme.surface),
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(color: AppColors.darkBorder),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+              ),
             ),
             child: Column(
               children: [
                 Icon(
                   Icons.quiz,
                   size: 48.sp,
-                  color: AppColors.textOnDarkSecondary,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.7),
                 ),
                 SizedBox(height: 12.h),
                 Text(
                   'لا توجد أسئلة',
                   style: TextStyle(
                     fontSize: 16.sp,
-                    color: AppColors.textOnDark,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 SizedBox(height: 4.h),
@@ -1492,7 +1619,9 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                   'أضف سؤال واحد على الأقل',
                   style: TextStyle(
                     fontSize: 12.sp,
-                    color: AppColors.textOnDarkSecondary,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
                   ),
                 ),
               ],
@@ -1523,7 +1652,9 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color:
+            (Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: _typeColor.withValues(alpha: 0.2)),
       ),
@@ -1547,14 +1678,14 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textOnDark,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ),
               IconButton(
                 icon: Icon(
                   Icons.delete_outline,
-                  color: AppColors.error,
+                  color: Theme.of(context).colorScheme.error,
                   size: 20.sp,
                 ),
                 onPressed: () => setState(() => _questions.removeAt(index)),
@@ -1575,8 +1706,10 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                           : Icons.circle_outlined,
                       size: 16.sp,
                       color: q['correct'] == i
-                          ? AppColors.success
-                          : AppColors.textOnDarkSecondary,
+                          ? Colors.green
+                          : Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.7),
                     ),
                     SizedBox(width: 8.w),
                     Text(
@@ -1584,8 +1717,10 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                       style: TextStyle(
                         fontSize: 12.sp,
                         color: q['correct'] == i
-                            ? AppColors.success
-                            : AppColors.textOnDarkSecondary,
+                            ? Colors.green
+                            : Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.7),
                       ),
                     ),
                   ],
@@ -1612,8 +1747,14 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
-        border: Border(top: BorderSide(color: AppColors.darkBorder)),
+        color:
+            (Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface),
+        border: Border(
+          top: BorderSide(
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+          ),
+        ),
       ),
       child: SafeArea(
         child: Row(
@@ -1623,8 +1764,12 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                 child: OutlinedButton(
                   onPressed: () => setState(() => _currentStep = 0),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.textOnDark,
-                    side: BorderSide(color: AppColors.darkBorder),
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
+                    side: BorderSide(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.outline.withOpacity(0.5),
+                    ),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -1764,7 +1909,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('تم نشر الكويز بنجاح! 🎉'),
-            backgroundColor: AppColors.success,
+            backgroundColor: Colors.green,
           ),
         );
         Navigator.pop(context, true);
@@ -1804,8 +1949,13 @@ class _QuestionDialogState extends State<_QuestionDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppColors.darkCard,
-      title: Text('إضافة سؤال', style: TextStyle(color: AppColors.textOnDark)),
+      backgroundColor:
+          (Theme.of(context).cardTheme.color ??
+          Theme.of(context).colorScheme.surface),
+      title: Text(
+        'إضافة سؤال',
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+      ),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1816,7 +1966,7 @@ class _QuestionDialogState extends State<_QuestionDialog> {
               'نوع السؤال:',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: AppColors.textOnDark,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 13.sp,
               ),
             ),
@@ -1843,15 +1993,27 @@ class _QuestionDialogState extends State<_QuestionDialog> {
               onChanged: (_) {
                 if (_errorText != null) setState(() => _errorText = null);
               },
-              style: TextStyle(color: AppColors.textOnDark),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               decoration: InputDecoration(
                 labelText: 'نص السؤال',
-                labelStyle: TextStyle(color: AppColors.textOnDarkSecondary),
+                labelStyle: TextStyle(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.7),
+                ),
                 border: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.darkBorder),
+                  borderSide: BorderSide(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outline.withOpacity(0.5),
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.darkBorder),
+                  borderSide: BorderSide(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outline.withOpacity(0.5),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: widget.typeColor),
@@ -1871,7 +2033,10 @@ class _QuestionDialogState extends State<_QuestionDialog> {
               SizedBox(height: 8.h),
               Text(
                 _errorText!,
-                style: TextStyle(color: AppColors.error, fontSize: 12.sp),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                  fontSize: 12.sp,
+                ),
               ),
             ],
           ],
@@ -1882,7 +2047,9 @@ class _QuestionDialogState extends State<_QuestionDialog> {
           onPressed: () => Navigator.pop(context),
           child: Text(
             'إلغاء',
-            style: TextStyle(color: AppColors.textOnDarkSecondary),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            ),
           ),
         ),
         ElevatedButton(
@@ -1903,10 +2070,13 @@ class _QuestionDialogState extends State<_QuestionDialog> {
         decoration: BoxDecoration(
           color: isSelected
               ? widget.typeColor.withValues(alpha: 0.2)
-              : AppColors.darkSurface,
+              : (Theme.of(context).cardTheme.color ??
+                    Theme.of(context).colorScheme.surface),
           borderRadius: BorderRadius.circular(8.r),
           border: Border.all(
-            color: isSelected ? widget.typeColor : AppColors.darkBorder,
+            color: isSelected
+                ? widget.typeColor
+                : Theme.of(context).colorScheme.outline.withOpacity(0.5),
           ),
         ),
         child: Row(
@@ -1917,7 +2087,7 @@ class _QuestionDialogState extends State<_QuestionDialog> {
               size: 14.sp,
               color: isSelected
                   ? widget.typeColor
-                  : AppColors.textOnDarkSecondary,
+                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             ),
             SizedBox(width: 4.w),
             Text(
@@ -1926,7 +2096,7 @@ class _QuestionDialogState extends State<_QuestionDialog> {
                 fontSize: 11.sp,
                 color: isSelected
                     ? widget.typeColor
-                    : AppColors.textOnDarkSecondary,
+                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
@@ -1944,7 +2114,7 @@ class _QuestionDialogState extends State<_QuestionDialog> {
           'الخيارات:',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppColors.textOnDark,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         SizedBox(height: 8.h),
@@ -1961,7 +2131,9 @@ class _QuestionDialogState extends State<_QuestionDialog> {
                   border: Border.all(
                     color: _correctOption == i
                         ? widget.typeColor
-                        : AppColors.darkBorder,
+                        : Theme.of(
+                            context,
+                          ).colorScheme.outline.withOpacity(0.5),
                   ),
                 ),
                 child: Row(
@@ -1979,11 +2151,15 @@ class _QuestionDialogState extends State<_QuestionDialog> {
                           if (_errorText != null)
                             setState(() => _errorText = null);
                         },
-                        style: TextStyle(color: AppColors.textOnDark),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           hintText: 'الخيار ${i + 1}',
                           hintStyle: TextStyle(
-                            color: AppColors.textOnDarkSecondary,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.7),
                           ),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(
@@ -2011,7 +2187,7 @@ class _QuestionDialogState extends State<_QuestionDialog> {
           'الإجابة الصحيحة:',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppColors.textOnDark,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         SizedBox(height: 8.h),
@@ -2025,12 +2201,15 @@ class _QuestionDialogState extends State<_QuestionDialog> {
                   decoration: BoxDecoration(
                     color: _correctOption == 0
                         ? Colors.green.withValues(alpha: 0.15)
-                        : AppColors.darkSurface,
+                        : (Theme.of(context).cardTheme.color ??
+                              Theme.of(context).colorScheme.surface),
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
                       color: _correctOption == 0
                           ? Colors.green
-                          : AppColors.darkBorder,
+                          : Theme.of(
+                              context,
+                            ).colorScheme.outline.withOpacity(0.5),
                     ),
                   ),
                   child: Center(
@@ -2039,7 +2218,9 @@ class _QuestionDialogState extends State<_QuestionDialog> {
                       style: TextStyle(
                         color: _correctOption == 0
                             ? Colors.green
-                            : AppColors.textOnDarkSecondary,
+                            : Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.7),
                         fontWeight: FontWeight.bold,
                         fontSize: 16.sp,
                       ),
@@ -2057,12 +2238,15 @@ class _QuestionDialogState extends State<_QuestionDialog> {
                   decoration: BoxDecoration(
                     color: _correctOption == 1
                         ? Colors.red.withValues(alpha: 0.15)
-                        : AppColors.darkSurface,
+                        : (Theme.of(context).cardTheme.color ??
+                              Theme.of(context).colorScheme.surface),
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
                       color: _correctOption == 1
                           ? Colors.red
-                          : AppColors.darkBorder,
+                          : Theme.of(
+                              context,
+                            ).colorScheme.outline.withOpacity(0.5),
                     ),
                   ),
                   child: Center(
@@ -2071,7 +2255,9 @@ class _QuestionDialogState extends State<_QuestionDialog> {
                       style: TextStyle(
                         color: _correctOption == 1
                             ? Colors.red
-                            : AppColors.textOnDarkSecondary,
+                            : Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.7),
                         fontWeight: FontWeight.bold,
                         fontSize: 16.sp,
                       ),
@@ -2094,7 +2280,7 @@ class _QuestionDialogState extends State<_QuestionDialog> {
           'الإجابة الصحيحة:',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppColors.textOnDark,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         SizedBox(height: 8.h),
@@ -2103,12 +2289,18 @@ class _QuestionDialogState extends State<_QuestionDialog> {
           style: TextStyle(color: AppColors.textOnDark),
           decoration: InputDecoration(
             hintText: 'اكتب الإجابة الصحيحة للتصحيح التلقائي',
-            hintStyle: TextStyle(color: AppColors.textOnDarkSecondary),
+            hintStyle: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            ),
             border: OutlineInputBorder(
-              borderSide: BorderSide(color: AppColors.darkBorder),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+              ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: AppColors.darkBorder),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderSide: BorderSide(color: widget.typeColor),
@@ -2119,7 +2311,7 @@ class _QuestionDialogState extends State<_QuestionDialog> {
         Text(
           'سيتم مقارنة إجابة الطالب بهذه الإجابة (بدون حساسية للأحرف)',
           style: TextStyle(
-            color: AppColors.textOnDarkSecondary,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             fontSize: 10.sp,
           ),
         ),

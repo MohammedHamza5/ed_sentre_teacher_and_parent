@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../../core/config/app_colors.dart';
+// Removed AppColors import
 import '../../../../shared/models/group_model.dart';
 
 class ScheduleTimelineTile extends StatelessWidget {
@@ -36,8 +36,12 @@ class ScheduleTimelineTile extends StatelessWidget {
                       : Container(
                           width: 2.w,
                           color: isPast
-                              ? AppColors.textHint.withValues(alpha: 0.3)
-                              : AppColors.primary.withValues(alpha: 0.3),
+                              ? Theme.of(
+                                  context,
+                                ).colorScheme.outline.withOpacity(0.3)
+                              : Theme.of(
+                                  context,
+                                ).colorScheme.primary.withOpacity(0.3),
                         ),
                 ),
                 // Dot
@@ -46,12 +50,21 @@ class ScheduleTimelineTile extends StatelessWidget {
                   height: 12.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isPast ? AppColors.textHint : AppColors.primary,
-                    border: Border.all(color: Colors.white, width: 2.w),
+                    color: isPast
+                        ? Theme.of(context).colorScheme.outline
+                        : Theme.of(context).colorScheme.primary,
+                    border: Border.all(
+                      color:
+                          Theme.of(context).cardTheme.color ??
+                          Theme.of(context).colorScheme.surface,
+                      width: 2.w,
+                    ),
                     boxShadow: [
                       if (!isPast)
                         BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.4),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.4),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -65,8 +78,12 @@ class ScheduleTimelineTile extends StatelessWidget {
                       : Container(
                           width: 2.w,
                           color: isPast
-                              ? AppColors.textHint.withValues(alpha: 0.3)
-                              : AppColors.primary.withValues(alpha: 0.3),
+                              ? Theme.of(
+                                  context,
+                                ).colorScheme.outline.withOpacity(0.3)
+                              : Theme.of(
+                                  context,
+                                ).colorScheme.primary.withOpacity(0.3),
                         ),
                 ),
               ],
@@ -79,14 +96,18 @@ class ScheduleTimelineTile extends StatelessWidget {
               padding: EdgeInsets.only(bottom: 24.h), // Spacing between items
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color:
+                      Theme.of(context).cardTheme.color ??
+                      Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16.r),
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.1),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.1),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: Theme.of(context).shadowColor.withOpacity(0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -107,7 +128,9 @@ class ScheduleTimelineTile extends StatelessWidget {
                               vertical: 4.h,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.1),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8.r),
                             ),
                             child: Row(
@@ -115,7 +138,7 @@ class ScheduleTimelineTile extends StatelessWidget {
                                 Icon(
                                   Icons.access_time_rounded,
                                   size: 14.sp,
-                                  color: AppColors.primary,
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
                                 SizedBox(width: 4.w),
                                 Text(
@@ -123,14 +146,18 @@ class ScheduleTimelineTile extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 12.sp,
                                     fontWeight: FontWeight.w600,
-                                    color: AppColors.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                   ),
                                 ),
                                 Text(
                                   ' - ',
                                   style: TextStyle(
                                     fontSize: 12.sp,
-                                    color: AppColors.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                   ),
                                 ),
                                 Text(
@@ -138,7 +165,9 @@ class ScheduleTimelineTile extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 12.sp,
                                     fontWeight: FontWeight.w600,
-                                    color: AppColors.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                   ),
                                 ),
                               ],
@@ -151,9 +180,9 @@ class ScheduleTimelineTile extends StatelessWidget {
                                 vertical: 4.h,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.secondary.withValues(
-                                  alpha: 0.1,
-                                ),
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.secondary.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8.r),
                               ),
                               child: Text(
@@ -161,7 +190,9 @@ class ScheduleTimelineTile extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 11.sp,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.secondary,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.secondary,
                                 ),
                               ),
                             ),
@@ -175,7 +206,7 @@ class ScheduleTimelineTile extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
 
@@ -187,14 +218,16 @@ class ScheduleTimelineTile extends StatelessWidget {
                           Icon(
                             Icons.people_outline_rounded,
                             size: 16.sp,
-                            color: AppColors.textHint,
+                            color: Theme.of(context).colorScheme.outline,
                           ),
                           SizedBox(width: 4.w),
                           Text(
                             '${group.currentStudents} / ${group.maxStudents} طالب',
                             style: TextStyle(
                               fontSize: 13.sp,
-                              color: AppColors.textSecondary,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.7),
                             ),
                           ),
                           SizedBox(width: 16.w),
@@ -202,14 +235,16 @@ class ScheduleTimelineTile extends StatelessWidget {
                           Icon(
                             Icons.location_on_outlined,
                             size: 16.sp,
-                            color: AppColors.textHint,
+                            color: Theme.of(context).colorScheme.outline,
                           ),
                           SizedBox(width: 4.w),
                           Text(
                             'القاعة الرئيسية', // Hardcoded for now or fetch from DB
                             style: TextStyle(
                               fontSize: 13.sp,
-                              color: AppColors.textSecondary,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.7),
                             ),
                           ),
                         ],

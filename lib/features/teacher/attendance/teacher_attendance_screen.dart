@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import '../../../core/config/app_colors.dart';
+// Removed AppColors import
 import '../../auth/provider/auth_provider.dart';
 import '../../../core/providers/center_provider.dart';
 import '../../../shared/data/supabase_repository.dart';
@@ -231,7 +231,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('فشل التحديث: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -263,7 +263,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -307,11 +307,20 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
       expandedHeight: 140.h,
       floating: false,
       pinned: true,
-      backgroundColor: AppColors.darkSurface,
+      backgroundColor:
+          (Theme.of(context).cardTheme.color ??
+          Theme.of(context).colorScheme.surface),
       automaticallyImplyLeading: false,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
-          decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.primary.withOpacity(0.8),
+              ],
+            ),
+          ),
           child: Stack(
             children: [
               // Decorative circles
@@ -413,12 +422,20 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.class_, color: AppColors.primaryLight, size: 18.sp),
+                Icon(
+                  Icons.class_,
+                  color:
+                      (Theme.of(context).cardTheme.color ??
+                      Theme.of(context).colorScheme.surface),
+                  size: 18.sp,
+                ),
                 SizedBox(width: 8.w),
                 Text(
                   'الحصة الحالية',
                   style: TextStyle(
-                    color: AppColors.textOnDarkSecondary,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
                     fontSize: 12.sp,
                   ),
                 ),
@@ -428,23 +445,29 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w),
               decoration: BoxDecoration(
-                color: AppColors.darkInput,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: AppColors.darkBorder),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+                ),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: _selectedGroupId,
                   isExpanded: true,
-                  dropdownColor: AppColors.darkElevated,
+                  dropdownColor:
+                      (Theme.of(context).cardTheme.color ??
+                      Theme.of(context).colorScheme.surface),
                   style: TextStyle(
-                    color: AppColors.textOnDark,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
                   ),
                   icon: Icon(
                     Icons.keyboard_arrow_down,
-                    color: AppColors.primaryLight,
+                    color:
+                        (Theme.of(context).cardTheme.color ??
+                        Theme.of(context).colorScheme.surface),
                   ),
                   items: _myGroups.map((group) {
                     return DropdownMenuItem<String>(
@@ -477,7 +500,9 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
 
                           return Text(
                             '${group.groupName} - ${_getDayName(group.dayOfWeek)} $timeDisplay',
-                            style: TextStyle(color: AppColors.textOnDark),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                           );
                         },
                       ),
@@ -518,18 +543,29 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
       decoration: BoxDecoration(
-        color: AppColors.primarySoft,
+        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.primaryLight, size: 14.sp),
+          Icon(
+            icon,
+            color:
+                (Theme.of(context).cardTheme.color ??
+                Theme.of(context).colorScheme.surface),
+            size: 14.sp,
+          ),
           SizedBox(width: 4.w),
           Text(
             text,
-            style: TextStyle(color: AppColors.textOnDark, fontSize: 12.sp),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 12.sp,
+            ),
           ),
         ],
       ),
@@ -545,7 +581,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
             child: _buildStatCard(
               'حضور',
               _presentCount,
-              AppColors.success,
+              Colors.green,
               Icons.check_circle,
             ),
           ),
@@ -554,7 +590,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
             child: _buildStatCard(
               'غياب',
               _absentCount,
-              AppColors.error,
+              Theme.of(context).colorScheme.error,
               Icons.cancel,
             ),
           ),
@@ -563,7 +599,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
             child: _buildStatCard(
               'لم يُسجل',
               _pendingCount,
-              AppColors.warning,
+              Colors.orange,
               Icons.help_outline,
             ),
           ),
@@ -599,7 +635,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
             label,
             style: TextStyle(
               fontSize: 11.sp,
-              color: AppColors.textOnDarkSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
         ],
@@ -639,14 +675,14 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
               height: 18.w,
               child: CircularProgressIndicator(
                 strokeWidth: 2.2,
-                color: AppColors.primary,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
             SizedBox(width: 10.w),
             Text(
               'جاري التحميل...',
               style: TextStyle(
-                color: AppColors.textOnDarkSecondary,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -669,22 +705,22 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
 
     switch (status) {
       case 'present':
-        statusColor = AppColors.success;
+        statusColor = Colors.green;
         statusIcon = Icons.check_circle;
         statusText = 'حاضر';
         break;
       case 'late':
-        statusColor = AppColors.warning;
+        statusColor = Colors.orange;
         statusIcon = Icons.access_time;
         statusText = 'متأخر';
         break;
       case 'absent':
-        statusColor = AppColors.error;
+        statusColor = Theme.of(context).colorScheme.error;
         statusIcon = Icons.cancel;
         statusText = 'غائب';
         break;
       default:
-        statusColor = AppColors.textOnDarkHint;
+        statusColor = Theme.of(context).colorScheme.onSurface.withOpacity(0.5);
         statusIcon = Icons.help_outline;
         statusText = 'لم يُسجل';
     }
@@ -733,7 +769,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
                         style: TextStyle(
                           fontSize: 15.sp,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textOnDark,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       if (checkInTime != null)
@@ -741,7 +777,9 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
                           'وقت الحضور: $checkInTime',
                           style: TextStyle(
                             fontSize: 11.sp,
-                            color: AppColors.textOnDarkSecondary,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.7),
                           ),
                         ),
                     ],
@@ -794,14 +832,18 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: AppColors.darkCard,
+              color:
+                  (Theme.of(context).cardTheme.color ??
+                  Theme.of(context).colorScheme.surface),
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.darkBorder),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+              ),
             ),
             child: Icon(
               Icons.class_outlined,
               size: 56.sp,
-              color: AppColors.textOnDarkHint,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
             ),
           ),
           SizedBox(height: 16.h),
@@ -809,7 +851,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
             'لا توجد مجموعات',
             style: TextStyle(
               fontSize: 18.sp,
-              color: AppColors.textOnDark,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -818,7 +860,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
             'لم يتم تعيين مجموعات لك بعد',
             style: TextStyle(
               fontSize: 14.sp,
-              color: AppColors.textOnDarkSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
         ],
@@ -834,14 +876,18 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: AppColors.darkCard,
+              color:
+                  (Theme.of(context).cardTheme.color ??
+                  Theme.of(context).colorScheme.surface),
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.darkBorder),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+              ),
             ),
             child: Icon(
               Icons.people_outline,
               size: 56.sp,
-              color: AppColors.textOnDarkHint,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
             ),
           ),
           SizedBox(height: 16.h),
@@ -849,7 +895,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
             'لا يوجد طلاب في هذه المجموعة',
             style: TextStyle(
               fontSize: 16.sp,
-              color: AppColors.textOnDark,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -858,7 +904,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
             'سيظهر الطلاب المسجلون هنا',
             style: TextStyle(
               fontSize: 13.sp,
-              color: AppColors.textOnDarkSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
         ],

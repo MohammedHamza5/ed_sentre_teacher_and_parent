@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-import '../../../core/config/app_colors.dart';
+// Removed AppColors import
 import '../../../shared/models/models.dart';
 import '../../auth/provider/auth_provider.dart';
 import '../provider/teacher_provider.dart';
@@ -39,7 +39,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     final currentCenter = centerProvider.currentCenter;
 
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -92,7 +92,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
   Widget _buildHeader(UserModel user, TeacherModel? teacher) {
     return Container(
       padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-      decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+      decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary),
       child: Stack(
         children: [
           // Drawer menu button (top-left)
@@ -147,7 +147,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                   ),
                   child: CircleAvatar(
                     radius: 52.r,
-                    backgroundColor: AppColors.darkCard,
+                    backgroundColor:
+                        Theme.of(context).cardTheme.color ??
+                        Theme.of(context).colorScheme.surface,
                     backgroundImage: user.avatarUrl != null
                         ? NetworkImage(user.avatarUrl!)
                         : null,
@@ -181,11 +183,11 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                     Container(
                       padding: EdgeInsets.all(5.w),
                       decoration: BoxDecoration(
-                        color: AppColors.warning,
+                        color: Colors.orange,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.warning.withValues(alpha: 0.4),
+                            color: Colors.orange.withOpacity(0.4),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -263,7 +265,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
       child: GlassMorphismCard(
         padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
         hasNeonBorder: true,
-        neonColor: AppColors.primary,
+        neonColor: Theme.of(context).colorScheme.primary,
         blurStrength: 20,
         borderRadius: 24.r,
         child: Row(
@@ -273,21 +275,38 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
               icon: Icons.people_rounded,
               value: '${teacherProvider.totalUniqueStudents}',
               label: 'طالب',
-              gradient: AppColors.premiumOcean,
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                ],
+              ),
             ),
             _buildStatDivider(),
             _buildStatItem(
               icon: Icons.groups_rounded,
               value: '${teacherProvider.totalActiveGroups}',
               label: 'مجموعة',
-              gradient: AppColors.premiumEmerald,
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.secondary,
+                  Theme.of(context).colorScheme.secondary.withOpacity(0.8),
+                ],
+              ),
             ),
             _buildStatDivider(),
             _buildStatItem(
               icon: Icons.business_rounded,
               value: '${centerProvider.availableCenters.length}',
               label: 'سنتر',
-              gradient: AppColors.premiumRoyal,
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primaryContainer,
+                  Theme.of(
+                    context,
+                  ).colorScheme.primaryContainer.withOpacity(0.8),
+                ],
+              ),
             ),
           ],
         ),
@@ -327,7 +346,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
             style: TextStyle(
               fontSize: 24.sp,
               fontWeight: FontWeight.bold,
-              color: AppColors.textOnDark,
+              color: Theme.of(context).colorScheme.onSurface,
               fontFamily: 'Cairo',
             ),
           ),
@@ -336,7 +355,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
             label,
             style: TextStyle(
               fontSize: 13.sp,
-              color: AppColors.textOnDarkSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
               fontFamily: 'Cairo',
             ),
           ),
@@ -349,7 +368,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     return Container(
       height: 50.h,
       width: 1,
-      color: AppColors.darkBorder.withValues(alpha: 0.5),
+      color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
     );
   }
 
@@ -359,9 +378,14 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
 
   Widget _buildCenterCard(dynamic center) {
     return GlassMorphismCard(
-      gradient: AppColors.premiumOcean,
+      gradient: LinearGradient(
+        colors: [
+          Theme.of(context).colorScheme.primary,
+          Theme.of(context).colorScheme.primary.withOpacity(0.8),
+        ],
+      ),
       hasNeonBorder: true,
-      neonColor: AppColors.info,
+      neonColor: Colors.blueAccent,
       padding: EdgeInsets.all(16.w),
       child: Row(
         children: [
@@ -430,7 +454,12 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
           title: 'الإعدادات',
           icon: Icons.settings_rounded,
           subtitle: 'تخصيص تجربتك',
-          titleGradient: AppColors.premiumRoyal,
+          titleGradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.primary,
+              Theme.of(context).colorScheme.primary,
+            ],
+          ),
         ),
         SizedBox(height: 12.h),
         GlassMorphismCard(
@@ -459,7 +488,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                 subtitle: 'مفعّل حالياً',
                 trailing: Switch(
                   value: true,
-                  activeColor: AppColors.primary,
+                  activeColor: Theme.of(context).colorScheme.primary,
                   onChanged: (_) {},
                 ),
               ),
@@ -486,9 +515,15 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     Widget? trailing,
     bool isDestructive = false,
   }) {
-    final color = isDestructive ? AppColors.error : AppColors.textOnDark;
-    final iconBg = isDestructive ? AppColors.errorSoft : AppColors.primarySoft;
-    final iconColor = isDestructive ? AppColors.error : AppColors.primary;
+    final color = isDestructive
+        ? Theme.of(context).colorScheme.error
+        : Theme.of(context).colorScheme.onSurface;
+    final iconBg = isDestructive
+        ? Theme.of(context).colorScheme.error.withOpacity(0.1)
+        : Theme.of(context).colorScheme.primary.withOpacity(0.1);
+    final iconColor = isDestructive
+        ? Theme.of(context).colorScheme.error
+        : Theme.of(context).colorScheme.primary;
 
     return ListTile(
       onTap: onTap,
@@ -511,14 +546,17 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
       ),
       subtitle: Text(
         subtitle,
-        style: TextStyle(fontSize: 12.sp, color: AppColors.textOnDarkSecondary),
+        style: TextStyle(
+          fontSize: 12.sp,
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+        ),
       ),
       trailing:
           trailing ??
           Icon(
             Icons.arrow_forward_ios_rounded,
             size: 16.sp,
-            color: AppColors.textOnDarkHint,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
           ),
     );
   }
@@ -527,7 +565,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     return Divider(
       height: 1,
       indent: 60.w,
-      color: AppColors.darkBorder.withValues(alpha: 0.5),
+      color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
     );
   }
 
@@ -546,7 +584,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor:
+            Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(28.r),
         ),
@@ -557,7 +597,12 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
             children: [
               IconContainer(
                 icon: Icons.verified_user_rounded,
-                gradient: AppColors.primaryGradient,
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(context).colorScheme.primary,
+                  ],
+                ),
                 size: 32.sp,
                 padding: 14,
               ),
@@ -567,7 +612,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                 style: TextStyle(
                   fontSize: 22.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textOnDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               SizedBox(height: 6.h),
@@ -575,7 +620,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                 'امسح الكود للتحقق من الهوية',
                 style: TextStyle(
                   fontSize: 13.sp,
-                  color: AppColors.textOnDarkSecondary,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.7),
                 ),
               ),
               SizedBox(height: 28.h),
@@ -591,13 +638,13 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                   data: data,
                   version: QrVersions.auto,
                   size: 180.w,
-                  eyeStyle: const QrEyeStyle(
+                  eyeStyle: QrEyeStyle(
                     eyeShape: QrEyeShape.square,
-                    color: AppColors.primary,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
-                  dataModuleStyle: const QrDataModuleStyle(
+                  dataModuleStyle: QrDataModuleStyle(
                     dataModuleShape: QrDataModuleShape.square,
-                    color: AppColors.primary,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ),
@@ -608,7 +655,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textOnDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               SizedBox(height: 24.h),
@@ -628,7 +675,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor:
+            Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24.r),
         ),
@@ -640,12 +689,12 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
               Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: AppColors.errorSoft,
+                  color: Theme.of(context).colorScheme.error.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.logout_rounded,
-                  color: AppColors.error,
+                  color: Theme.of(context).colorScheme.error,
                   size: 32.sp,
                 ),
               ),
@@ -655,7 +704,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                 style: TextStyle(
                   fontSize: 20.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textOnDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               SizedBox(height: 10.h),
@@ -663,7 +712,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                 'هل أنت متأكد من تسجيل الخروج؟',
                 style: TextStyle(
                   fontSize: 14.sp,
-                  color: AppColors.textOnDarkSecondary,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.7),
                 ),
               ),
               SizedBox(height: 28.h),
@@ -674,7 +725,11 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 14.h),
-                        side: BorderSide(color: AppColors.darkBorder),
+                        side: BorderSide(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.outline.withOpacity(0.1),
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14.r),
                         ),
@@ -682,7 +737,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                       child: Text(
                         'إلغاء',
                         style: TextStyle(
-                          color: AppColors.textOnDarkSecondary,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.7),
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -698,7 +755,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                         if (context.mounted) context.go('/login');
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.error,
+                        backgroundColor: Theme.of(context).colorScheme.error,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14.r),

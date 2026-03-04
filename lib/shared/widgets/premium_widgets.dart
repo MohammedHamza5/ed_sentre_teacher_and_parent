@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../core/config/app_colors.dart';
-
 /// ═══════════════════════════════════════════════════════════════════════════
 /// PREMIUM WIDGETS - EdSentre Design System
+/// All widgets use Theme.of(context) for proper light/dark mode support.
 /// ═══════════════════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -37,6 +36,7 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       margin: margin,
       child: ClipRRect(
@@ -51,10 +51,14 @@ class GlassCard extends StatelessWidget {
               child: Container(
                 padding: padding ?? EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: backgroundColor ?? AppColors.glassWhite,
+                  color:
+                      backgroundColor ??
+                      theme.colorScheme.surface.withOpacity(0.7),
                   borderRadius: BorderRadius.circular(borderRadius ?? 20.r),
                   border: hasBorder
-                      ? Border.all(color: AppColors.glassBorder)
+                      ? Border.all(
+                          color: theme.colorScheme.outline.withOpacity(0.2),
+                        )
                       : null,
                 ),
                 child: child,
@@ -68,7 +72,7 @@ class GlassCard extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PREMIUM CARD - Elevated Dark Card
+// PREMIUM CARD - Elevated Card (adapts to light/dark)
 // ═══════════════════════════════════════════════════════════════════════════
 
 class PremiumCard extends StatelessWidget {
@@ -99,6 +103,9 @@ class PremiumCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cardColor = theme.cardTheme.color ?? theme.colorScheme.surface;
+
     return Container(
       margin: margin ?? EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
@@ -106,7 +113,9 @@ class PremiumCard extends StatelessWidget {
         boxShadow: hasGlow
             ? [
                 BoxShadow(
-                  color: (glowColor ?? AppColors.primary).withOpacity(0.2),
+                  color: (glowColor ?? theme.colorScheme.primary).withOpacity(
+                    0.2,
+                  ),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -121,13 +130,13 @@ class PremiumCard extends StatelessWidget {
           child: Container(
             padding: padding ?? EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: gradient == null
-                  ? (backgroundColor ?? AppColors.darkCard)
-                  : null,
+              color: gradient == null ? (backgroundColor ?? cardColor) : null,
               gradient: gradient,
               borderRadius: BorderRadius.circular(borderRadius ?? 20.r),
               border: hasBorder
-                  ? Border.all(color: AppColors.darkBorder.withOpacity(0.5))
+                  ? Border.all(
+                      color: theme.colorScheme.outline.withOpacity(0.15),
+                    )
                   : null,
             ),
             child: child,
@@ -168,16 +177,24 @@ class GradientButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final defaultGradient = LinearGradient(
+      colors: [
+        theme.colorScheme.primary,
+        theme.colorScheme.primary.withOpacity(0.8),
+      ],
+    );
+
     return Container(
       width: width ?? double.infinity,
       height: height ?? 56.h,
       decoration: BoxDecoration(
-        gradient: gradient ?? AppColors.primaryGradient,
+        gradient: gradient ?? defaultGradient,
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: hasGlow
             ? [
                 BoxShadow(
-                  color: AppColors.primary.withOpacity(0.4),
+                  color: theme.colorScheme.primary.withOpacity(0.4),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -250,10 +267,18 @@ class AnimatedStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final defaultGradient = LinearGradient(
+      colors: [
+        theme.colorScheme.primary,
+        theme.colorScheme.primary.withOpacity(0.8),
+      ],
+    );
+
     return PremiumCard(
           onTap: onTap,
           hasGlow: true,
-          glowColor: iconColor ?? AppColors.primary,
+          glowColor: iconColor ?? theme.colorScheme.primary,
           padding: EdgeInsets.all(12.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,7 +288,7 @@ class AnimatedStatCard extends StatelessWidget {
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  gradient: gradient ?? AppColors.primaryGradient,
+                  gradient: gradient ?? defaultGradient,
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(icon, color: Colors.white, size: 18.sp),
@@ -277,7 +302,7 @@ class AnimatedStatCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 22.sp,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textOnDark,
+                    color: theme.colorScheme.onSurface,
                     height: 1,
                   ),
                 ),
@@ -288,7 +313,7 @@ class AnimatedStatCard extends StatelessWidget {
                 title,
                 style: TextStyle(
                   fontSize: 11.sp,
-                  color: AppColors.textOnDarkSecondary,
+                  color: theme.colorScheme.onSurface.withOpacity(0.7),
                   height: 1,
                 ),
                 maxLines: 1,
@@ -310,31 +335,32 @@ class AnimatedStatCard extends StatelessWidget {
 class GlowingIcon extends StatelessWidget {
   final IconData icon;
   final double size;
-  final Color color;
+  final Color? color;
   final double glowRadius;
 
   const GlowingIcon({
     super.key,
     required this.icon,
     this.size = 24,
-    this.color = AppColors.primary,
+    this.color,
     this.glowRadius = 20,
   });
 
   @override
   Widget build(BuildContext context) {
+    final effectiveColor = color ?? Theme.of(context).colorScheme.primary;
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.4),
+            color: effectiveColor.withOpacity(0.4),
             blurRadius: glowRadius,
             spreadRadius: 2,
           ),
         ],
       ),
-      child: Icon(icon, size: size, color: color),
+      child: Icon(icon, size: size, color: effectiveColor),
     );
   }
 }
@@ -365,11 +391,12 @@ class IconContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: EdgeInsets.all(padding ?? 10.w),
       decoration: BoxDecoration(
         color: gradient == null
-            ? (backgroundColor ?? AppColors.primarySoft)
+            ? (backgroundColor ?? theme.colorScheme.primary.withOpacity(0.1))
             : null,
         gradient: gradient,
         borderRadius: BorderRadius.circular(borderRadius ?? 12.r),
@@ -377,7 +404,7 @@ class IconContainer extends StatelessWidget {
       child: Icon(
         icon,
         size: size ?? 22.sp,
-        color: iconColor ?? AppColors.primary,
+        color: iconColor ?? theme.colorScheme.primary,
       ),
     );
   }
@@ -396,18 +423,19 @@ class ShimmerLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
           width: width ?? double.infinity,
           height: height ?? 20.h,
           decoration: BoxDecoration(
-            color: AppColors.darkElevated,
+            color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(borderRadius ?? 8.r),
           ),
         )
         .animate(onPlay: (c) => c.repeat())
         .shimmer(
           duration: 1500.ms,
-          color: AppColors.darkBorder.withOpacity(0.3),
+          color: theme.colorScheme.outline.withOpacity(0.3),
         );
   }
 }
@@ -432,6 +460,7 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 4.w),
       child: Row(
@@ -440,7 +469,7 @@ class SectionHeader extends StatelessWidget {
           Row(
             children: [
               if (icon != null) ...[
-                Icon(icon, color: AppColors.primary, size: 22.sp),
+                Icon(icon, color: theme.colorScheme.primary, size: 22.sp),
                 SizedBox(width: 10.w),
               ],
               Text(
@@ -448,7 +477,7 @@ class SectionHeader extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textOnDark,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
             ],
@@ -458,7 +487,7 @@ class SectionHeader extends StatelessWidget {
               onPressed: onAction,
               style: TextButton.styleFrom(
                 padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
-                backgroundColor: AppColors.primarySoft,
+                backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10.r),
                 ),
@@ -468,7 +497,7 @@ class SectionHeader extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
+                  color: theme.colorScheme.primary,
                 ),
               ),
             ),
@@ -500,6 +529,7 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Center(
       child: Padding(
         padding: EdgeInsets.all(32.w),
@@ -509,13 +539,17 @@ class EmptyState extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(28.w),
               decoration: BoxDecoration(
-                color: AppColors.darkCard,
+                color: theme.colorScheme.surface,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: AppColors.darkBorder.withOpacity(0.5),
+                  color: theme.colorScheme.outline.withOpacity(0.2),
                 ),
               ),
-              child: Icon(icon, size: 48.sp, color: AppColors.textOnDarkHint),
+              child: Icon(
+                icon,
+                size: 48.sp,
+                color: theme.colorScheme.onSurface.withOpacity(0.5),
+              ),
             ),
             SizedBox(height: 24.h),
             Text(
@@ -523,7 +557,7 @@ class EmptyState extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textOnDark,
+                color: theme.colorScheme.onSurface,
               ),
               textAlign: TextAlign.center,
             ),
@@ -533,7 +567,7 @@ class EmptyState extends StatelessWidget {
                 subtitle!,
                 style: TextStyle(
                   fontSize: 14.sp,
-                  color: AppColors.textOnDarkSecondary,
+                  color: theme.colorScheme.onSurface.withOpacity(0.7),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -572,16 +606,19 @@ class FloatingNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cardColor = theme.cardTheme.color ?? theme.colorScheme.surface;
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: cardColor,
         borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(color: AppColors.darkBorder.withOpacity(0.5)),
+        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withOpacity(0.15),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -603,7 +640,9 @@ class FloatingNavBar extends StatelessWidget {
                 vertical: 10.h,
               ),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primarySoft : Colors.transparent,
+                color: isSelected
+                    ? theme.colorScheme.primary.withOpacity(0.1)
+                    : Colors.transparent,
                 borderRadius: BorderRadius.circular(16.r),
               ),
               child: Row(
@@ -611,8 +650,8 @@ class FloatingNavBar extends StatelessWidget {
                   Icon(
                     isSelected ? item.activeIcon : item.icon,
                     color: isSelected
-                        ? AppColors.primary
-                        : AppColors.textOnDarkHint,
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.onSurface.withOpacity(0.5),
                     size: 24.sp,
                   ),
                   if (isSelected) ...[
@@ -622,7 +661,7 @@ class FloatingNavBar extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
+                        color: theme.colorScheme.primary,
                       ),
                     ),
                   ],
@@ -670,20 +709,28 @@ class AvatarWithBorder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final defaultGradient = LinearGradient(
+      colors: [
+        theme.colorScheme.primary,
+        theme.colorScheme.primary.withOpacity(0.8),
+      ],
+    );
+
     return Container(
       padding: EdgeInsets.all(borderWidth),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: borderGradient ?? AppColors.primaryGradient,
+        gradient: borderGradient ?? defaultGradient,
       ),
       child: CircleAvatar(
         radius: radius.r,
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: theme.cardTheme.color ?? theme.colorScheme.surface,
         backgroundImage: imageUrl != null ? NetworkImage(imageUrl!) : null,
         child: imageUrl == null
             ? Icon(
                 placeholderIcon ?? Icons.person,
-                color: AppColors.textOnDarkSecondary,
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
                 size: (radius * 0.9).sp,
               )
             : null,

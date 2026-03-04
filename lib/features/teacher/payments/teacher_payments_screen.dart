@@ -11,7 +11,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../../core/config/app_colors.dart';
+// Removed AppColors import
 import '../../../shared/widgets/premium_widgets.dart';
 import '../provider/teacher_provider.dart';
 
@@ -57,7 +57,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -110,13 +110,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
   Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1A5D1A), Color(0xFF0D7C66)],
-        ),
-      ),
+      decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary),
       child: Stack(
         children: [
           // Decorative circles
@@ -267,7 +261,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                 style: TextStyle(
                   fontSize: 20.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textOnDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               SizedBox(height: 4.h),
@@ -275,7 +269,9 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                 '$_selectedYear',
                 style: TextStyle(
                   fontSize: 14.sp,
-                  color: AppColors.textOnDarkSecondary,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.7),
                 ),
               ),
             ],
@@ -307,10 +303,16 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
       child: Container(
         padding: EdgeInsets.all(10.w),
         decoration: BoxDecoration(
-          color: AppColors.darkElevated,
+          color:
+              Theme.of(context).cardTheme.color ??
+              Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12.r),
         ),
-        child: Icon(icon, color: AppColors.textOnDark, size: 24.sp),
+        child: Icon(
+          icon,
+          color: Theme.of(context).colorScheme.onSurface,
+          size: 24.sp,
+        ),
       ),
     );
   }
@@ -343,15 +345,11 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
           width: double.infinity,
           padding: EdgeInsets.all(24.w),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF1A5D1A), Color(0xFF0D7C66)],
-            ),
+            color: Theme.of(context).colorScheme.primary,
             borderRadius: BorderRadius.circular(24.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF1A5D1A).withOpacity(0.3),
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -411,8 +409,11 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                   title: 'إجمالي التحصيل',
                   value: _formatCurrency(totalCollected),
                   icon: Icons.payments_rounded,
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF4158D0), Color(0xFFC850C0)],
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                    ],
                   ),
                 ),
               ),
@@ -422,8 +423,11 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                   title: 'نصيب السنتر',
                   value: _formatCurrency(centerShare),
                   icon: Icons.account_balance_rounded,
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.error,
+                      Theme.of(context).colorScheme.error.withOpacity(0.8),
+                    ],
                   ),
                 ),
               ),
@@ -443,7 +447,9 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color:
+            Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: Colors.white.withOpacity(0.08)),
       ),
@@ -463,7 +469,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
             title,
             style: TextStyle(
               fontSize: 12.sp,
-              color: AppColors.textOnDarkSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
           SizedBox(height: 4.h),
@@ -472,7 +478,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
-              color: AppColors.textOnDark,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],
@@ -531,8 +537,11 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(14.r),
                 ),
@@ -552,7 +561,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textOnDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     SizedBox(height: 4.h),
@@ -560,7 +569,9 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                       'يُصرف شهرياً بغض النظر عن التحصيل',
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: AppColors.textOnDarkSecondary,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.7),
                       ),
                     ),
                   ],
@@ -600,7 +611,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                   Container(
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
+                      color: Theme.of(context).colorScheme.primary,
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Icon(
@@ -616,7 +627,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textOnDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -626,7 +637,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                       vertical: 4.h,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4CAF50).withOpacity(0.15),
+                      color: Colors.green.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
@@ -634,7 +645,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                       style: TextStyle(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF4CAF50),
+                        color: Colors.green,
                       ),
                     ),
                   ),
@@ -654,19 +665,19 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                   _buildDetailChip(
                     'المحصّل',
                     '${_formatCurrency(collected)} ج.م',
-                    const Color(0xFF4158D0),
+                    Theme.of(context).colorScheme.primary,
                   ),
                   SizedBox(width: 8.w),
                   _buildDetailChip(
                     'نصيبك (${percentage.toInt()}%)',
                     '${_formatCurrency(teacherTotal)} ج.م',
-                    const Color(0xFF4CAF50),
+                    Colors.green,
                   ),
                   SizedBox(width: 8.w),
                   _buildDetailChip(
                     'السنتر',
                     '${_formatCurrency(centerTotal)} ج.م',
-                    const Color(0xFFFF6B6B),
+                    Theme.of(context).colorScheme.error,
                   ),
                 ],
               ),
@@ -703,7 +714,9 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                   'نصيبك',
                   style: TextStyle(
                     fontSize: 11.sp,
-                    color: AppColors.textOnDarkSecondary,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
                   ),
                 ),
               ],
@@ -714,7 +727,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                   width: 10.w,
                   height: 10.w,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFF6B6B),
+                    color: Theme.of(context).colorScheme.error,
                     borderRadius: BorderRadius.circular(3.r),
                   ),
                 ),
@@ -723,7 +736,9 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                   'السنتر',
                   style: TextStyle(
                     fontSize: 11.sp,
-                    color: AppColors.textOnDarkSecondary,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
                   ),
                 ),
               ],
@@ -741,20 +756,14 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                 Expanded(
                   flex: (teacherRatio * 100).toInt().clamp(1, 99),
                   child: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF4CAF50), Color(0xFF81C784)],
-                      ),
-                    ),
+                    decoration: const BoxDecoration(color: Colors.green),
                   ),
                 ),
                 Expanded(
                   flex: ((1 - teacherRatio) * 100).toInt().clamp(1, 99),
                   child: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFFFF8A80), Color(0xFFFF6B6B)],
-                      ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.error,
                     ),
                   ),
                 ),
@@ -779,7 +788,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  gradient: AppColors.accentGradient,
+                  color: Theme.of(context).colorScheme.secondary,
                   borderRadius: BorderRadius.circular(14.r),
                 ),
                 child: Column(
@@ -812,7 +821,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textOnDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     SizedBox(height: 4.h),
@@ -820,7 +829,9 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                       'سعر الحصة: ${_formatCurrency(rate)} ج.م',
                       style: TextStyle(
                         fontSize: 13.sp,
-                        color: AppColors.textOnDarkSecondary,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.7),
                       ),
                     ),
                   ],
@@ -922,7 +933,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
               color:
-                  (isBonus ? const Color(0xFF4CAF50) : const Color(0xFFFF6B6B))
+                  (isBonus ? Colors.green : Theme.of(context).colorScheme.error)
                       .withOpacity(0.15),
               borderRadius: BorderRadius.circular(10.r),
             ),
@@ -931,8 +942,8 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                   ? Icons.arrow_upward_rounded
                   : Icons.arrow_downward_rounded,
               color: isBonus
-                  ? const Color(0xFF4CAF50)
-                  : const Color(0xFFFF6B6B),
+                  ? Colors.green
+                  : Theme.of(context).colorScheme.error,
               size: 20.sp,
             ),
           ),
@@ -940,7 +951,10 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
           Expanded(
             child: Text(
               description,
-              style: TextStyle(fontSize: 14.sp, color: AppColors.textOnDark),
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
           ),
           Text(
@@ -949,8 +963,8 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
               fontSize: 16.sp,
               fontWeight: FontWeight.bold,
               color: isBonus
-                  ? const Color(0xFF4CAF50)
-                  : const Color(0xFFFF6B6B),
+                  ? Colors.green
+                  : Theme.of(context).colorScheme.error,
             ),
           ),
         ],
@@ -987,7 +1001,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
         statusIcon = Icons.hourglass_empty_rounded;
         break;
       default:
-        statusColor = AppColors.textOnDarkSecondary;
+        statusColor = Theme.of(context).colorScheme.onSurface.withOpacity(0.7);
         statusText = salaryId != null ? 'محسوب — لم يُصرف بعد' : 'لم يُحسب بعد';
         statusIcon = Icons.info_outline_rounded;
     }
@@ -1012,7 +1026,9 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                   'حالة الراتب',
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: AppColors.textOnDarkSecondary,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
                   ),
                 ),
                 SizedBox(height: 4.h),

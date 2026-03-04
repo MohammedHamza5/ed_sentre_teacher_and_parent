@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../../core/config/app_colors.dart';
+// Removed unused AppColors
 import '../../auth/provider/auth_provider.dart';
 import '../../../core/providers/center_provider.dart';
 import '../../../shared/data/supabase_repository.dart';
@@ -119,23 +119,44 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
-      body: Column(
-        children: [
-          _buildHeader(),
-          SizedBox(height: 20.h),
-          _buildDaySelector(),
-          SizedBox(height: 24.h),
-          Expanded(
-            child: _isLoading
-                ? _buildLoadingState()
-                : _displayedGroups.isEmpty
-                ? _buildEmptyState()
-                : RefreshIndicator(
-                    onRefresh: _loadSchedule,
-                    color: AppColors.primary,
-                    backgroundColor: AppColors.darkCard,
-                    child: ListView.builder(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: Text(
+          'جدول الحصص',
+          style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold),
+        ),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.refresh_rounded,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            onPressed: _loadSchedule,
+          ),
+          const DrawerMenuButton(isTeacher: true),
+          SizedBox(width: 8.w),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: _loadSchedule,
+        color: Theme.of(context).colorScheme.primary,
+        backgroundColor:
+            Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface,
+        child: Column(
+          children: [
+            SizedBox(height: 20.h),
+            _buildDaySelector(),
+            SizedBox(height: 24.h),
+            Expanded(
+              child: _isLoading
+                  ? _buildLoadingState()
+                  : _displayedGroups.isEmpty
+                  ? _buildEmptyState()
+                  : ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
                       padding: EdgeInsets.symmetric(
                         horizontal: 20.w,
                       ).copyWith(bottom: 100.h),
@@ -145,51 +166,14 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                         return _buildScheduleCard(group, index);
                       },
                     ),
-                  ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // HEADER
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  Widget _buildHeader() {
-    return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 16.h,
-        left: 20.w,
-        right: 20.w,
-        bottom: 16.h,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: PremiumSectionHeader(
-              title: 'جدول الحصص',
-              subtitle: 'نظم وقتك بكفاءة',
-              icon: Icons.calendar_month_rounded,
-              titleGradient: AppColors.premiumOcean,
-            ),
-          ),
-          GlassMorphismCard(
-            onTap: _loadSchedule,
-            padding: EdgeInsets.all(10.w),
-            borderRadius: 12.r,
-            child: Icon(
-              Icons.refresh_rounded,
-              color: AppColors.primary,
-              size: 22.sp,
-            ),
-          ),
-          SizedBox(width: 8.w),
-          DrawerMenuButton(isTeacher: true, color: AppColors.primary),
-        ],
-      ),
-    ).animate().fadeIn().slideY(begin: -0.1);
-  }
+  // Header replaced by AppBar
 
   // ═══════════════════════════════════════════════════════════════════════════
   // DAY SELECTOR
@@ -221,11 +205,10 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
               padding: EdgeInsets.symmetric(vertical: 12.h),
               borderRadius: 20.r,
               backgroundColor: isSelected
-                  ? AppColors.primary
-                  : AppColors.darkCard.withOpacity(0.5),
-              gradient: isSelected ? AppColors.premiumOcean : null,
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).cardTheme.color,
               hasNeonBorder: isSelected,
-              neonColor: AppColors.primary,
+              neonColor: Theme.of(context).colorScheme.primary,
               animationDelay: 50 * index,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -234,8 +217,10 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                     day.name,
                     style: TextStyle(
                       color: isSelected
-                          ? Colors.white
-                          : AppColors.textOnDarkSecondary,
+                          ? Theme.of(context).colorScheme.onPrimary
+                          : Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 13.sp,
                       fontWeight: isSelected
                           ? FontWeight.bold
@@ -249,7 +234,9 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                       width: 6.w,
                       height: 6.w,
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.white : AppColors.secondary,
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.onPrimary
+                            : Theme.of(context).colorScheme.secondary,
                         shape: BoxShape.circle,
                         boxShadow: isSelected
                             ? [
@@ -281,7 +268,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
     return GlassMorphismCard(
       margin: EdgeInsets.only(bottom: 16.h),
       hasNeonBorder: true,
-      neonColor: AppColors.primary,
+      neonColor: Theme.of(context).colorScheme.primary,
       animationDelay: 100 * index,
       child: Row(
         children: [
@@ -289,11 +276,11 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
             decoration: BoxDecoration(
-              gradient: AppColors.premiumOcean,
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(14.r),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withOpacity(0.3),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -312,7 +299,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.primary,
                     fontFamily: 'Cairo',
                   ),
                 ),
@@ -322,7 +309,9 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                     group.endTime!.split(' ')[0],
                     style: TextStyle(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.8),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -342,7 +331,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textOnDark,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontFamily: 'Cairo',
                   ),
                   maxLines: 1,
@@ -376,14 +365,18 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14.sp, color: AppColors.textOnDarkSecondary),
+        Icon(
+          icon,
+          size: 14.sp,
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+        ),
         SizedBox(width: 4.w),
         Flexible(
           child: Text(
             text,
             style: TextStyle(
               fontSize: 12.sp,
-              color: AppColors.textOnDarkSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 
-import '../../../core/config/app_colors.dart';
+// Removed AppColors import
 import '../../../shared/widgets/premium_widgets.dart';
 import '../../../shared/data/supabase_repository.dart';
 import 'package:provider/provider.dart';
@@ -97,7 +97,7 @@ class _TeacherAttendanceHistoryScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('فشل تحميل السجل: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -107,7 +107,7 @@ class _TeacherAttendanceHistoryScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('سجل الحضور', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.transparent,
@@ -132,7 +132,7 @@ class _TeacherAttendanceHistoryScreenState
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                     child: Center(
                       child: CircularProgressIndicator(
-                        color: AppColors.primary,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                   );
@@ -145,10 +145,10 @@ class _TeacherAttendanceHistoryScreenState
                     leading: Container(
                       padding: EdgeInsets.all(10.w),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10.r),
                       ),
-                      child: Icon(Icons.date_range, color: AppColors.primary),
+                      child: Icon(Icons.date_range, color: Theme.of(context).colorScheme.primary),
                     ),
                     title: Text(
                       DateFormat('EEEE, d MMMM', 'ar').format(date),

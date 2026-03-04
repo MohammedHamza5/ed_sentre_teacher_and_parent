@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../../core/config/app_colors.dart';
 import '../../auth/provider/auth_provider.dart';
 import '../../../core/providers/center_provider.dart';
 import '../provider/teacher_provider.dart';
@@ -16,7 +15,6 @@ import '../../../shared/widgets/premium_plus_widgets.dart';
 import '../../ai/widgets/weakness_card.dart';
 import '../../ai/services/ai_weakness_detector.dart';
 import '../../notifications/presentation/screens/teacher_notifications_screen.dart';
-import '../../search/presentation/screens/search_screen.dart';
 import '../../../shared/widgets/app_drawer.dart';
 
 /// 🎨 Teacher Home Screen - Premium Dark Mode Design
@@ -140,19 +138,53 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
     final user = authProvider.currentUser;
 
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      // backgroundColor: Theme.of(context).scaffoldBackgroundColor, (removed to use Theme)
       body: RefreshIndicator(
         onRefresh: _loadData,
-        color: AppColors.primary,
-        backgroundColor: AppColors.darkCard,
+        color: Theme.of(context).colorScheme.primary,
+        backgroundColor:
+            Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface,
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
             // ═══════════════════════════════════════════════════════════
-            // PREMIUM HEADER
+            // APP BAR — Clean: max 2 icons
             // ═══════════════════════════════════════════════════════════
-            SliverToBoxAdapter(
-              child: _buildHeader(teacher, user, centerProvider),
+            SliverAppBar(
+              floating: true,
+              snap: true,
+              elevation: 0,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              title: Text(
+                'لوحة التحكم',
+                style: TextStyle(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontFamily: 'Cairo',
+                ),
+              ),
+              actions: [
+                IconButton(
+                  icon: Icon(
+                    Icons.notifications_outlined,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const TeacherNotificationsScreen(),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(left: 8.w),
+                  child: DrawerMenuButton(
+                    isTeacher: true,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ],
             ),
 
             // ═══════════════════════════════════════════════════════════
@@ -162,6 +194,19 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
               padding: EdgeInsets.symmetric(horizontal: 20.w),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
+                  SizedBox(height: 8.h),
+
+                  // Teacher Welcome Card
+                  _buildTeacherWelcomeCard(user, teacher, teacherProvider),
+
+                  SizedBox(height: 16.h),
+
+                  // Center Selector
+                  if (centerProvider.hasMultipleCenters)
+                    _buildCenterSelector(centerProvider)
+                  else if (centerProvider.currentCenter != null)
+                    _buildCurrentCenter(centerProvider),
+
                   SizedBox(height: 24.h),
 
                   // 1. Quick Stats
@@ -180,7 +225,6 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                     title: 'حصص اليوم',
                     icon: Icons.calendar_today_rounded,
                     subtitle: 'جدول حصصك لهذا اليوم',
-                    titleGradient: AppColors.premiumOcean,
                     actions: [
                       HeaderAction(
                         icon: Icons.calendar_month_rounded,
@@ -199,7 +243,6 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                     title: 'الوصول السريع',
                     icon: Icons.grid_view_rounded,
                     subtitle: 'أدواتك المفضلة',
-                    titleGradient: AppColors.premiumSunset,
                   ),
                   SizedBox(height: 16.h),
                   _buildQuickActions(),
@@ -215,183 +258,112 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // HEADER - Premium Gradient with Glass Effect
+  // Welcome Card (teacher info moved here from AppBar)
   // ═══════════════════════════════════════════════════════════════════════════
-
-  Widget _buildHeader(
-    dynamic teacher,
-    dynamic user,
-    CenterProvider centerProvider,
+  Widget _buildTeacherWelcomeCard(
+    UserModel? user,
+    TeacherModel? teacher,
+    TeacherProvider teacherProvider,
   ) {
     return Container(
-      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-      decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
-      child: Stack(
-        children: [
-          // Decorative elements
-          Positioned(
-            top: -60,
-            right: -60,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.08),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -40,
-            left: -40,
-            child: Container(
-              width: 160,
-              height: 160,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.05),
-              ),
-            ),
-          ),
-
-          // Content
-          Padding(
-            padding: EdgeInsets.all(20.w),
-            child: Column(
-              children: [
-                // Top Row: Profile & Actions
-                Row(
-                  children: [
-                    // Avatar with gradient border
-                    AvatarWithBorder(
-                      imageUrl: user?.avatarUrl,
-                      radius: 28,
-                      borderGradient: LinearGradient(
-                        colors: [
-                          Colors.white.withOpacity(0.8),
-                          Colors.white.withOpacity(0.3),
-                        ],
-                      ),
-                    ).animate().fadeIn().scale(delay: 100.ms),
-
-                    SizedBox(width: 16.w),
-
-                    // Greeting
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _getGreeting(),
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: Colors.white.withOpacity(0.9),
-                              fontFamily: 'Cairo',
-                            ),
-                          ).animate().fadeIn().slideX(begin: 0.2),
-                          SizedBox(height: 4.h),
-                          Text(
-                            teacher?.displayName ?? user?.fullName ?? 'معلم',
-                            style: TextStyle(
-                              fontSize: 24.sp,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontFamily: 'Cairo',
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  offset: const Offset(0, 2),
-                                  blurRadius: 4,
-                                ),
-                              ],
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ).animate().fadeIn(delay: 100.ms).slideX(begin: 0.2),
-                        ],
-                      ),
-                    ),
-
-                    // Action buttons
-                    _buildHeaderAction(
-                      icon: Icons.notifications_outlined,
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const TeacherNotificationsScreen(),
-                        ),
-                      ),
-                      delay: 200,
-                    ),
-                    _buildHeaderAction(
-                      icon: Icons.search_rounded,
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const GlobalSearchScreen(),
-                        ),
-                      ),
-                      delay: 250,
-                    ),
-                    SizedBox(width: 8.w),
-                    DrawerMenuButton(
-                      isTeacher: true,
-                    ).animate(delay: 300.ms).fadeIn().scale(),
-                  ],
-                ),
-
-                SizedBox(height: 20.h),
-
-                // Center Selector (Glass Effect)
-                if (centerProvider.hasMultipleCenters)
-                  _buildCenterSelector(centerProvider)
-                else if (centerProvider.currentCenter != null)
-                  _buildCurrentCenter(centerProvider),
-
-                SizedBox(height: 16.h),
-              ],
-            ),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Theme.of(context).colorScheme.primary,
+            Theme.of(context).colorScheme.primary.withOpacity(0.8),
+          ],
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-    );
+      child: Row(
+        children: [
+          AvatarWithBorder(imageUrl: user?.avatarUrl, radius: 28),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _getGreeting(),
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.white70,
+                    fontFamily: 'Cairo',
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  teacher?.displayName ?? user?.fullName ?? 'معلم',
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontFamily: 'Cairo',
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (teacherProvider.groups.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.only(top: 2.h),
+                    child: Text(
+                      '${teacherProvider.groups.length} مجموعة نشطة',
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: Colors.white60,
+                        fontFamily: 'Cairo',
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.all(10.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Icon(Icons.school_rounded, color: Colors.white, size: 24.sp),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0);
   }
 
-  Widget _buildHeaderAction({
-    required IconData icon,
-    required VoidCallback onTap,
-    int delay = 0,
-  }) {
-    return Container(
-      margin: EdgeInsets.only(left: 8.w),
-      child: GlassMorphismCard(
-        onTap: onTap,
-        padding: EdgeInsets.all(10.w),
-        borderRadius: 14.r,
-        blurStrength: 5,
-        animationDelay: delay,
-        child: Icon(icon, color: Colors.white, size: 22.sp),
-      ),
-    );
-  }
+  // (Header code removed to use SliverAppBar)
 
   Widget _buildCenterSelector(CenterProvider centerProvider) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.12),
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+        ),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: centerProvider.currentCenterId,
           isExpanded: true,
-          dropdownColor: AppColors.darkCard,
+          dropdownColor: Theme.of(context).colorScheme.surface,
           icon: Icon(
             Icons.keyboard_arrow_down_rounded,
-            color: Colors.white.withOpacity(0.9),
+            color: Theme.of(context).colorScheme.onSurface,
           ),
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 15.sp,
             fontWeight: FontWeight.w600,
             fontFamily: 'Cairo',
@@ -407,7 +379,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
           },
         ),
       ),
-    ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2);
+    ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1);
   }
 
   Widget _buildCurrentCenter(CenterProvider centerProvider) {
@@ -415,20 +387,20 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
       children: [
         Icon(
           Icons.location_on_rounded,
-          color: Colors.white.withOpacity(0.8),
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
           size: 18.sp,
         ),
-        SizedBox(width: 6.w),
+        SizedBox(width: 8.w),
         Text(
           centerProvider.currentCenter!.name,
           style: TextStyle(
             fontSize: 15.sp,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),
       ],
-    ).animate().fadeIn(delay: 300.ms);
+    ).animate().fadeIn(delay: 100.ms);
   }
 
   String _getGreeting() {
@@ -457,7 +429,6 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
               title: 'حصص اليوم',
               value: '$todayClassesCount',
               icon: Icons.groups_rounded,
-              gradient: AppColors.premiumOcean,
               animationDelay: 0,
             ),
           ),
@@ -467,7 +438,6 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
               title: 'إجمالي الطلاب',
               value: '$totalStudents',
               icon: Icons.school_rounded,
-              gradient: AppColors.premiumEmerald,
               animationDelay: 100,
             ),
           ),
@@ -477,7 +447,6 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
               title: 'الرسائل',
               value: '${stats['unread_messages_count'] ?? 0}',
               icon: Icons.mark_chat_unread_rounded,
-              gradient: AppColors.premiumRoyal,
               animationDelay: 200,
             ),
           ),
@@ -497,7 +466,6 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
           title: 'رؤى الذكاء الاصطناعي',
           icon: Icons.psychology_rounded,
           subtitle: 'تحليلات ذكية لأداء طلابك',
-          titleGradient: AppColors.premiumRoyal,
         ),
         SizedBox(height: 12.h),
         SizedBox(
@@ -550,106 +518,114 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
   }
 
   Widget _buildClassCard(GroupModel group, int index) {
-    return GlassMorphismCard(
-      onTap: () => context.go('/teacher/groups/${group.id}'),
-      margin: EdgeInsets.only(bottom: 14.h),
-      hasNeonBorder: true,
-      neonColor: AppColors.primary,
-      animationDelay: 100 * index,
-      child: Row(
-        children: [
-          // Time Pillar
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-            decoration: BoxDecoration(
-              gradient: AppColors.premiumOcean,
-              borderRadius: BorderRadius.circular(14.r),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Text(
-                  _getTodayStartTime(group)?.split(' ')[0] ?? '--',
-                  style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontFamily: 'Cairo',
-                  ),
-                ),
-                if ((_getTodayStartTime(group)?.split(' ').length ?? 0) >= 2)
-                  Text(
-                    _getTodayStartTime(group)!.split(' ')[1],
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.9),
-                      fontWeight: FontWeight.w600,
+    return Card(
+          margin: EdgeInsets.only(bottom: 14.h),
+          child: InkWell(
+            onTap: () => context.go('/teacher/groups/${group.id}'),
+            borderRadius: BorderRadius.circular(16.r),
+            child: Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Row(
+                children: [
+                  // Time Pillar
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 14.w,
+                      vertical: 10.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          _getTodayStartTime(group)?.split(' ')[0] ?? '--',
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                            fontFamily: 'Cairo',
+                          ),
+                        ),
+                        if ((_getTodayStartTime(group)?.split(' ').length ??
+                                0) >=
+                            2)
+                          Text(
+                            _getTodayStartTime(group)!.split(' ')[1],
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.8),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-              ],
-            ),
-          ),
-          SizedBox(width: 16.w),
+                  SizedBox(width: 16.w),
 
-          // Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  group.courseName ?? group.groupName,
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textOnDark,
-                    fontFamily: 'Cairo',
+                  // Details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          group.courseName ?? group.groupName,
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontFamily: 'Cairo',
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: 8.h),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildClassInfo(
+                                Icons.class_outlined,
+                                group.groupName,
+                                isFlexible: true,
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
+                            _buildClassInfo(
+                              Icons.people_outline,
+                              '${group.currentStudents}',
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 8.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildClassInfo(
-                        Icons.class_outlined,
-                        group.groupName,
-                        isFlexible: true,
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                    _buildClassInfo(
-                      Icons.people_outline,
-                      '${group.currentStudents}',
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
 
-          // Arrow
-          Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10.r),
-            ),
-            child: Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 14.sp,
-              color: AppColors.textOnDarkSecondary,
+                  // Arrow
+                  Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceVariant,
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 14.sp,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ],
-      ),
-    );
+        )
+        .animate()
+        .fadeIn(delay: Duration(milliseconds: 100 * index))
+        .slideY(begin: 0.1);
   }
 
   Widget _buildClassInfo(
@@ -660,7 +636,11 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14.sp, color: AppColors.textOnDarkSecondary),
+        Icon(
+          icon,
+          size: 14.sp,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
         SizedBox(width: 4.w),
         if (isFlexible)
           Flexible(
@@ -670,7 +650,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 13.sp,
-                color: AppColors.textOnDarkSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
           )
@@ -679,7 +659,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
             text,
             style: TextStyle(
               fontSize: 13.sp,
-              color: AppColors.textOnDarkSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
       ],
@@ -695,43 +675,36 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
       _QuickAction(
         icon: Icons.groups_rounded,
         label: 'المجموعات',
-        gradient: AppColors.premiumOcean,
         route: '/teacher/groups',
       ),
       _QuickAction(
         icon: Icons.fact_check_rounded,
         label: 'الحضور',
-        gradient: AppColors.premiumEmerald,
         route: '/teacher/attendance',
       ),
       _QuickAction(
         icon: Icons.assignment_rounded,
         label: 'الواجبات',
-        gradient: AppColors.premiumRoyal,
         route: '/teacher/assignments',
       ),
       _QuickAction(
         icon: Icons.people_alt_rounded,
         label: 'الطلاب',
-        gradient: AppColors.premiumOcean,
         route: '/teacher/students',
       ),
       _QuickAction(
         icon: Icons.folder_copy_rounded,
         label: 'الملزمات',
-        gradient: AppColors.premiumSunset,
         route: '/teacher/materials',
       ),
       _QuickAction(
         icon: Icons.bar_chart_rounded,
         label: 'التقارير',
-        gradient: AppColors.premiumRoyal,
         route: '/teacher/reports',
       ),
       _QuickAction(
         icon: Icons.account_balance_wallet_rounded,
         label: 'المالية',
-        gradient: AppColors.premiumEmerald,
         route: '/teacher/payments',
       ),
     ];
@@ -756,44 +729,51 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
   }
 
   Widget _buildActionItem(_QuickAction action, int index) {
-    return GlassMorphismCard(
-      onTap: () => context.go(action.route),
-      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
-      animationDelay: 50 * index,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              gradient: action.gradient,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: action.gradient.colors.first.withOpacity(0.4),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+    return Card(
+          margin: EdgeInsets.zero,
+          child: InkWell(
+            onTap: () => context.go(action.route),
+            borderRadius: BorderRadius.circular(16.r),
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      action.icon,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 22.sp,
+                    ),
+                  ),
+                  SizedBox(height: 10.h),
+                  Text(
+                    action.label,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontFamily: 'Cairo',
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
-            child: Icon(action.icon, color: Colors.white, size: 22.sp),
           ),
-          SizedBox(height: 10.h),
-          Text(
-            action.label,
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textOnDark,
-              fontFamily: 'Cairo',
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
+        )
+        .animate()
+        .fadeIn(delay: Duration(milliseconds: 50 * index))
+        .scale(begin: const Offset(0.9, 0.9));
   }
 
   String? _getTodayStartTime(GroupModel group) {
@@ -843,13 +823,11 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
 class _QuickAction {
   final IconData icon;
   final String label;
-  final Gradient gradient;
   final String route;
 
   const _QuickAction({
     required this.icon,
     required this.label,
-    required this.gradient,
     required this.route,
   });
 }

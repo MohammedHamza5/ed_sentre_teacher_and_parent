@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../../core/config/app_colors.dart';
+// Removed AppColors import
 
 class AttendanceMonitorTile extends StatelessWidget {
   final String name;
@@ -30,12 +30,12 @@ class AttendanceMonitorTile extends StatelessWidget {
         duration: const Duration(milliseconds: 300),
         decoration: BoxDecoration(
           color: isPresent
-              ? AppColors.success.withValues(alpha: 0.1)
+              ? Colors.green.withValues(alpha: 0.1)
               : Colors.white,
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color: isPresent
-                ? AppColors.success
+                ? Colors.green
                 : Colors.transparent, // Clean look for pending
             width: 2.w,
           ),
@@ -59,7 +59,7 @@ class AttendanceMonitorTile extends StatelessWidget {
                           width: 10.w,
                           height: 10.w,
                           decoration: const BoxDecoration(
-                            color: AppColors.success,
+                            color: Colors.green,
                             shape: BoxShape.circle,
                           ),
                         )
@@ -84,11 +84,11 @@ class AttendanceMonitorTile extends StatelessWidget {
                     height: 40.w,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.surface,
+                      color: Theme.of(context).colorScheme.surface,
                       border: Border.all(
                         color: isPresent
-                            ? AppColors.success
-                            : AppColors.primary.withValues(alpha: 0.2),
+                            ? Colors.green
+                            : Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                         width: 2.w,
                       ),
                       image: avatarUrl != null
@@ -101,7 +101,7 @@ class AttendanceMonitorTile extends StatelessWidget {
                     child: avatarUrl == null
                         ? Icon(
                             Icons.person,
-                            color: AppColors.textHint,
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                             size: 20.sp,
                           )
                         : null,
@@ -118,8 +118,8 @@ class AttendanceMonitorTile extends StatelessWidget {
                       fontSize: 12.sp,
                       fontWeight: FontWeight.bold,
                       color: isPresent
-                          ? AppColors.success
-                          : AppColors.textPrimary,
+                          ? Colors.green
+                          : Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
 
@@ -133,8 +133,8 @@ class AttendanceMonitorTile extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: isPresent
-                          ? AppColors.success.withValues(alpha: 0.2)
-                          : AppColors.surface,
+                          ? Colors.green.withValues(alpha: 0.2)
+                          : Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(4.r),
                     ),
                     child: Text(
@@ -142,8 +142,8 @@ class AttendanceMonitorTile extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 9.sp,
                         color: isPresent
-                            ? AppColors.success
-                            : AppColors.textHint,
+                            ? Colors.green
+                            : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
