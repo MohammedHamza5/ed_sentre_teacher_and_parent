@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../../core/config/app_colors.dart';
+// Removed AppColors import
 import '../../../core/providers/center_provider.dart';
 import '../../auth/provider/auth_provider.dart';
 import '../../../shared/data/supabase_repository.dart';
@@ -45,14 +45,14 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     final centerProvider = context.watch<CenterProvider>();
 
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           'إضافة طالب جديد',
-          style: TextStyle(color: AppColors.textOnDark),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
-        backgroundColor: AppColors.darkCard,
-        foregroundColor: AppColors.textOnDark,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -92,26 +92,32 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                   // Grade Level Dropdown
                   Container(
                     decoration: BoxDecoration(
-                      color: AppColors.darkSurface,
+                      color: Theme.of(context).scaffoldBackgroundColor,
                       borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(color: AppColors.darkBorder),
+                      border: Border.all(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.outline.withOpacity(0.1),
+                      ),
                     ),
                     child: DropdownButtonFormField<String>(
                       decoration: InputDecoration(
                         labelText: 'السنة الدراسية',
                         labelStyle: TextStyle(
-                          color: AppColors.textOnDarkSecondary,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.7),
                         ),
                         prefixIcon: Icon(
                           Icons.school,
-                          color: AppColors.primary,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
                       ),
-                      dropdownColor: AppColors.darkElevated,
+                      dropdownColor: Theme.of(context).canvasColor,
                       style: TextStyle(
-                        color: AppColors.textOnDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 14.sp,
                       ),
                       items: _gradeLevels
@@ -155,35 +161,43 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
                         return LinearProgressIndicator(
-                          color: AppColors.primary,
-                          backgroundColor: AppColors.darkSurface,
+                          color: Theme.of(context).colorScheme.primary,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.surface,
                         );
                       }
                       final courses = snapshot.data!;
                       return Container(
                         decoration: BoxDecoration(
-                          color: AppColors.darkSurface,
+                          color: Theme.of(context).scaffoldBackgroundColor,
                           borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(color: AppColors.darkBorder),
+                          border: Border.all(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.outline.withOpacity(0.1),
+                          ),
                         ),
                         child: DropdownButtonFormField<String>(
                           decoration: InputDecoration(
                             labelText: 'المادة الدراسية',
                             labelStyle: TextStyle(
-                              color: AppColors.textOnDarkSecondary,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.7),
                             ),
                             prefixIcon: Icon(
                               Icons.book,
-                              color: AppColors.primary,
+                              color: Theme.of(context).colorScheme.primary,
                             ),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.symmetric(
                               horizontal: 16.w,
                             ),
                           ),
-                          dropdownColor: AppColors.darkElevated,
+                          dropdownColor: Theme.of(context).canvasColor,
                           style: TextStyle(
-                            color: AppColors.textOnDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 14.sp,
                           ),
                           items: courses
@@ -213,12 +227,16 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                       child: Center(
                         child: Column(
                           children: [
-                            CircularProgressIndicator(color: AppColors.primary),
+                            CircularProgressIndicator(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                             SizedBox(height: 8.h),
                             Text(
                               'جاري تحليل الجداول والحمل...',
                               style: TextStyle(
-                                color: AppColors.textOnDarkSecondary,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withOpacity(0.7),
                               ),
                             ),
                           ],
@@ -232,7 +250,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                       'المجموعات المقترحة (الأفضل للطالب):',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     SizedBox(height: 8.h),
@@ -246,11 +264,13 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
               SizedBox(height: 32.h),
               Container(
                 decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
+                  color: Theme.of(context).colorScheme.primary,
                   borderRadius: BorderRadius.circular(12.r),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -291,28 +311,39 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color:
+            Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: AppColors.primary, size: 20.sp),
+              Icon(
+                icon,
+                color: Theme.of(context).colorScheme.primary,
+                size: 20.sp,
+              ),
               SizedBox(width: 8.w),
               Text(
                 title,
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textOnDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
           ),
-          Divider(height: 24.h, color: AppColors.darkBorder),
+          Divider(
+            height: 24.h,
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+          ),
           ...children,
         ],
       ),
@@ -328,18 +359,25 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+        ),
       ),
       child: TextFormField(
         controller: controller,
         keyboardType: keyboardType,
-        style: TextStyle(color: AppColors.textOnDark, fontSize: 14.sp),
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onSurface,
+          fontSize: 14.sp,
+        ),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: AppColors.textOnDarkSecondary),
-          prefixIcon: Icon(icon, color: AppColors.primary),
+          labelStyle: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+          ),
+          prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.primary),
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
             horizontal: 16.w,
@@ -360,10 +398,12 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.1)
-              : AppColors.darkSurface,
+              ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+              : Theme.of(context).scaffoldBackgroundColor,
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.darkBorder,
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.outline.withOpacity(0.1),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12.r),
@@ -374,13 +414,13 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.15),
+                  color: Colors.green.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
                   '${group['score']}% Match',
                   style: TextStyle(
-                    color: AppColors.success,
+                    color: Colors.green,
                     fontSize: 10.sp,
                     fontWeight: FontWeight.bold,
                   ),
@@ -395,14 +435,16 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                     group['group_name'] ?? 'Group',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textOnDark,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   Text(
                     group['reason'] ?? 'Recommended based on schedule',
                     style: TextStyle(
                       fontSize: 11.sp,
-                      color: AppColors.textOnDarkSecondary,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.7),
                     ),
                   ),
                 ],
@@ -411,8 +453,8 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
             Icon(
               isSelected ? Icons.check_circle : Icons.circle_outlined,
               color: isSelected
-                  ? AppColors.primary
-                  : AppColors.textOnDarkSecondary,
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             ),
           ],
         ),
@@ -451,7 +493,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('يرجى اختيار مجموعة للطالب'),
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
       return;
@@ -474,7 +516,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('تم تسجيل الطالب بنجاح ✅'),
-            backgroundColor: AppColors.success,
+            backgroundColor: Colors.green,
           ),
         );
         context.pop();
@@ -484,7 +526,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('حدث خطأ: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }

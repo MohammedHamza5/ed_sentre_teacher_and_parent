@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../core/config/app_colors.dart';
-
+// Removed AppColors import as we rely on ThemeData now
 /// ═══════════════════════════════════════════════════════════════════════════
 /// PREMIUM PLUS WIDGETS - Enhanced Design System for Teachers
 /// مكونات متميزة محسنة لنظام التصميم للمعلمين
@@ -51,7 +50,9 @@ class GlassMorphismCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(borderRadius ?? 24.r),
                   boxShadow: [
                     BoxShadow(
-                      color: (neonColor ?? AppColors.primary).withOpacity(0.3),
+                      color:
+                          (neonColor ?? Theme.of(context).colorScheme.primary)
+                              .withOpacity(0.3),
                       blurRadius: 20,
                       spreadRadius: 2,
                     ),
@@ -67,12 +68,11 @@ class GlassMorphismCard extends StatelessWidget {
               ),
               child: Container(
                 decoration: BoxDecoration(
-                  color: backgroundColor,
-                  gradient:
-                      gradient ??
-                      (backgroundColor == null
-                          ? AppColors.glassGradient
-                          : null),
+                  color:
+                      backgroundColor ??
+                      Theme.of(context).cardTheme.color ??
+                      Theme.of(context).colorScheme.surface,
+                  gradient: gradient,
                   borderRadius: BorderRadius.circular(borderRadius ?? 24.r),
                   border: Border.all(
                     color: Colors.white.withOpacity(0.1),
@@ -111,7 +111,7 @@ class PremiumStatCard extends StatelessWidget {
   final String value;
   final String? subtitle;
   final IconData icon;
-  final Gradient gradient;
+  final Gradient? gradient;
   final Color? iconColor;
   final VoidCallback? onTap;
   final int animationDelay;
@@ -123,7 +123,7 @@ class PremiumStatCard extends StatelessWidget {
     required this.value,
     this.subtitle,
     required this.icon,
-    required this.gradient,
+    this.gradient,
     this.iconColor,
     this.onTap,
     this.animationDelay = 0,
@@ -144,10 +144,16 @@ class PremiumStatCard extends StatelessWidget {
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
                   gradient: gradient,
+                  color: gradient == null
+                      ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                      : null,
                   borderRadius: BorderRadius.circular(14.r),
-                  boxShadow: AppColors.softGlow,
                 ),
-                child: Icon(icon, color: Colors.white, size: 22.sp),
+                child: Icon(
+                  icon,
+                  color: iconColor ?? Theme.of(context).colorScheme.primary,
+                  size: 22.sp,
+                ),
               )
               .animate(delay: Duration(milliseconds: animationDelay + 100))
               .scale(),
@@ -160,7 +166,7 @@ class PremiumStatCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 28.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textOnDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                   height: 1,
                   fontFamily: 'Cairo',
                 ),
@@ -176,7 +182,7 @@ class PremiumStatCard extends StatelessWidget {
             title,
             style: TextStyle(
               fontSize: 13.sp,
-              color: AppColors.textOnDarkSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
               fontWeight: FontWeight.w600,
               fontFamily: 'Cairo',
             ),
@@ -188,7 +194,7 @@ class PremiumStatCard extends StatelessWidget {
               subtitle!,
               style: TextStyle(
                 fontSize: 11.sp,
-                color: AppColors.textOnDarkHint,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                 fontFamily: 'Cairo',
               ),
             ),
@@ -248,9 +254,15 @@ class _FloatingActionMenuState extends State<FloatingActionMenu> {
       width: widget.size.w,
       height: widget.size.h,
       decoration: BoxDecoration(
-        gradient: AppColors.premiumOcean,
+        color: Theme.of(context).colorScheme.primary,
         shape: BoxShape.circle,
-        boxShadow: AppColors.neonGlow,
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -273,10 +285,13 @@ class _FloatingActionMenuState extends State<FloatingActionMenu> {
       width: isVisible ? 48.w : 0,
       height: isVisible ? 48.h : 0,
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color:
+            Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface,
         shape: BoxShape.circle,
-        boxShadow: AppColors.softGlow,
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+        ),
       ),
       child: Material(
         color: Colors.transparent,
@@ -286,7 +301,11 @@ class _FloatingActionMenuState extends State<FloatingActionMenu> {
             _toggleMenu();
           },
           borderRadius: BorderRadius.circular(24.r),
-          child: Icon(item.icon, color: Colors.white, size: 20.sp),
+          child: Icon(
+            item.icon,
+            color: Theme.of(context).colorScheme.onSurface,
+            size: 20.sp,
+          ),
         ),
       ),
     );
@@ -349,10 +368,19 @@ class PremiumSectionHeader extends StatelessWidget {
                           Container(
                             padding: EdgeInsets.all(8.w),
                             decoration: BoxDecoration(
-                              gradient: titleGradient ?? AppColors.premiumOcean,
+                              gradient: titleGradient,
+                              color: titleGradient == null
+                                  ? Theme.of(
+                                      context,
+                                    ).colorScheme.primary.withOpacity(0.1)
+                                  : null,
                               borderRadius: BorderRadius.circular(12.r),
                             ),
-                            child: Icon(icon, color: Colors.white, size: 18.sp),
+                            child: Icon(
+                              icon,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 18.sp,
+                            ),
                           ),
                           SizedBox(width: 12.w),
                         ],
@@ -362,7 +390,7 @@ class PremiumSectionHeader extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 20.sp,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textOnDark,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontFamily: 'Cairo',
                               height: 1.2,
                             ),
@@ -378,7 +406,9 @@ class PremiumSectionHeader extends StatelessWidget {
                         subtitle!,
                         style: TextStyle(
                           fontSize: 14.sp,
-                          color: AppColors.textOnDarkSecondary,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.7),
                           fontFamily: 'Cairo',
                         ),
                       ),
@@ -393,7 +423,7 @@ class PremiumSectionHeader extends StatelessWidget {
                       .map(
                         (action) => Padding(
                           padding: EdgeInsets.only(left: 8.w),
-                          child: _buildActionButton(action),
+                          child: _buildActionButton(context, action),
                         ),
                       )
                       .toList(),
@@ -407,20 +437,28 @@ class PremiumSectionHeader extends StatelessWidget {
         .slideX(begin: 0.1);
   }
 
-  Widget _buildActionButton(HeaderAction action) {
+  Widget _buildActionButton(BuildContext context, HeaderAction action) {
     return Container(
       padding: EdgeInsets.all(10.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color:
+            Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+        ),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: action.onTap,
           borderRadius: BorderRadius.circular(10.r),
-          child: Icon(action.icon, color: Colors.white, size: 18.sp),
+          child: Icon(
+            action.icon,
+            color: Theme.of(context).colorScheme.onSurface,
+            size: 18.sp,
+          ),
         ),
       ),
     );
@@ -499,7 +537,7 @@ class PremiumDataGrid extends StatelessWidget {
 class AnimatedGradientText extends StatefulWidget {
   final String text;
   final TextStyle? style;
-  final Gradient gradient;
+  final Gradient? gradient;
   final Duration animationDuration;
   final TextAlign textAlign;
 
@@ -507,7 +545,7 @@ class AnimatedGradientText extends StatefulWidget {
     super.key,
     required this.text,
     this.style,
-    this.gradient = AppColors.premiumOcean,
+    this.gradient,
     this.animationDuration = const Duration(seconds: 2),
     this.textAlign = TextAlign.start,
   });
@@ -543,8 +581,16 @@ class _AnimatedGradientTextState extends State<AnimatedGradientText>
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
+        final grad =
+            widget.gradient ??
+            LinearGradient(
+              colors: [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.secondary,
+              ],
+            );
         return ShaderMask(
-          shaderCallback: (bounds) => widget.gradient.createShader(
+          shaderCallback: (bounds) => grad.createShader(
             Rect.fromLTWH(0, 0, bounds.width, bounds.height),
           ),
           blendMode: BlendMode.srcIn,

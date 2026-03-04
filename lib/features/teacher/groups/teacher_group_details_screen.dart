@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../../core/config/app_colors.dart';
+// Removed AppColors import
 import '../provider/teacher_provider.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/widgets/premium_widgets.dart';
@@ -88,7 +88,7 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
     final tabBarHeight = kTextTabBarHeight + 12.h;
 
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _group == null
@@ -100,7 +100,7 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
                     expandedHeight: 260.h,
                     floating: false,
                     pinned: true,
-                    backgroundColor: AppColors.darkBackground,
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                     title: innerBoxIsScrolled
                         ? Text(
                             _group!.groupName,
@@ -134,7 +134,7 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text('تم نسخ كود المجموعة: $code'),
-                                    backgroundColor: AppColors.success,
+                                    backgroundColor: Colors.green,
                                   ),
                                 );
                               },
@@ -159,7 +159,7 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
                     bottom: TabBar(
                       controller: _tabController,
                       isScrollable: true,
-                      indicatorColor: AppColors.primary,
+                      indicatorColor: Theme.of(context).colorScheme.primary,
                       labelColor: Colors.white,
                       unselectedLabelColor: Colors.white60,
                       indicatorWeight: 3,
@@ -203,7 +203,9 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
     final group = _group!;
 
     return Container(
-      decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+      decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.primary.withOpacity(0.8)])),
       child: Stack(
         children: [
           Positioned(
@@ -429,19 +431,19 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.45),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.45),
                     width: 2,
                   ),
                 ),
                 child: CircleAvatar(
                   radius: 22.r,
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                  backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                   backgroundImage: avatar != null ? NetworkImage(avatar) : null,
                   child: avatar == null
                       ? Text(
                           name.isNotEmpty ? name[0] : 'ط',
                           style: TextStyle(
-                            color: AppColors.primaryLight,
+                            color: (Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface),
                             fontWeight: FontWeight.bold,
                           ),
                         )
@@ -488,16 +490,16 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.14),
+                  color: Colors.green.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(14.r),
                   border: Border.all(
-                    color: AppColors.success.withValues(alpha: 0.25),
+                    color: Colors.green.withValues(alpha: 0.25),
                   ),
                 ),
                 child: Text(
                   'نشط',
                   style: TextStyle(
-                    color: AppColors.success,
+                    color: Colors.green,
                     fontSize: 11.sp,
                     fontWeight: FontWeight.bold,
                   ),
@@ -518,16 +520,16 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
           padding: EdgeInsets.all(16.w),
           child: PremiumCard(
             hasGlow: true,
-            glowColor: AppColors.primary,
+            glowColor: Theme.of(context).colorScheme.primary,
             child: Row(
               children: [
                 Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.12),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14.r),
                   ),
-                  child: Icon(Icons.schedule_rounded, color: AppColors.primary),
+                  child: Icon(Icons.schedule_rounded, color: Theme.of(context).colorScheme.primary),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
@@ -564,12 +566,12 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
               Container(
                 padding: EdgeInsets.all(10.w),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14.r),
                 ),
                 child: Icon(
                   Icons.access_time_rounded,
-                  color: AppColors.primary,
+                  color: Theme.of(context).colorScheme.primary,
                   size: 20.sp,
                 ),
               ),
@@ -601,9 +603,9 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: AppColors.darkInput,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(14.r),
-                  border: Border.all(color: AppColors.darkBorder),
+                  border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                 ),
                 child: Text(
                   schedule.roomName?.isNotEmpty == true
@@ -647,7 +649,7 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
       children: [
         PremiumCard(
           hasGlow: true,
-          glowColor: AppColors.primary,
+          glowColor: Theme.of(context).colorScheme.primary,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -693,7 +695,7 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
                       height: 18.w,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: AppColors.primary,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     SizedBox(width: 10.w),
@@ -730,7 +732,7 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
 
             return PremiumCard(
               hasGlow: true,
-              glowColor: AppColors.primary,
+              glowColor: Theme.of(context).colorScheme.primary,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -759,7 +761,7 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
                         child: _buildMiniStat(
                           label: 'حضور',
                           value: present,
-                          color: AppColors.success,
+                          color: Colors.green,
                           icon: Icons.check_circle_rounded,
                         ),
                       ),
@@ -768,7 +770,7 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
                         child: _buildMiniStat(
                           label: 'تأخير',
                           value: late,
-                          color: AppColors.warning,
+                          color: Colors.orange,
                           icon: Icons.access_time_rounded,
                         ),
                       ),
@@ -777,7 +779,7 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
                         child: _buildMiniStat(
                           label: 'غياب',
                           value: absent,
-                          color: AppColors.error,
+                          color: Theme.of(context).colorScheme.error,
                           icon: Icons.cancel_rounded,
                         ),
                       ),
@@ -805,7 +807,7 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
               Icon(
                 Icons.broadcast_on_personal_rounded,
                 size: 48.sp,
-                color: isLiveActive ? AppColors.error : Colors.grey,
+                color: isLiveActive ? Theme.of(context).colorScheme.error : Colors.grey,
               ),
               SizedBox(height: 16.h),
               Text(
@@ -838,8 +840,8 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
                   gradient: LinearGradient(
                     colors: isLiveActive
                         ? [
-                            AppColors.error,
-                            AppColors.error.withValues(alpha: 0.8),
+                            Theme.of(context).colorScheme.error,
+                            Theme.of(context).colorScheme.error.withValues(alpha: 0.8),
                           ]
                         : [Colors.white10, Colors.white10],
                   ),
@@ -867,10 +869,10 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
               Container(
                 padding: EdgeInsets.all(10.w),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.history, color: AppColors.primary),
+                child: Icon(Icons.history, color: Theme.of(context).colorScheme.primary),
               ),
               SizedBox(width: 16.w),
               Expanded(
@@ -958,14 +960,14 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
-        color: AppColors.darkInput,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: AppColors.darkBorder.withValues(alpha: 0.8)),
+        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5).withValues(alpha: 0.8)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16.sp, color: AppColors.primaryLight),
+          Icon(icon, size: 16.sp, color: (Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface)),
           SizedBox(width: 8.w),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1001,7 +1003,7 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
         content: const Text(
           'المراقبة متاحة قبل الحصة بـ 30 دقيقة وحتى بعدها بـ 30 دقيقة فقط',
         ),
-        backgroundColor: AppColors.warning,
+        backgroundColor: Colors.orange,
       ),
     );
   }

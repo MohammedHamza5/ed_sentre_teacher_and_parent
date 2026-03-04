@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/config/app_colors.dart';
+// Removed AppColors import
 import '../../../shared/data/supabase_repository.dart';
 import '../../../shared/models/models.dart';
 
@@ -163,7 +163,7 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('فشل إرسال الرسالة'),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -173,17 +173,17 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.darkCard,
-        foregroundColor: AppColors.textOnDark,
+        backgroundColor: (Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface),
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         elevation: 0,
         title: Row(
           children: [
             Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: AppColors.primaryGradient,
+                gradient: LinearGradient(colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.primary.withOpacity(0.8)]),
               ),
               child: CircleAvatar(
                 radius: 18.r,
@@ -205,7 +205,7 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textOnDark,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 Row(
@@ -214,7 +214,7 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
                       width: 6.w,
                       height: 6.w,
                       decoration: const BoxDecoration(
-                        color: AppColors.success,
+                        color: Colors.green,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -224,7 +224,7 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
                       style: TextStyle(
                         fontSize: 10.sp,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.textOnDarkSecondary,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                       ),
                     ),
                   ],
@@ -239,7 +239,7 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
           Expanded(
             child: _isLoading
                 ? Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
+                    child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
                   )
                 : ListView.builder(
                     controller: _scrollController,
@@ -251,7 +251,7 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
                           padding: EdgeInsets.only(bottom: 12.h),
                           child: Center(
                             child: CircularProgressIndicator(
-                              color: AppColors.primary,
+                              color: Theme.of(context).colorScheme.primary,
                             ),
                           ),
                         );
@@ -276,8 +276,8 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
         margin: EdgeInsets.only(bottom: 8.h),
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
         decoration: BoxDecoration(
-          gradient: isMe ? AppColors.primaryGradient : null,
-          color: isMe ? null : AppColors.darkCard,
+          gradient: isMe ? LinearGradient(colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.primary.withOpacity(0.8)]) : null,
+          color: isMe ? null : (Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(16.r),
             topRight: Radius.circular(16.r),
@@ -299,7 +299,7 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
             Text(
               msg.content ?? '',
               style: TextStyle(
-                color: isMe ? Colors.white : AppColors.textOnDark,
+                color: isMe ? Colors.white : Theme.of(context).colorScheme.onSurface,
                 fontSize: 14.sp,
               ),
             ),
@@ -309,7 +309,7 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
               style: TextStyle(
                 color: isMe
                     ? Colors.white.withValues(alpha: 0.7)
-                    : AppColors.textOnDarkSecondary,
+                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                 fontSize: 10.sp,
               ),
             ),
@@ -323,8 +323,8 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
-        border: Border(top: BorderSide(color: AppColors.darkBorder, width: 1)),
+        color: (Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface),
+        border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5), width: 1)),
       ),
       child: SafeArea(
         child: Row(
@@ -332,25 +332,25 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
             IconButton(
               onPressed: () {},
               icon: const Icon(Icons.attach_file),
-              color: AppColors.textOnDarkSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             ),
             Expanded(
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 decoration: BoxDecoration(
-                  color: AppColors.darkSurface,
+                  color: (Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface),
                   borderRadius: BorderRadius.circular(24.r),
-                  border: Border.all(color: AppColors.darkBorder),
+                  border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                 ),
                 child: TextField(
                   controller: _messageController,
                   style: TextStyle(
-                    color: AppColors.textOnDark,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 14.sp,
                   ),
                   decoration: InputDecoration(
                     hintText: 'اكتب رسالتك...',
-                    hintStyle: TextStyle(color: AppColors.textOnDarkSecondary),
+                    hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                     border: InputBorder.none,
                   ),
                   onSubmitted: (_) => _sendMessage(),
@@ -360,7 +360,7 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
             SizedBox(width: 8.w),
             Container(
               decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
+                gradient: LinearGradient(colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.primary.withOpacity(0.8)]),
                 shape: BoxShape.circle,
               ),
               child: IconButton(

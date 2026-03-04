@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import '../../../core/config/app_colors.dart';
+import '../../../shared/widgets/app_drawer.dart';
 import '../../../core/providers/center_provider.dart';
 import '../../auth/provider/auth_provider.dart';
 import '../../../shared/data/supabase_repository.dart';
@@ -123,13 +123,15 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: _error != null && !_isLoading
           ? _buildErrorWidget()
           : RefreshIndicator(
               onRefresh: () => _loadData(reset: true),
-              color: AppColors.primary,
-              backgroundColor: AppColors.darkCard,
+              color: Theme.of(context).colorScheme.primary,
+              backgroundColor:
+                  (Theme.of(context).cardTheme.color ??
+                  Theme.of(context).colorScheme.surface),
               child: CustomScrollView(
                 controller: _scrollController,
                 physics: const BouncingScrollPhysics(),
@@ -150,7 +152,7 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showUploadOptions(context),
-        backgroundColor: AppColors.primary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         icon: const Icon(Icons.cloud_upload_outlined, color: Colors.white),
         label: const Text(
@@ -166,10 +168,16 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
       expandedHeight: 140.h,
       floating: false,
       pinned: true,
-      backgroundColor: AppColors.darkSurface,
+      backgroundColor:
+          (Theme.of(context).cardTheme.color ??
+          Theme.of(context).colorScheme.surface),
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
-          decoration: const BoxDecoration(gradient: AppColors.oceanGradient),
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF0EA5E9), Color(0xFF38BDF8)],
+            ),
+          ),
           child: Stack(
             children: [
               Positioned(
@@ -250,6 +258,10 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
           icon: const Icon(Icons.search, color: Colors.white),
           onPressed: () {},
         ),
+        Padding(
+          padding: EdgeInsets.only(left: 8.w),
+          child: const DrawerMenuButton(isTeacher: true),
+        ),
       ],
     );
   }
@@ -262,13 +274,13 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: AppColors.errorSoft,
+              color: Theme.of(context).colorScheme.error.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.error_outline_rounded,
               size: 48.sp,
-              color: AppColors.error,
+              color: Theme.of(context).colorScheme.error,
             ),
           ),
           SizedBox(height: 16.h),
@@ -277,7 +289,7 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
-              color: AppColors.textOnDark,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           SizedBox(height: 8.h),
@@ -287,7 +299,7 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
               _error ?? '',
               style: TextStyle(
                 fontSize: 14.sp,
-                color: AppColors.textOnDarkSecondary,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
               ),
               textAlign: TextAlign.center,
             ),
@@ -333,14 +345,16 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                     style: TextStyle(
                       fontSize: 22.sp,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textOnDark,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   SizedBox(height: 2.h),
                   Text(
                     'المواد التعليمية',
                     style: TextStyle(
-                      color: AppColors.textOnDarkSecondary,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 11.sp,
                     ),
                   ),
@@ -357,12 +371,12 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                   Container(
                     padding: EdgeInsets.all(10.w),
                     decoration: BoxDecoration(
-                      color: AppColors.warning.withValues(alpha: 0.15),
+                      color: Colors.orange.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.cloud_download_rounded,
-                      color: AppColors.warning,
+                      color: Colors.orange,
                       size: 22.sp,
                     ),
                   ),
@@ -372,14 +386,16 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                     style: TextStyle(
                       fontSize: 22.sp,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textOnDark,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   SizedBox(height: 2.h),
                   Text(
                     'إجمالي التحميلات',
                     style: TextStyle(
-                      color: AppColors.textOnDarkSecondary,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.7),
                       fontSize: 11.sp,
                     ),
                   ),
@@ -419,11 +435,25 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
               duration: const Duration(milliseconds: 300),
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               decoration: BoxDecoration(
-                gradient: isSelected ? AppColors.primaryGradient : null,
-                color: isSelected ? null : AppColors.darkCard,
+                gradient: isSelected
+                    ? LinearGradient(
+                        colors: [
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.8),
+                        ],
+                      )
+                    : null,
+                color: isSelected
+                    ? null
+                    : (Theme.of(context).cardTheme.color ??
+                          Theme.of(context).colorScheme.surface),
                 borderRadius: BorderRadius.circular(30.r),
                 border: Border.all(
-                  color: isSelected ? Colors.transparent : AppColors.darkBorder,
+                  color: isSelected
+                      ? Colors.transparent
+                      : Theme.of(context).colorScheme.outline.withOpacity(0.5),
                 ),
               ),
               child: Row(
@@ -434,7 +464,9 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                     size: 16.sp,
                     color: isSelected
                         ? Colors.white
-                        : AppColors.textOnDarkSecondary,
+                        : Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.7),
                   ),
                   SizedBox(width: 6.w),
                   Text(
@@ -442,7 +474,9 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                     style: TextStyle(
                       color: isSelected
                           ? Colors.white
-                          : AppColors.textOnDarkSecondary,
+                          : Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.7),
                       fontWeight: isSelected
                           ? FontWeight.bold
                           : FontWeight.w500,
@@ -473,14 +507,16 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                   height: 18.w,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.2,
-                    color: AppColors.primary,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 SizedBox(width: 10.w),
                 Text(
                   'جاري التحميل...',
                   style: TextStyle(
-                    color: AppColors.textOnDarkSecondary,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -501,14 +537,22 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
               Container(
                 padding: EdgeInsets.all(28.w),
                 decoration: BoxDecoration(
-                  color: AppColors.darkCard,
+                  color:
+                      (Theme.of(context).cardTheme.color ??
+                      Theme.of(context).colorScheme.surface),
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.darkBorder),
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outline.withOpacity(0.5),
+                  ),
                 ),
                 child: Icon(
                   Icons.folder_open_rounded,
                   size: 56.sp,
-                  color: AppColors.textOnDarkHint,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.5),
                 ),
               ),
               SizedBox(height: 20.h),
@@ -517,7 +561,7 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textOnDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               SizedBox(height: 8.h),
@@ -525,7 +569,9 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                 'ابدأ برفع المحتوى التعليمي لطلابك',
                 style: TextStyle(
                   fontSize: 14.sp,
-                  color: AppColors.textOnDarkHint,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.5),
                 ),
               ),
             ],
@@ -558,7 +604,11 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
   Widget _buildLoadMoreIndicator() {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 16.h),
-      child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+      child: Center(
+        child: CircularProgressIndicator(
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
     );
   }
 
@@ -600,7 +650,7 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('تم رفع المحتوى بنجاح'),
-            backgroundColor: AppColors.success,
+            backgroundColor: Colors.green,
           ),
         );
         _loadData();
@@ -611,7 +661,7 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('فشل الرفع: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
         setState(() => _isLoading = false);
@@ -639,26 +689,34 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkElevated,
+        backgroundColor:
+            (Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface),
         title: Text(
           'حذف المحتوى',
-          style: TextStyle(color: AppColors.textOnDark),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
         content: Text(
           'هل أنت متأكد من حذف "${material['title']}"؟',
-          style: TextStyle(color: AppColors.textOnDarkSecondary),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               'إلغاء',
-              style: TextStyle(color: AppColors.textOnDarkSecondary),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
             child: const Text('حذف'),
           ),
         ],

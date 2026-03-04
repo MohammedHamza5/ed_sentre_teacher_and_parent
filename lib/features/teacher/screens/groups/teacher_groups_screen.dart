@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart' as intl;
 
-import '../../../../core/config/app_colors.dart';
+// Removed AppColors import
 import '../../../../shared/widgets/premium_widgets.dart';
 import '../../../../shared/models/models.dart';
 import '../../provider/teacher_provider.dart';
@@ -81,10 +81,11 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
   void _showMonitorWindowHint() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text(
+        content: Text(
           'المراقبة متاحة قبل الحصة بـ 30 دقيقة وحتى بعدها بـ 30 دقيقة فقط',
+          style: TextStyle(color: Theme.of(context).colorScheme.onError),
         ),
-        backgroundColor: AppColors.warning,
+        backgroundColor: Theme.of(context).colorScheme.error,
       ),
     );
   }
@@ -95,16 +96,21 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
     final groups = provider.groups;
 
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           'المجموعات الذكية',
-          style: TextStyle(color: Colors.white, fontSize: 20.sp),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 20.sp,
+            fontFamily: 'Cairo',
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        leading: BackButton(color: Colors.white),
+        leading: BackButton(color: Theme.of(context).colorScheme.onSurface),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -145,22 +151,17 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
     );
     final totalGroups = provider.groups.length;
 
-    // Gradient Card
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF6C63FF), Color(0xFF483D8B)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: Theme.of(context).colorScheme.primaryContainer,
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Color(0xFF6C63FF).withOpacity(0.3),
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
             blurRadius: 20,
-            offset: Offset(0, 10),
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -175,7 +176,13 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                 children: [
                   Text(
                     'نظرة عامة (شهرية)',
-                    style: TextStyle(color: Colors.white70, fontSize: 14.sp),
+                    style: TextStyle(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onPrimaryContainer.withOpacity(0.7),
+                      fontSize: 14.sp,
+                      fontFamily: 'Cairo',
+                    ),
                   ),
                   SizedBox(height: 8.h),
                   Text(
@@ -184,9 +191,10 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                       decimalDigits: 0,
                     ).format(totalIncome),
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
                       fontSize: 28.sp,
                       fontWeight: FontWeight.bold,
+                      fontFamily: 'Cairo',
                     ),
                   ).animate().scale(duration: 500.ms),
                 ],
@@ -194,12 +202,14 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onPrimaryContainer.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.analytics_rounded,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
                   size: 30.sp,
                 ),
               ),
@@ -222,19 +232,26 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        color: Theme.of(
+          context,
+        ).colorScheme.onPrimaryContainer.withOpacity(0.15),
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.white, size: 16.sp),
+          Icon(
+            icon,
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
+            size: 16.sp,
+          ),
           SizedBox(width: 6.w),
           Text(
             label,
             style: TextStyle(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
               fontWeight: FontWeight.w600,
               fontSize: 13.sp,
+              fontFamily: 'Cairo',
             ),
           ),
         ],
@@ -256,14 +273,18 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
       child: Container(
         margin: EdgeInsets.only(bottom: 20.h),
         decoration: BoxDecoration(
-          color: Color(0xFF1E1E2E),
+          color:
+              Theme.of(context).cardTheme.color ??
+              Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
               blurRadius: 10,
-              offset: Offset(0, 5),
+              offset: const Offset(0, 5),
             ),
           ],
         ),
@@ -278,14 +299,16 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                     height: 48.w,
                     width: 48.w,
                     decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
+                      color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(16.r),
                     ),
                     child: Center(
                       child: Text(
                         group.groupName.isNotEmpty ? group.groupName[0] : 'G',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimaryContainer,
                           fontSize: 20.sp,
                           fontWeight: FontWeight.bold,
                         ),
@@ -300,16 +323,20 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                         Text(
                           group.groupName,
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 16.sp,
                             fontWeight: FontWeight.bold,
+                            fontFamily: 'Cairo',
                           ),
                         ),
                         Text(
                           '${group.courseName ?? 'مادة'} • ${group.currentStudents} طالب',
                           style: TextStyle(
-                            color: Colors.grey[400],
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.7),
                             fontSize: 12.sp,
+                            fontFamily: 'Cairo',
                           ),
                         ),
                       ],
@@ -320,7 +347,10 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
               ),
             ),
 
-            Divider(color: Colors.white10, height: 1),
+            Divider(
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+              height: 1,
+            ),
 
             // 2. Schedule Section - "The Smart & Genius Part"
             if (schedules.isNotEmpty)
@@ -332,9 +362,10 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                     Text(
                       'مواعيد الحصص',
                       style: TextStyle(
-                        color: AppColors.primary,
+                        color: Theme.of(context).colorScheme.primary,
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w600,
+                        fontFamily: 'Cairo',
                       ),
                     ),
                     SizedBox(height: 10.h),
@@ -348,10 +379,14 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                             vertical: 8.h,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(
-                              color: AppColors.primary.withOpacity(0.3),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.3),
                             ),
                           ),
                           child: Row(
@@ -359,15 +394,18 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                             children: [
                               Icon(
                                 Icons.access_time_rounded,
-                                color: AppColors.primary,
+                                color: Theme.of(context).colorScheme.primary,
                                 size: 14.sp,
                               ),
                               SizedBox(width: 6.w),
                               Text(
                                 '${schedule.dayOfWeek} ${schedule.startTime}',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
                                   fontSize: 12.sp,
+                                  fontFamily: 'Cairo',
                                 ),
                               ),
                             ],
@@ -384,9 +422,12 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                 child: Text(
                   'لم يتم تحديد مواعيد بعد',
                   style: TextStyle(
-                    color: Colors.grey,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.5),
                     fontSize: 12.sp,
                     fontStyle: FontStyle.italic,
+                    fontFamily: 'Cairo',
                   ),
                 ),
               ),
@@ -403,8 +444,11 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                       Text(
                         'الأداء المالي',
                         style: TextStyle(
-                          color: Colors.grey[400],
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.6),
                           fontSize: 12.sp,
+                          fontFamily: 'Cairo',
                         ),
                       ),
                       Text(
@@ -413,7 +457,8 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                           decimalDigits: 0,
                         ).format(financials['teacher_share']),
                         style: TextStyle(
-                          color: Colors.greenAccent,
+                          color: Colors
+                              .greenAccent, // Kept for financial positive vibe
                           fontSize: 14.sp,
                           fontWeight: FontWeight.bold,
                         ),
@@ -429,8 +474,10 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                           (financials['total_income'] == 0
                               ? 1
                               : financials['total_income']!),
-                      backgroundColor: Colors.white10,
-                      valueColor: AlwaysStoppedAnimation<Color>(
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.1),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
                         Colors.greenAccent,
                       ),
                       minHeight: 6.h,
@@ -439,7 +486,13 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                   SizedBox(height: 4.h),
                   Text(
                     'نسبتك من اجمالي الدخل (${intl.NumberFormat.currency(symbol: 'ج.م', decimalDigits: 0).format(financials['total_income'])})',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 10.sp),
+                    style: TextStyle(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.5),
+                      fontSize: 10.sp,
+                      fontFamily: 'Cairo',
+                    ),
                   ),
                 ],
               ),
@@ -467,9 +520,21 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                       fontSize: 13.sp,
                       hasGlow: canMonitor,
                       gradient: canMonitor
-                          ? AppColors.primaryGradient
-                          : const LinearGradient(
-                              colors: [Colors.white10, Colors.white10],
+                          ? LinearGradient(
+                              colors: [
+                                Theme.of(context).colorScheme.primary,
+                                Theme.of(context).colorScheme.secondary,
+                              ],
+                            )
+                          : LinearGradient(
+                              colors: [
+                                Theme.of(
+                                  context,
+                                ).colorScheme.outline.withOpacity(0.1),
+                                Theme.of(
+                                  context,
+                                ).colorScheme.outline.withOpacity(0.1),
+                              ],
                             ),
                     ),
                   ),
@@ -481,7 +546,12 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                       onPressed: () => context.push('/teacher/messages'),
                       height: 38.h,
                       fontSize: 13.sp,
-                      gradient: AppColors.secondaryGradient,
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).colorScheme.secondary,
+                          Theme.of(context).colorScheme.primary,
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -499,21 +569,22 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: isFull
-            ? Colors.red.withOpacity(0.2)
-            : Colors.green.withOpacity(0.2),
+            ? Theme.of(context).colorScheme.error.withOpacity(0.1)
+            : Colors.green.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8.r),
         border: Border.all(
           color: isFull
-              ? Colors.red.withOpacity(0.5)
+              ? Theme.of(context).colorScheme.error.withOpacity(0.5)
               : Colors.green.withOpacity(0.5),
         ),
       ),
       child: Text(
         isFull ? 'مكتمل' : 'نشط',
         style: TextStyle(
-          color: isFull ? Colors.redAccent : Colors.greenAccent,
+          color: isFull ? Theme.of(context).colorScheme.error : Colors.green,
           fontSize: 10.sp,
           fontWeight: FontWeight.bold,
+          fontFamily: 'Cairo',
         ),
       ),
     );

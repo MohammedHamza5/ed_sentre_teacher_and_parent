@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/config/app_colors.dart';
+// Removed AppColors import
 import '../../../../shared/data/supabase_repository.dart';
 
 class UploadMaterialDialog extends StatefulWidget {
@@ -144,7 +144,7 @@ class _UploadMaterialDialogState extends State<UploadMaterialDialog> {
                   style: TextStyle(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -178,7 +178,7 @@ class _UploadMaterialDialogState extends State<UploadMaterialDialog> {
                         borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(
                           color: _selectedFile != null
-                              ? AppColors.primary
+                              ? Theme.of(context).colorScheme.primary
                               : Colors.grey.shade300,
                           style: BorderStyle.solid,
                           width: _selectedFile != null ? 2 : 1,
@@ -192,7 +192,7 @@ class _UploadMaterialDialogState extends State<UploadMaterialDialog> {
                                 : Icons.cloud_upload_outlined,
                             size: 40.sp,
                             color: _selectedFile != null
-                                ? AppColors.primary
+                                ? Theme.of(context).colorScheme.primary
                                 : Colors.grey,
                           ),
                           SizedBox(height: 8.h),
@@ -203,7 +203,7 @@ class _UploadMaterialDialogState extends State<UploadMaterialDialog> {
                             style: TextStyle(
                               fontSize: 14.sp,
                               color: _selectedFile != null
-                                  ? AppColors.primary
+                                  ? Theme.of(context).colorScheme.primary
                                   : Colors.grey,
                               fontWeight: _selectedFile != null
                                   ? FontWeight.bold
@@ -264,7 +264,7 @@ class _UploadMaterialDialogState extends State<UploadMaterialDialog> {
                 ElevatedButton(
                   onPressed: _isUploading ? null : _handleUpload,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
@@ -299,7 +299,7 @@ class _UploadMaterialDialogState extends State<UploadMaterialDialog> {
           Icon(
             icon,
             size: 16.sp,
-            color: isSelected ? Colors.white : AppColors.textSecondary,
+            color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
           ),
           SizedBox(width: 4.w),
           Text(label),
@@ -310,9 +310,9 @@ class _UploadMaterialDialogState extends State<UploadMaterialDialog> {
         if (val) setState(() => _selectedType = id);
       },
       backgroundColor: Colors.white,
-      selectedColor: AppColors.primary,
+      selectedColor: Theme.of(context).colorScheme.primary,
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : AppColors.textSecondary,
+        color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
     );
