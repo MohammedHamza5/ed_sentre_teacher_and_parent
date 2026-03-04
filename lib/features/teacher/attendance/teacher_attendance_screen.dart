@@ -825,90 +825,18 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
   }
 
   Widget _buildNoGroupsState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: EdgeInsets.all(24.w),
-            decoration: BoxDecoration(
-              color:
-                  (Theme.of(context).cardTheme.color ??
-                  Theme.of(context).colorScheme.surface),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
-              ),
-            ),
-            child: Icon(
-              Icons.class_outlined,
-              size: 56.sp,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'لا توجد مجموعات',
-            style: TextStyle(
-              fontSize: 18.sp,
-              color: Theme.of(context).colorScheme.onSurface,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'لم يتم تعيين مجموعات لك بعد',
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-            ),
-          ),
-        ],
-      ),
+    return EmptyState(
+      icon: Icons.class_outlined,
+      title: 'لا توجد مجموعات',
+      subtitle: 'لم يتم تعيين مجموعات لك بعد',
     ).animate().fadeIn().scale(begin: const Offset(0.9, 0.9));
   }
 
   Widget _buildNoStudentsState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: EdgeInsets.all(24.w),
-            decoration: BoxDecoration(
-              color:
-                  (Theme.of(context).cardTheme.color ??
-                  Theme.of(context).colorScheme.surface),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
-              ),
-            ),
-            child: Icon(
-              Icons.people_outline,
-              size: 56.sp,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'لا يوجد طلاب في هذه المجموعة',
-            style: TextStyle(
-              fontSize: 16.sp,
-              color: Theme.of(context).colorScheme.onSurface,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'سيظهر الطلاب المسجلون هنا',
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-            ),
-          ),
-        ],
-      ),
+    return EmptyState(
+      icon: Icons.people_outline,
+      title: 'لا يوجد طلاب في هذه المجموعة',
+      subtitle: 'سيظهر الطلاب المسجلون هنا',
     ).animate().fadeIn().scale(begin: const Offset(0.9, 0.9));
   }
 
