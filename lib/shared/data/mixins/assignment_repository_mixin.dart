@@ -111,7 +111,7 @@ mixin AssignmentRepositoryMixin on BaseRepository {
   ) async {
     final response = await client
         .from('assignment_submissions')
-        .select('*, users:student_user_id(full_name, avatar_url)')
+        .select('*, users(full_name, avatar_url)')
         .eq('assignment_id', assignmentId);
 
     return (response as List).map((e) {
@@ -179,11 +179,55 @@ mixin AssignmentRepositoryMixin on BaseRepository {
     final userId = currentUserId;
     if (userId == null) throw Exception('User not logged in');
 
-    await client.from('assignments').insert({
-      ...data,
-      'teacher_user_id': userId,
-      'created_at': DateTime.now().toIso8601String(),
-    });
+    // Extract questions and remove from main assignment payload
+    final questionsList = data['questions'] as List<dynamic>?;
+    data.remove('questions');
+
+    // 1. Insert Assignment
+    final response = await client
+        .from('assignments')
+        .insert({
+          ...data,
+          'teacher_user_id': userId,
+          'created_at': DateTime.now().toIso8601String(),
+        })
+        .select('id')
+        .single();
+
+    final assignmentId = response['id'] as String;
+
+    // 2. Insert Questions if they exist
+    if (questionsList != null && questionsList.isNotEmpty) {
+      final formattedQuestions = questionsList.asMap().entries.map((entry) {
+        final q = entry.value as Map<String, dynamic>;
+
+        // Map string types to enum
+        String type = 'mcq';
+        if (q['type'] == 'true_false' || q['type'] == 'trueFalse')
+          type = 'true_false';
+        if (q['type'] == 'short_answer' || q['type'] == 'shortAnswer')
+          type = 'short_answer';
+        if (q['type'] == 'essay') type = 'essay';
+
+        return {
+          'id':
+              q['id']?.toString() ??
+              '${DateTime.now().millisecondsSinceEpoch}_${entry.key}',
+          'assignment_id': assignmentId,
+          'text': q['text'] ?? '',
+          'type': type,
+          'marks': q['points'] ?? 1.0,
+          'options': q['options'] ?? [],
+          'correct_answer':
+              q['correct_answer'] ?? q['correct_option_index']?.toString(),
+          'order_index': entry.key,
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+        };
+      }).toList();
+
+      await client.from('exam_questions').insert(formattedQuestions);
+    }
   }
 
   /// Delete assignment (soft delete)

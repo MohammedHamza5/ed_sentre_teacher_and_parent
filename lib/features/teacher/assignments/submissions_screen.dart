@@ -6,6 +6,7 @@ import '../../../core/config/app_colors.dart';
 import '../../../shared/data/supabase_repository.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/widgets/premium_widgets.dart';
+import 'grading_review_screen.dart';
 
 /// Teacher Submissions / Grading Screen
 class SubmissionsScreen extends StatefulWidget {
@@ -41,10 +42,14 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
     });
 
     try {
+      debugPrint(
+        '==== Loading submissions for assignment: $_assignmentId ====',
+      );
       final repository = context.read<SupabaseRepository>();
       final submissions = await repository.getAssignmentSubmissions(
         _assignmentId,
       );
+      debugPrint('==== Loaded ${submissions.length} raw submissions ====');
 
       // Filter out 'in_progress' submissions (not yet submitted)
       final actualSubmissions = submissions.where((s) {
@@ -59,6 +64,7 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
         });
       }
     } catch (e) {
+      debugPrint('==== Error loading submissions: $e ====');
       if (mounted) {
         setState(() {
           _error = e.toString();
@@ -460,10 +466,23 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: () => _showGradeDialog(submission),
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => GradingReviewScreen(
+                submission: submission,
+                maxScore: _maxScore,
+              ),
+            ),
+          );
+          if (result == true) {
+            _loadSubmissions();
+          }
+        },
         icon: Icon(Icons.grading, size: 18.sp),
         label: Text(
-          'تصحيح',
+          'تصحيح وإرسال النتيجة',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp),
         ),
         style: ElevatedButton.styleFrom(
@@ -478,148 +497,26 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
     );
   }
 
-  void _showGradeDialog(SubmissionModel submission) {
-    final scoreController = TextEditingController(
-      text: submission.score?.toStringAsFixed(0) ?? '',
-    );
-    final feedbackController = TextEditingController(
-      text: submission.feedback ?? '',
-    );
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.darkElevated,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-        title: Text(
-          'تصحيح — ${submission.studentName ?? "طالب"}',
-          style: TextStyle(color: Colors.white, fontSize: 16.sp),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: scoreController,
-              keyboardType: TextInputType.number,
-              style: TextStyle(color: Colors.white, fontSize: 14.sp),
-              decoration: InputDecoration(
-                labelText: 'الدرجة (من ${_maxScore.toStringAsFixed(0)})',
-                labelStyle: TextStyle(color: Colors.white54),
-                filled: true,
-                fillColor: AppColors.darkSurface,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: AppColors.darkBorder),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: AppColors.darkBorder),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: AppColors.primary),
-                ),
-              ),
-            ),
-            SizedBox(height: 12.h),
-            TextField(
-              controller: feedbackController,
-              maxLines: 3,
-              style: TextStyle(color: Colors.white, fontSize: 14.sp),
-              decoration: InputDecoration(
-                labelText: 'ملاحظات (اختياري)',
-                labelStyle: TextStyle(color: Colors.white54),
-                filled: true,
-                fillColor: AppColors.darkSurface,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: AppColors.darkBorder),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: AppColors.darkBorder),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: AppColors.primary),
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('إلغاء', style: TextStyle(color: Colors.white54)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final score = double.tryParse(scoreController.text);
-              if (score == null || score < 0 || score > _maxScore) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'أدخل درجة صحيحة (0 - ${_maxScore.toStringAsFixed(0)})',
-                    ),
-                  ),
-                );
-                return;
-              }
-
-              Navigator.pop(ctx);
-
-              try {
-                final repo = context.read<SupabaseRepository>();
-                await repo.gradeSubmission(
-                  submissionId: submission.id,
-                  score: score,
-                  feedback: feedbackController.text.isNotEmpty
-                      ? feedbackController.text
-                      : null,
-                );
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('تم حفظ التصحيح بنجاح'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                  _loadSubmissions();
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('فشل في الحفظ: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-            child: const Text(
-              'حفظ',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
+  void _showGradeDialog(SubmissionModel submission) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            GradingReviewScreen(submission: submission, maxScore: _maxScore),
       ),
     );
+    if (result == true) {
+      _loadSubmissions();
+    }
   }
 
   Map<String, dynamic>? _findQuestion(String questionId) {
-    final questions = widget.assignment['questions'];
+    dynamic questions = widget.assignment['questions'];
+    if (questions is String) {
+      try {
+        questions = jsonDecode(questions);
+      } catch (_) {}
+    }
     if (questions is List) {
       for (int i = 0; i < questions.length; i++) {
         final q = questions[i] as Map<String, dynamic>?;
@@ -632,9 +529,11 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
   }
 
   String _formatAnswer(dynamic answer, Map<String, dynamic>? question) {
+    if (answer == -1 || answer == '-1') return 'لم يُجب';
+
     if (answer is int && question != null) {
       final options = question['options'];
-      if (options is List && answer < options.length) {
+      if (options is List && answer >= 0 && answer < options.length) {
         return options[answer].toString();
       }
       return 'الخيار ${answer + 1}';
