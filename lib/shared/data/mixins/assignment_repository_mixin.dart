@@ -140,7 +140,7 @@ mixin AssignmentRepositoryMixin on BaseRepository {
     try {
       var query = client
           .from('assignments')
-          .select('*')
+          .select('*, assignment_submissions(count)')
           .eq('center_id', centerId)
           .eq('teacher_user_id', userId)
           .isFilter('deleted_at', null);
