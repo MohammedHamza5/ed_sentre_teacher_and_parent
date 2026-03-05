@@ -418,6 +418,7 @@ class AIProvider extends ChangeNotifier {
     required int questionCount,
     required String examType,
     String? filePath,
+    String? extractedText,
     List<String>? targetChapters,
   }) async {
     final cost = AiConfig.getCost(EdSentreTask.teacherGenerateExam);
@@ -457,6 +458,10 @@ class AIProvider extends ChangeNotifier {
         content = knowledge['extracted_text'] as String? ?? '';
         subject = knowledge['subject_name'] as String? ?? '';
         grade = knowledge['grade_level'] as String? ?? '';
+      } else if (extractedText != null && extractedText.isNotEmpty) {
+        content = extractedText;
+        subject = 'مادة مخصصة';
+        grade = 'عام';
       } else if (filePath == null) {
         _generationError = 'يجب توفير ملف أو محتوى للامتحان';
         return null;

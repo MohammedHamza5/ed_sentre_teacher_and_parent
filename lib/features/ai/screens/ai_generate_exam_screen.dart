@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:syncfusion_flutter_pdf/pdf.dart';
 import '../../../core/config/app_colors.dart';
 import '../../ai/provider/ai_provider.dart';
 import '../../../core/providers/center_provider.dart';
@@ -903,10 +904,22 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
 
     final aiProvider = context.read<AIProvider>();
     String? filePath;
+    String? extractedText;
 
-    // Upload file if selected
+    // Upload file if selected and extract text locally
     if (_selectedFile != null && widget.knowledgeBaseId == null) {
       setState(() => _isUploading = true);
+
+      // Extract text from PDF
+      try {
+        final PdfDocument document = PdfDocument(
+          inputBytes: await _selectedFile!.readAsBytes(),
+        );
+        extractedText = PdfTextExtractor(document).extractText();
+        document.dispose();
+      } catch (e) {
+        debugPrint('Error extracting PDF text: $e');
+      }
 
       filePath = await aiProvider.uploadDocumentToStorage(_selectedFile!);
 
@@ -930,6 +943,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
       questionCount: _questionCount,
       examType: _examType,
       filePath: filePath,
+      extractedText: extractedText,
     );
 
     if (result != null && mounted) {
@@ -953,29 +967,73 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
     final aiProvider = context.read<AIProvider>();
     final centerProvider = context.read<CenterProvider>();
 
+    String finalTitle = _generatedExam!['title'] ?? 'امتحان بالذكاء الاصطناعي';
+    if (finalTitle.trim().isEmpty) finalTitle = 'امتحان بالذكاء الاصطناعي';
+
     // 1. Save to Bank (Optional but good for history)
     await aiProvider.saveGeneratedExam(
       centerId: centerProvider.currentCenterId!,
       knowledgeBaseId: widget.knowledgeBaseId,
-      title: _generatedExam!['title'] ?? 'امتحان',
+      title: finalTitle,
       examType: _examType,
       difficulty: _difficulty,
       examData: _generatedExam!,
     );
 
-    // 2. Navigate to CreateAssignmentScreen for Publishing
+    // 2. Navigate to CreateAssignmentScreen for Publishing (Matching manual flow exactly)
     if (mounted) {
-      Navigator.push(
+      // Map AI questions to the format expected by CreateAssignmentScreen
+      final questionsList = (_generatedExam!['questions'] as List).map((q) {
+        // AI returns 'multiple_choice', 'true_false' but Assignment Screen expects 'mcq'
+        String type = 'mcq';
+        if (q['type'] == 'true_false') type = 'tf';
+
+        // Options might be returned from AI as a list or a string
+        List<String> optionsParams = [];
+        final optionsRaw = q['options'];
+        if (optionsRaw is List) {
+          optionsParams = optionsRaw.map((e) => e.toString()).toList();
+        } else if (optionsRaw is String && optionsRaw.isNotEmpty) {
+          optionsParams = [optionsRaw];
+        }
+
+        // True/false mapping (CreateAssignmentScreen logic uses true/false strings usually)
+        if (type == 'tf') {
+          optionsParams = ['صح', 'خطأ'];
+        }
+
+        return {
+          'id': DateTime.now().millisecondsSinceEpoch.toString(),
+          'question': q['question'] ?? '',
+          'type': type,
+          'options': optionsParams,
+          'correct': q['correct_answer'] ?? 0,
+          'correct_answer': type == 'tf'
+              ? (q['correct_answer'] == 0 ? 'صح' : 'خطأ')
+              : (optionsParams.isNotEmpty &&
+                        q['correct_answer'] != null &&
+                        q['correct_answer'] < optionsParams.length
+                    ? optionsParams[q['correct_answer']]
+                    : ''),
+          'marks': q['marks'] ?? 2,
+          'difficulty': q['difficulty'] ?? _difficulty,
+        };
+      }).toList();
+
+      final minutes = _generatedExam!['estimated_time_minutes'] ?? 30;
+      final maxScore = _generatedExam!['total_marks'] ?? 100;
+
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => CreateAssignmentScreen(
-            type: 'quiz', // Always quiz for interactive questions
-            initialTitle: _generatedExam!['title'] ?? 'امتحان',
-            initialQuestions: (_generatedExam!['questions'] as List)
-                .map((e) => Map<String, dynamic>.from(e))
-                .toList(),
-            initialDuration: _generatedExam!['estimated_time_minutes'],
-            initialMaxScore: _generatedExam!['total_marks'],
+            type: _examType == 'assignment'
+                ? 'assignment'
+                : (_examType == 'quiz' ? 'quiz' : 'exam'),
+            initialTitle: finalTitle,
+            initialQuestions: questionsList,
+            initialDuration: minutes,
+            initialMaxScore: maxScore,
           ),
         ),
       );
