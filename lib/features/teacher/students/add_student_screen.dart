@@ -8,6 +8,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/providers/center_provider.dart';
 import '../../auth/provider/auth_provider.dart';
 import '../../../shared/data/supabase_repository.dart';
+import '../../../core/constants/educational_consts.dart';
 
 class AddStudentScreen extends StatefulWidget {
   const AddStudentScreen({super.key});
@@ -31,14 +32,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
   bool _isAnalyzing = false;
   Map<String, dynamic>? _selectedGroup;
 
-  final List<String> _gradeLevels = [
-    'الصف الأول الأعدادي',
-    'الصف الثاني الأعدادي',
-    'الصف الثالث الأعدادي',
-    'الصف الأول الثانوي',
-    'الصف الثاني الثانوي',
-    'الصف الثالث الثانوي',
-  ];
+  final List<String> _gradeLevels = EducationalStages.allGrades;
 
   @override
   Widget build(BuildContext context) {
