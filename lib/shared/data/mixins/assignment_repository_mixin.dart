@@ -203,10 +203,12 @@ mixin AssignmentRepositoryMixin on BaseRepository {
 
         // Map string types to enum
         String type = 'mcq';
-        if (q['type'] == 'true_false' || q['type'] == 'trueFalse')
+        if (q['type'] == 'true_false' || q['type'] == 'trueFalse') {
           type = 'true_false';
-        if (q['type'] == 'short_answer' || q['type'] == 'shortAnswer')
+        }
+        if (q['type'] == 'short_answer' || q['type'] == 'shortAnswer') {
           type = 'short_answer';
+        }
         if (q['type'] == 'essay') type = 'essay';
 
         return {

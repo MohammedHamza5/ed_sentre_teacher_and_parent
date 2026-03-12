@@ -2148,8 +2148,9 @@ class _QuestionDialogState extends State<_QuestionDialog> {
                       child: TextField(
                         controller: _options[i],
                         onChanged: (_) {
-                          if (_errorText != null)
+                          if (_errorText != null) {
                             setState(() => _errorText = null);
+                          }
                         },
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.onSurface,

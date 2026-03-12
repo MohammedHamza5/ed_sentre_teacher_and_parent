@@ -1,4 +1,3 @@
-import 'package:ed_sentre_techer_and_parent/shared/models/enums.dart';
 
 enum QuestionType {
   mcq,

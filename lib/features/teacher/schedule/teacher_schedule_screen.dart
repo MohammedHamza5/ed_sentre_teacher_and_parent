@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../shared/widgets/app_drawer.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 // Removed unused AppColors
 import '../../auth/provider/auth_provider.dart';
