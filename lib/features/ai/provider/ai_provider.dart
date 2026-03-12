@@ -388,8 +388,19 @@ class AIProvider extends ChangeNotifier {
       final userId = _repository.client.auth.currentUser?.id;
       if (userId == null) return null;
 
-      final fileName =
-          '${DateTime.now().millisecondsSinceEpoch}_${pdfFile.uri.pathSegments.last}';
+      // Sanitize the filename to avoid InvalidKey exceptions in Supabase Storage
+      String originalName = pdfFile.uri.pathSegments.last;
+      
+      // 1. Keep only alphanumeric characters, dots, underscores, and dashes
+      // This will strip out Arabic characters, spaces, and special symbols
+      String sanitizedName = originalName.replaceAll(RegExp(r'[^a-zA-Z0-9.\-_]'), '');
+      
+      // 2. If the name becomes empty (e.g., if it was entirely Arabic), provide a fallback
+      if (sanitizedName.isEmpty || sanitizedName == '.pdf') {
+        sanitizedName = 'document.pdf';
+      }
+
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}_$sanitizedName';
       final filePath = '$userId/$fileName';
 
       await _repository.client.storage
