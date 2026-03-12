@@ -61,9 +61,9 @@ serve(async (req) => {
     const finalFilePath = file_path || params?.file_path;
     const finalDifficulty = difficulty || params?.difficulty;
 
-    const DASH_SCOPE_KEY = Deno.env.get('DASHSCOPE_API_KEY');
+    const DASH_SCOPE_KEY = Deno.env.get('DASHSCOPE_API_KEY') || Deno.env.get('QWEN_API_KEY');
     if (!DASH_SCOPE_KEY) {
-      throw new Error('DASHSCOPE_API_KEY is missing from Edge Function secrets.');
+      throw new Error('DASHSCOPE_API_KEY or QWEN_API_KEY is missing from Edge Function secrets.');
     }
 
     const supabaseClient = createClient(
