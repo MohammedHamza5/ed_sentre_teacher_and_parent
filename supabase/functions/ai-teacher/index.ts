@@ -216,7 +216,7 @@ ${content}`}
         }
     }
 
-    return new Response(JSON.stringify({ result: textResult }), {
+    return new Response(JSON.stringify({ result: textResult, content: textResult }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
