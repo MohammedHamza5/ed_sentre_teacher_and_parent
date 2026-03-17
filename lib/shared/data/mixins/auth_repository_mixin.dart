@@ -16,18 +16,35 @@ mixin AuthRepositoryMixin on BaseRepository {
   /// Get current authenticated user
   User? get currentUser => client.auth.currentUser;
 
-  /// Sign in with email and password
-  Future<AuthResponse> signInWithEmail(String email, String password) async {
+  /// Sign in with email, code, or phone fallback
+  Future<AuthResponse> signInWithIdentifier(String identifier, String password) async {
+    String? emailToUse;
+    
+    // If it's already an email, use it directly (fallback for old accounts if needed)
+    if (identifier.contains('@')) {
+      emailToUse = identifier;
+    } else if (identifier.toUpperCase().startsWith('T') || identifier.toUpperCase().startsWith('P')) {
+      emailToUse = '${identifier.toUpperCase()}@edsentre.com';
+    } else {
+      // Phone number fallback
+      try {
+        final response = await client.rpc(
+          'get_login_identifier_by_phone',
+          params: {'p_phone': identifier},
+        );
+        if (response != null && response.toString().isNotEmpty) {
+          emailToUse = response.toString();
+        } else {
+          throw const AuthException('لم يتم العثور على حساب مرتبط برقم الهاتف هذا.');
+        }
+      } catch (e) {
+        if (e is AuthException) rethrow;
+        throw AuthException('حدث خطأ في البحث برقم الهاتف: $e');
+      }
+    }
+    
     return await client.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
-  }
-
-  /// Sign in with phone and password (for student code login)
-  Future<AuthResponse> signInWithPhone(String phone, String password) async {
-    return await client.auth.signInWithPassword(
-      phone: phone,
+      email: emailToUse,
       password: password,
     );
   }
@@ -67,13 +84,14 @@ mixin AuthRepositoryMixin on BaseRepository {
 
   /// تسجيل مستخدم جديد (Sign Up)
   Future<AuthResponse> signUp({
-    required String email,
+    required String invitationCode,
     required String password,
     String? fullName,
     String? phone,
   }) async {
+    final pseudoEmail = '${invitationCode.toUpperCase()}@edsentre.com';
     final response = await client.auth.signUp(
-      email: email,
+      email: pseudoEmail,
       password: password,
       data: {
         if (fullName != null) 'full_name': fullName,

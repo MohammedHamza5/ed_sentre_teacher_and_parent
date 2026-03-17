@@ -16,7 +16,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _identifierController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
   bool _obscurePassword = true;
@@ -25,7 +26,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _identifierController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     _nameController.dispose();
     super.dispose();
@@ -41,7 +43,8 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_isSignUpMode) {
       // تسجيل حساب جديد
       final success = await authProvider.signUp(
-        email: _emailController.text.trim(),
+        invitationCode: _identifierController.text.trim(),
+        phone: _phoneController.text.trim(),
         password: _passwordController.text,
         fullName: _nameController.text.trim(),
       );
@@ -49,8 +52,12 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _isLoading = false);
 
       if (success && mounted) {
-        // الانتقال لشاشة إدخال الكود
-        context.go('/invitation-code');
+        // بمجرد نجاح الدخول والتسجيل نذهب للوجهة مباشرة
+        if (authProvider.isTeacher) {
+          context.go('/teacher');
+        } else if (authProvider.isParent) {
+          context.go('/parent');
+        }
       } else if (mounted && authProvider.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -62,20 +69,15 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } else {
       // تسجيل دخول
-      final success = await authProvider.signInWithEmail(
-        _emailController.text.trim(),
+      final success = await authProvider.signInWithIdentifier(
+        _identifierController.text.trim(),
         _passwordController.text,
       );
 
       setState(() => _isLoading = false);
 
       if (success && mounted) {
-        // التحقق هل يحتاج إدخال كود
-        if (authProvider.needsInvitationCode ||
-            (authProvider.userRole == null &&
-                !authProvider.isUnauthorizedRole)) {
-          context.go('/invitation-code');
-        } else if (authProvider.isTeacher) {
+        if (authProvider.isTeacher) {
           context.go('/teacher');
         } else if (authProvider.isParent) {
           context.go('/parent');
@@ -181,29 +183,53 @@ class _LoginScreenState extends State<LoginScreen> {
                       SizedBox(height: 16.h),
                     ],
 
-                    // Email Field
+                    // Identifier Field
                     TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
+                      controller: _identifierController,
+                      keyboardType: _isSignUpMode ? TextInputType.text : TextInputType.visiblePassword,
                       textInputAction: TextInputAction.next,
                       decoration: InputDecoration(
-                        labelText: 'البريد الإلكتروني',
-                        hintText: 'أدخل بريدك الإلكتروني',
-                        prefixIcon: const Icon(Icons.email_outlined),
+                        labelText: _isSignUpMode ? 'كود الدعوة' : 'كود الدعوة أو رقم الهاتف',
+                        hintText: _isSignUpMode ? 'أدخل كود الدعوة (مثال: T12345)' : 'أدخل كود الدعوة أو رقم هاتفك',
+                        prefixIcon: const Icon(Icons.badge_outlined),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'الرجاء إدخال البريد الإلكتروني';
+                        if (value == null || value.trim().isEmpty) {
+                          return _isSignUpMode ? 'الرجاء إدخال كود الدعوة' : 'الرجاء إدخال الكود أو رقم الهاتف';
                         }
-                        if (!value.contains('@')) {
-                          return 'الرجاء إدخال بريد إلكتروني صحيح';
+                        if (_isSignUpMode && value.trim().length < 6) {
+                          return 'كود الدعوة غير صحيح';
                         }
                         return null;
                       },
                     ),
+
+                    if (_isSignUpMode) ...[
+                      SizedBox(height: 16.h),
+                      // Phone Field
+                      TextFormField(
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                        textInputAction: TextInputAction.next,
+                        decoration: InputDecoration(
+                          labelText: 'رقم الهاتف',
+                          hintText: 'أدخل رقم هاتفك الخاص لاستخدامه للدخول لاحقاً',
+                          prefixIcon: const Icon(Icons.phone_outlined),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                        ),
+                        validator: (value) {
+                          if (_isSignUpMode && (value == null || value.trim().isEmpty)) {
+                            return 'الرجاء إدخال رقم الهاتف';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
 
                     SizedBox(height: 16.h),
 

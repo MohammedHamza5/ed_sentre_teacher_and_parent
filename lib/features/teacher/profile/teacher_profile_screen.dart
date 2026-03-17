@@ -201,6 +201,24 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                     ).animate().fadeIn(delay: 200.ms).scale(),
                   ],
                 ),
+                SizedBox(height: 6.h),
+
+                // Invitation Code & Phone
+                Text(
+                  'كود الدعوة: ${user.email?.replaceAll('@edsentre.com', '') ?? ''}',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                  ),
+                ).animate().fadeIn(delay: 250.ms),
+                SizedBox(height: 4.h),
+                Text(
+                  'الهاتف: ${user.phone ?? "غير محدد"}',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 13.sp,
+                  ),
+                ).animate().fadeIn(delay: 250.ms),
                 SizedBox(height: 12.h),
 
                 // Role Badge

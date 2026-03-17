@@ -207,14 +207,14 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Sign in with email and password
-  Future<bool> signInWithEmail(String email, String password) async {
+  /// Sign in with identifier (Code or Phone) and password
+  Future<bool> signInWithIdentifier(String identifier, String password) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      await _repository.signInWithEmail(email, password);
+      await _repository.signInWithIdentifier(identifier, password);
       // Ensure we have a session before loading profile
       if (_repository.client.auth.currentSession == null) {
         throw const AuthException('Login failed: No session created');
@@ -224,38 +224,12 @@ class AuthProvider extends ChangeNotifier {
       // Verify role logic will handle the rest
       await _loadUserProfile();
 
-      log.auth('Sign In Success (Email)', data: {'email': email});
+      log.auth('Sign In Success', data: {'identifier': identifier});
       _isLoading = false;
       notifyListeners();
       return true;
     } on AuthException catch (e) {
       log.auth('Sign In Failed (AuthException)', data: {'error': e.message});
-      _error = _getAuthErrorMessage(e.message);
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    } catch (e) {
-      _error = 'حدث خطأ أثناء تسجيل الدخول';
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-  }
-
-  /// Sign in with phone (student code)
-  Future<bool> signInWithStudentCode(String code, String password) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      // Format phone as student code login
-      await _repository.signInWithPhone(code, password);
-      await _loadUserProfile();
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } on AuthException catch (e) {
       _error = _getAuthErrorMessage(e.message);
       _isLoading = false;
       notifyListeners();
@@ -312,12 +286,12 @@ class AuthProvider extends ChangeNotifier {
   // INVITATION CODE METHODS - نظام أكواد الدعوة
   // ═══════════════════════════════════════════════════════════════════════
 
-  /// تسجيل حساب جديد
+  /// تسجيل حساب جديد برقم هاتف وكود دعوة
   Future<bool> signUp({
-    required String email,
+    required String invitationCode,
     required String password,
-    String? fullName,
-    String? phone,
+    required String fullName,
+    required String phone,
   }) async {
     _isLoading = true;
     _error = null;
@@ -325,18 +299,23 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       final response = await _repository.signUp(
-        email: email,
+        invitationCode: invitationCode,
         password: password,
         fullName: fullName,
         phone: phone,
       );
 
       if (response.user != null) {
-        // تسجيل ناجح - المستخدم يحتاج إدخال كود الدعوة
-        _needsInvitationCode = true;
-        _isLoading = false;
-        notifyListeners();
-        return true;
+        // تحديث حالة المستخدم لجلب البروفايل المبدئي
+        _currentUser = await _repository.getUserProfile();
+        // بمجرد التسجيل بنجاح، نقوم بربط كود الدعوة تلقائياً
+        final bindSuccess = await useInvitationCode(invitationCode);
+        if (bindSuccess) {
+          _needsInvitationCode = false;
+          return true; // UseInvitationCode already set isLoading to false
+        } else {
+          return false; // Error set by useInvitationCode
+        }
       } else {
         _error = 'فشل التسجيل';
         _isLoading = false;

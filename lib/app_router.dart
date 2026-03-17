@@ -15,7 +15,6 @@ import 'shared/models/enums.dart';
 // Screens
 import 'features/auth/screens/splash_screen.dart';
 import 'features/auth/screens/login_screen.dart';
-import 'features/auth/screens/invitation_code_screen.dart';
 import 'shared/widgets/log_viewer_screen.dart';
 
 // Teacher Screens
@@ -57,11 +56,9 @@ class AppRouter {
       final isLoading = authProvider.isLoading;
       final isAuthenticated = authProvider.isAuthenticated;
       final userRole = authProvider.userRole;
-      final needsInvitationCode = authProvider.needsInvitationCode;
 
       final isOnSplash = state.matchedLocation == '/splash';
       final isOnLogin = state.matchedLocation == '/login';
-      final isOnInvitationCode = state.matchedLocation == '/invitation-code';
       final isOnTeacherRoute = state.matchedLocation.startsWith('/teacher');
       final isOnParentRoute = state.matchedLocation.startsWith('/parent');
 
@@ -80,31 +77,16 @@ class AppRouter {
         return null;
       }
 
-      // Not authenticated, go to login (allow invitation-code for new registration)
+      // Not authenticated, go to login
       if (!isAuthenticated &&
           !isOnLogin &&
-          !isOnSplash &&
-          !isOnInvitationCode) {
+          !isOnSplash) {
         return '/login';
-      }
-
-      // المستخدم مسجل لكن يحتاج إدخال كود
-      if (isAuthenticated && needsInvitationCode && !isOnInvitationCode) {
-        return '/invitation-code';
-      }
-
-      // المستخدم مسجل بدون دور محدد (يحتاج كود)
-      if (isAuthenticated &&
-          userRole == null &&
-          !isOnInvitationCode &&
-          !isOnLogin) {
-        return '/invitation-code';
       }
 
       // Authenticated, redirect based on role
       if (isAuthenticated &&
-          !needsInvitationCode &&
-          (isOnLogin || isOnSplash || isOnInvitationCode)) {
+          (isOnLogin || isOnSplash)) {
         if (userRole == UserRole.teacher) {
           return '/teacher';
         } else if (userRole == UserRole.parent) {
@@ -146,13 +128,6 @@ class AppRouter {
         path: '/login',
         name: 'login',
         builder: (context, state) => const LoginScreen(),
-      ),
-
-      // Invitation Code Screen
-      GoRoute(
-        path: '/invitation-code',
-        name: 'invitation-code',
-        builder: (context, state) => const InvitationCodeScreen(),
       ),
 
       // Teacher Routes

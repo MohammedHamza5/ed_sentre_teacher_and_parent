@@ -134,9 +134,18 @@ class ParentProfileScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 4.h),
 
-                      // Email/Phone
+                      // Invitation Code
                       Text(
-                        user?.email ?? user?.phone ?? '',
+                        'كود الدعوة: ${user?.email?.replaceAll('@edsentre.com', '') ?? ''}',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: Colors.white.withValues(alpha: 0.9),
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      // Phone
+                      Text(
+                        'الهاتف: ${user?.phone ?? "غير محدد"}',
                         style: TextStyle(
                           fontSize: 14.sp,
                           color: Colors.white.withValues(alpha: 0.8),
