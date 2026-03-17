@@ -56,7 +56,7 @@ ${content}
   "estimated_time_minutes": ${qCount * 2},
   "questions": [
     {
-      "type": "multiple_choice",
+      "type": "mcq",
       "question": "نص السؤال",
       "options": ["خيار 1", "خيار 2", "خيار 3", "خيار 4"],
       "correct_answer": 0,
@@ -66,7 +66,8 @@ ${content}
     {
       "type": "true_false",
       "question": "نص السؤال",
-      "correct_answer": 0, // يجب أن تكون 0 للصح و 1 للخطأ
+      "options": ["صح", "خطأ"],
+      "correct_answer": 0,
       "difficulty": "${exactDifficulty}",
       "marks": 2
     }

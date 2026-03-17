@@ -676,8 +676,8 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
   }
 
   Widget _buildQuestionPreview(int num, Map<String, dynamic> question) {
-    final type = question['type'] as String? ?? 'multiple_choice';
-    final text = question['question'] as String? ?? '';
+    final type = question['type'] as String? ?? 'mcq';
+    final text = question['question']?.toString() ?? '';
 
     // Safely parse options since AI might return String instead of List
     final optionsRaw = question['options'];
@@ -777,7 +777,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
           SizedBox(height: 12.h),
 
           // Options
-          if (type == 'multiple_choice' && options.isNotEmpty)
+          if (type == 'mcq' && options.isNotEmpty)
             ...List.generate(options.length, (i) {
               final isCorrect = i == correct;
               return Container(
@@ -993,36 +993,31 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
     if (mounted) {
       // Map AI questions to the format expected by CreateAssignmentScreen
       final questionsList = (_generatedExam!['questions'] as List).map((q) {
-        // AI returns 'multiple_choice', 'true_false' but Assignment Screen expects 'mcq'
-        String type = 'mcq';
-        if (q['type'] == 'true_false') type = 'tf';
-
-        // Options might be returned from AI as a list or a string
+        String type = q['type'] == 'true_false' ? 'true_false' : 'mcq';
+        
         List<String> optionsParams = [];
         final optionsRaw = q['options'];
         if (optionsRaw is List) {
           optionsParams = optionsRaw.map((e) => e.toString()).toList();
-        } else if (optionsRaw is String && optionsRaw.isNotEmpty) {
-          optionsParams = [optionsRaw];
         }
 
-        // True/false mapping (CreateAssignmentScreen logic uses true/false strings usually)
-        if (type == 'tf') {
+        if (type == 'true_false') {
           optionsParams = ['صح', 'خطأ'];
         }
 
+        int correctIndex = 0;
+        if (q['correct_answer'] is int) correctIndex = q['correct_answer'];
+
         return {
           'id': DateTime.now().millisecondsSinceEpoch.toString(),
-          'question': q['question'] ?? '',
+          'question': q['question']?.toString() ?? '',
           'type': type,
           'options': optionsParams,
-          'correct': q['correct_answer'] ?? 0,
-          'correct_answer': type == 'tf'
-              ? (q['correct_answer'] == 0 ? 'صح' : 'خطأ')
-              : (optionsParams.isNotEmpty &&
-                        q['correct_answer'] != null &&
-                        q['correct_answer'] < optionsParams.length
-                    ? optionsParams[q['correct_answer']]
+          'correct': correctIndex,
+          'correct_answer': type == 'true_false'
+              ? (correctIndex == 0 ? 'صح' : 'خطأ')
+              : (optionsParams.isNotEmpty && correctIndex < optionsParams.length
+                    ? optionsParams[correctIndex]
                     : ''),
           'marks': q['marks'] ?? 2,
           'difficulty': q['difficulty'] ?? _difficulty,

@@ -14,6 +14,8 @@ import '../../../core/providers/center_provider.dart';
 import '../../../shared/widgets/premium_widgets.dart';
 import '../../../shared/widgets/premium_plus_widgets.dart';
 import '../../settings/presentation/screens/settings_screen.dart';
+import '../../ai/screens/ai_assistant_screen.dart';
+
 
 /// 🎨 Teacher Profile Screen - Premium Dark Mode Design
 class TeacherProfileScreen extends StatefulWidget {
@@ -490,6 +492,14 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                 subtitle: 'تحديث البيانات والصورة',
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                ),
+              ),
+              _buildActionTile(
+                icon: Icons.auto_awesome,
+                title: 'المولد الذكي للامتحانات',
+                subtitle: 'المساعد الذكي للمعلم',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const AIAssistantScreen()),
                 ),
               ),
               _buildDivider(),

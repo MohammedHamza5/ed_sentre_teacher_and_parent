@@ -20,6 +20,7 @@ import 'core/utils/app_logger.dart';
 import 'shared/data/supabase_repository.dart';
 import 'shared/widgets/error_widgets.dart';
 import 'app_router.dart';
+import 'core/di/setup_di.dart';
 
 // https://supabase.com/dashboard/project/mbmqrmgdgygznbqvvfqi // MCP Supabase
 
@@ -28,6 +29,9 @@ void main() async {
   await runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+
+      // إعداد DI للتطبيق وللميزات مثل ExamGenerator
+      await setupDI();
 
       // إعداد معالج الأخطاء العام
       setupGlobalErrorHandler();
