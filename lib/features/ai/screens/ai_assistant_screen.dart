@@ -559,7 +559,6 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
   }
 
   Widget _buildAITools(AIProvider aiProvider) {
-    final hasKnowledge = aiProvider.knowledgeBase.isNotEmpty;
     final tools = [
       {
         'icon': Icons.quiz_outlined,
@@ -567,7 +566,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
         'desc': 'امتحان شامل من المحتوى',
         'color': AppColors.warning,
         'credits': 10,
-        'enabled': hasKnowledge,
+        'enabled': true,
         'onTap': () => _openGenerateExam('exam'),
       },
       {
@@ -576,7 +575,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
         'desc': 'واجب مخصص من المحتوى',
         'color': AppColors.primary,
         'credits': 5,
-        'enabled': hasKnowledge,
+        'enabled': true,
         'onTap': () => _openGenerateExam('homework'),
       },
       {
@@ -585,7 +584,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
         'desc': 'ملخص مبسط للمحتوى',
         'color': AppColors.secondary,
         'credits': 3,
-        'enabled': hasKnowledge,
+        'enabled': true,
         'onTap': _generateSummary,
       },
       {
@@ -893,23 +892,10 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
   }
 
   void _openGenerateExam(String type) {
-    final aiProvider = context.read<AIProvider>();
-    if (aiProvider.knowledgeBase.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('ارفع كتاب أو ملزمة أولاً'),
-          backgroundColor: AppColors.darkElevated,
-        ),
-      );
-      return;
-    }
-
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => AIGenerateExamScreen(
-          knowledgeBaseId: aiProvider.knowledgeBase.first['id'],
-          knowledgeTitle: aiProvider.knowledgeBase.first['title'],
           examType: type,
         ),
       ),

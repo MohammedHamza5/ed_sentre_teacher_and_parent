@@ -390,17 +390,21 @@ class AIProvider extends ChangeNotifier {
 
       // Sanitize the filename to avoid InvalidKey exceptions in Supabase Storage
       String originalName = pdfFile.uri.pathSegments.last;
-      
+
       // 1. Keep only alphanumeric characters, dots, underscores, and dashes
       // This will strip out Arabic characters, spaces, and special symbols
-      String sanitizedName = originalName.replaceAll(RegExp(r'[^a-zA-Z0-9.\-_]'), '');
-      
+      String sanitizedName = originalName.replaceAll(
+        RegExp(r'[^a-zA-Z0-9.\-_]'),
+        '',
+      );
+
       // 2. If the name becomes empty (e.g., if it was entirely Arabic), provide a fallback
       if (sanitizedName.isEmpty || sanitizedName == '.pdf') {
         sanitizedName = 'document.pdf';
       }
 
-      final fileName = '${DateTime.now().millisecondsSinceEpoch}_$sanitizedName';
+      final fileName =
+          '${DateTime.now().millisecondsSinceEpoch}_$sanitizedName';
       final filePath = '$userId/$fileName';
 
       await _repository.client.storage
@@ -506,10 +510,23 @@ class AIProvider extends ChangeNotifier {
         return response.json;
       } else {
         _generationError = response.error ?? 'فشل في إنشاء الامتحان';
+        if (_generationError == 'empty_response') {
+          _generationError =
+              'استغرق الطلب وقتًا طويلاً أو لم يصل رد. (يرجى المحاولة بملف أصغر)';
+        } else if (_generationError == 'invalid_json' ||
+            _generationError == 'invalid_shape' ||
+            _generationError == 'missing_questions') {
+          _generationError =
+              'فشل في معالجة النتيجة من الخادم المكتظة. المحتوى ربما يكون كبيراً جداً.';
+        }
         return null;
       }
     } catch (e) {
       _generationError = e.toString();
+      if (_generationError!.toLowerCase().contains('timeout') ||
+          _generationError!.toLowerCase().contains('deadline')) {
+        _generationError = 'استغرق الطلب وقتًا طويلاً. الملف كبير العبء.';
+      }
       return null;
     } finally {
       _isGenerating = false;

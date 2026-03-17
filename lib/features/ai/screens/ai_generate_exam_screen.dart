@@ -946,11 +946,20 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
       extractedText: extractedText,
     );
 
-    if (result != null && mounted) {
-      setState(() {
-        _generatedExam = result;
-        _isGenerated = true;
-      });
+    if (mounted) {
+      if (result != null) {
+        setState(() {
+          _generatedExam = result;
+          _isGenerated = true;
+        });
+      } else if (aiProvider.generationError != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(aiProvider.generationError!),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
