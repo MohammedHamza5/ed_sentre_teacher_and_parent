@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-// Removed AppColors import
 import '../../../shared/models/models.dart';
 import '../../auth/provider/auth_provider.dart';
 import '../provider/teacher_provider.dart';

@@ -1,25 +1,27 @@
 import 'dart:io';
+
+import 'package:ed_sentre_techer_and_parent/features/exam_generator/presentation/providers/ai_exam_provider.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:syncfusion_flutter_pdf/pdf.dart';
-import '../../../core/config/app_colors.dart';
-import '../../ai/provider/ai_provider.dart';
-import '../../../core/providers/center_provider.dart';
-import '../../teacher/assignments/create_assignment_screen.dart';
 
-/// شاشة إنشاء امتحان بـ AI
+// NOTE: I'll need to make sure the import path for the provider is correct relative to the screen.
+// Since the screen is in lib/features/ai/screens/ and the provider is in lib/features/exam_generator/presentation/providers/
+// The path should be: ../../exam_generator/presentation/providers/ai_exam_provider.dart
+
+// I'll use the user provided code for AIGenerateExamScreen but with corrected imports.
+
 class AIGenerateExamScreen extends StatefulWidget {
   final String? knowledgeBaseId;
   final String? knowledgeTitle;
-  final String examType;
+  final String? examType;
 
   const AIGenerateExamScreen({
     super.key,
     this.knowledgeBaseId,
     this.knowledgeTitle,
-    this.examType = 'exam',
+    this.examType,
   });
 
   @override
@@ -27,1020 +29,410 @@ class AIGenerateExamScreen extends StatefulWidget {
 }
 
 class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
-  String _difficulty = 'medium';
-  int _questionCount = 10;
-  String _examType = 'exam';
-
+  final _questionCountController = TextEditingController(text: '10');
+  late String _selectedDifficulty;
+  late String _selectedType;
   File? _selectedFile;
-  bool _isUploading = false;
-
-  Map<String, dynamic>? _generatedExam;
-  bool _isGenerated = false;
 
   @override
   void initState() {
     super.initState();
-    _examType = widget.examType;
-    _questionCount = widget.examType == 'quiz' ? 5 : 10;
+    _selectedDifficulty = 'medium';
+    _selectedType = widget.examType ?? 'exam';
+  }
+
+  @override
+  void dispose() {
+    _questionCountController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+
+    if (result != null) {
+      setState(() => _selectedFile = File(result.files.single.path!));
+    }
+  }
+
+  void _generate() async {
+    final provider = context.read<AiExamProvider>();
+    final count = int.tryParse(_questionCountController.text) ?? 10;
+
+    if (widget.knowledgeBaseId != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('التوليد من قاعدة المعرفة النصية قيد التطوير حالياً. يرجى استخدام ملف PDF.')),
+      );
+      return;
+    }
+
+    if (_selectedFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('الرجاء اختيار ملف PDF أولاً')),
+      );
+      return;
+    }
+
+    final result = await provider.generateFromPdf(
+      pdfFile: _selectedFile!,
+      questionCount: count,
+      difficulty: _selectedDifficulty,
+      examType: _selectedType,
+    );
+
+    if (result != null && mounted) {
+      final questions = result['questions'] as List;
+      _showSuccessDialog(questions.length);
+    } else if (mounted && provider.hasError) {
+      _showErrorDialog(provider.error ?? 'فشل التوليد لأسباب تقنية');
+    }
+  }
+
+  void _showSuccessDialog(int count) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF161B22),
+        title: const Text('تم بنجاح! 🎉', style: TextStyle(color: Colors.white)),
+        content: Text('تم توليد $count سؤال بجودة عالية من الملف المرفق.',
+            style: const TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('حسناً', style: TextStyle(color: Color(0xFF8B5CF6))),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog(String error) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF161B22),
+        title: const Text('عذراً، حدث خطأ ❌', style: TextStyle(color: Colors.white)),
+        content: Text(error, style: const TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('إغلاق', style: TextStyle(color: Colors.redAccent)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _generate();
+            },
+            child: const Text('إعادة المحاولة', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final aiProvider = context.watch<AIProvider>();
+    final provider = context.watch<AiExamProvider>();
 
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: const Color(0xFF0D1117),
       appBar: AppBar(
-        title: Text(
-          _isGenerated ? 'معاينة الامتحان' : 'إنشاء امتحان بـ AI',
-          style: TextStyle(color: AppColors.textOnDark),
-        ),
-        backgroundColor: AppColors.darkCard,
-        foregroundColor: AppColors.textOnDark,
+        title: const Text('مولد الامتحانات الذكي'),
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        actions: [
-          if (_isGenerated)
-            TextButton.icon(
-              onPressed: _publishExam,
-              icon: const Icon(Icons.publish, color: Colors.white),
-              label: const Text('نشر', style: TextStyle(color: Colors.white)),
+      ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: EdgeInsets.all(20.r),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildUploadCard(),
+                SizedBox(height: 24.h),
+                _buildSettingsSection(),
+                SizedBox(height: 32.h),
+                _buildGenerateButton(),
+              ],
+            ),
+          ),
+          if (provider.isLoading)
+            Container(
+              color: Colors.black87,
+              child: _buildLoadingState(provider),
             ),
         ],
       ),
-      body: _isGenerated ? _buildPreview() : _buildSettings(aiProvider),
     );
   }
 
-  Widget _buildSettings(AIProvider aiProvider) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // بطاقة المحتوى المحدد
-          _buildSelectedContent(),
-          SizedBox(height: 24.h),
-
-          // نوع الاختبار
-          _buildSectionTitle('📝 نوع الاختبار'),
-          SizedBox(height: 12.h),
-          _buildExamTypeSelector(),
-          SizedBox(height: 24.h),
-
-          // درجة الصعوبة
-          _buildSectionTitle('📊 درجة الصعوبة'),
-          SizedBox(height: 12.h),
-          _buildDifficultySelector(),
-          SizedBox(height: 24.h),
-
-          // عدد الأسئلة
-          _buildSectionTitle('🔢 عدد الأسئلة'),
-          SizedBox(height: 12.h),
-          _buildQuestionCountSlider(),
-          SizedBox(height: 32.h),
-
-          // معلومات التكلفة
-          _buildCostInfo(aiProvider),
-          SizedBox(height: 24.h),
-
-          // زر الإنشاء
-          Container(
-            width: double.infinity,
-            height: 50.h,
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              borderRadius: BorderRadius.circular(12.r),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: ElevatedButton.icon(
-              onPressed: (aiProvider.isGenerating || _isUploading)
-                  ? null
-                  : _generate,
-              icon: (aiProvider.isGenerating || _isUploading)
-                  ? SizedBox(
-                      width: 20.w,
-                      height: 20.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.auto_awesome),
-              label: Text(
-                _isUploading
-                    ? 'جاري رفع الملف...'
-                    : (aiProvider.isGenerating
-                          ? 'جاري الإنشاء...'
-                          : 'إنشاء الامتحان 🪄'),
-                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                foregroundColor: Colors.white,
-                shadowColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-              ),
-            ),
-          ),
-
-          // رسالة خطأ
-          if (aiProvider.generationError != null) ...[
-            SizedBox(height: 16.h),
+  Widget _buildLoadingState(AiExamProvider provider) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(32.r),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
             Container(
-              padding: EdgeInsets.all(12.w),
+              padding: EdgeInsets.all(24.r),
               decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: AppColors.error.withValues(alpha: 0.3),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.error, color: AppColors.error, size: 20.sp),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: Text(
-                      aiProvider.generationError!,
-                      style: TextStyle(fontSize: 13.sp, color: AppColors.error),
-                    ),
+                color: const Color(0xFF161B22),
+                borderRadius: BorderRadius.circular(24.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF8B5CF6).withOpacity(0.2),
+                    blurRadius: 20,
+                    spreadRadius: 5,
                   ),
                 ],
               ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSelectedContent() {
-    final hasKnowledge =
-        widget.knowledgeBaseId != null && widget.knowledgeTitle != null;
-    final hasFile = _selectedFile != null;
-
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Icon(
-                  Icons.menu_book,
-                  color: AppColors.primary,
-                  size: 28.sp,
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      hasKnowledge
-                          ? 'المحتوى المحدد من القاعدة'
-                          : (hasFile ? 'ملف PDF المرفق' : 'لم يتم تحديد محتوى'),
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: AppColors.textOnDarkSecondary,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(
+                    value: provider.progress > 0 ? provider.progress : null,
+                    strokeWidth: 6,
+                    color: const Color(0xFF8B5CF6),
+                  ),
+                  SizedBox(height: 24.h),
+                  Text(
+                    provider.statusMessage,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (provider.progress > 0) ...[
+                    SizedBox(height: 12.h),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10.r),
+                      child: LinearProgressIndicator(
+                        value: provider.progress,
+                        minHeight: 8.h,
+                        backgroundColor: Colors.white10,
+                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
                       ),
                     ),
+                    SizedBox(height: 8.h),
                     Text(
-                      hasKnowledge
-                          ? widget.knowledgeTitle!
-                          : (hasFile
-                                ? _selectedFile!.uri.pathSegments.last
-                                : 'ارفق ملف PDF لإنشاء امتحان'),
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textOnDark,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      '${(provider.progress * 100).toInt()}% اكتمل',
+                      style: TextStyle(color: Colors.white38, fontSize: 12.sp),
                     ),
                   ],
-                ),
-              ),
-              if (hasKnowledge || hasFile)
-                Icon(Icons.check_circle, color: AppColors.success, size: 24.sp),
-            ],
-          ),
-          if (!hasKnowledge) ...[
-            SizedBox(height: 16.h),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: _pickPdfFile,
-                icon: Icon(
-                  hasFile ? Icons.edit : Icons.upload_file,
-                  color: AppColors.primary,
-                ),
-                label: Text(
-                  hasFile ? 'تغيير الملف' : 'إرفاق ملف PDF',
-                  style: TextStyle(color: AppColors.primary),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(
-                    color: AppColors.primary.withValues(alpha: 0.5),
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                ),
+                ],
               ),
             ),
+            SizedBox(height: 24.h),
+            TextButton(
+              onPressed: () => provider.reset(),
+              child: const Text('إلغاء العملية', style: TextStyle(color: Colors.white54)),
+            ),
           ],
-        ],
+        ),
       ),
     );
   }
 
-  Future<void> _pickPdfFile() async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pdf'],
-      );
-
-      if (result != null && result.files.single.path != null) {
-        setState(() {
-          _selectedFile = File(result.files.single.path!);
-        });
-      }
-    } catch (e) {
-      debugPrint('Error picking file: $e');
-    }
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: 16.sp,
-        fontWeight: FontWeight.bold,
-        color: AppColors.textOnDark,
-      ),
-    );
-  }
-
-  Widget _buildExamTypeSelector() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildTypeOption('exam', 'امتحان', Icons.quiz, Colors.orange),
-        ),
-        SizedBox(width: 12.w),
-        Expanded(
-          child: _buildTypeOption(
-            'assignment',
-            'واجب',
-            Icons.assignment,
-            const Color(0xFF3B82F6),
-          ),
-        ),
-        SizedBox(width: 12.w),
-        Expanded(
-          child: _buildTypeOption(
-            'quiz',
-            'كويز',
-            Icons.bolt,
-            const Color(0xFF8B5CF6),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTypeOption(
-    String value,
-    String label,
-    IconData icon,
-    Color color,
-  ) {
-    final isSelected = _examType == value;
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _examType = value;
-          if (value == 'quiz') _questionCount = 5;
-        });
-      },
-      borderRadius: BorderRadius.circular(12.r),
+  Widget _buildUploadCard() {
+    return GestureDetector(
+      onTap: _pickFile,
       child: Container(
-        padding: EdgeInsets.all(16.w),
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 40.h),
         decoration: BoxDecoration(
-          color: isSelected
-              ? color.withValues(alpha: 0.15)
-              : AppColors.darkCard,
-          borderRadius: BorderRadius.circular(12.r),
+          color: const Color(0xFF161B22),
+          borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
-            color: isSelected ? color : AppColors.darkBorder,
-            width: isSelected ? 2 : 1,
+            color: _selectedFile != null
+                ? const Color(0xFF8B5CF6)
+                : Colors.white10,
+            width: 2,
           ),
         ),
         child: Column(
           children: [
             Icon(
-              icon,
-              color: isSelected ? color : AppColors.textOnDarkSecondary,
-              size: 28.sp,
+              _selectedFile != null
+                  ? Icons.picture_as_pdf
+                  : Icons.cloud_upload_outlined,
+              size: 48.sp,
+              color: _selectedFile != null
+                  ? const Color(0xFF8B5CF6)
+                  : Colors.white30,
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: 12.h),
             Text(
-              label,
+              _selectedFile != null
+                  ? _selectedFile!.path.split('/').last
+                  : 'اصغط لاختيار ملف PDF المنهج',
               style: TextStyle(
-                fontSize: 13.sp,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? color : AppColors.textOnDarkSecondary,
+                color: _selectedFile != null ? Colors.white : Colors.white30,
+                fontSize: 14.sp,
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDifficultySelector() {
-    return Row(
-      children: [
-        Expanded(child: _buildDifficultyOption('easy', 'سهل', Colors.green)),
-        SizedBox(width: 8.w),
-        Expanded(
-          child: _buildDifficultyOption('medium', 'متوسط', Colors.orange),
-        ),
-        SizedBox(width: 8.w),
-        Expanded(child: _buildDifficultyOption('hard', 'صعب', Colors.red)),
-        SizedBox(width: 8.w),
-        Expanded(
-          child: _buildDifficultyOption(
-            'mixed',
-            'متنوع',
-            const Color(0xFF8B5CF6),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDifficultyOption(String value, String label, Color color) {
-    final isSelected = _difficulty == value;
-    return InkWell(
-      onTap: () => setState(() => _difficulty = value),
-      borderRadius: BorderRadius.circular(12.r),
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? color.withValues(alpha: 0.15)
-              : AppColors.darkCard,
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: isSelected ? color : AppColors.darkBorder,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 13.sp,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              color: isSelected ? color : AppColors.textOnDarkSecondary,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuestionCountSlider() {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '$_questionCount سؤال',
-              style: TextStyle(
-                fontSize: 24.sp,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textOnDark,
-              ),
-            ),
-            Text(
-              _getEstimatedTime(),
-              style: TextStyle(
-                fontSize: 13.sp,
-                color: AppColors.textOnDarkSecondary,
-              ),
-            ),
-          ],
-        ),
-        Slider(
-          value: _questionCount.toDouble(),
-          min: 5,
-          max: 30,
-          divisions: 25,
-          activeColor: AppColors.primary,
-          inactiveColor: AppColors.darkBorder,
-          label: '$_questionCount',
-          onChanged: (v) => setState(() => _questionCount = v.round()),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '5',
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: AppColors.textOnDarkSecondary,
-              ),
-            ),
-            Text(
-              '30',
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: AppColors.textOnDarkSecondary,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  String _getEstimatedTime() {
-    final minutes = _questionCount * 2;
-    return 'الوقت المقدر: $minutes دقيقة';
-  }
-
-  Widget _buildCostInfo(AIProvider aiProvider) {
-    final cost = _examType == 'quiz' ? 5 : (_examType == 'exam' ? 15 : 10);
-    final hasEnough = aiProvider.totalCredits >= cost;
-
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: hasEnough
-            ? AppColors.success.withValues(alpha: 0.1)
-            : AppColors.error.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: hasEnough
-              ? AppColors.success.withValues(alpha: 0.3)
-              : AppColors.error.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            hasEnough ? Icons.check_circle : Icons.warning,
-            color: hasEnough ? AppColors.success : AppColors.error,
-            size: 24.sp,
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  hasEnough ? 'رصيدك كافٍ' : 'رصيد غير كافٍ',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.bold,
-                    color: hasEnough ? AppColors.success : AppColors.error,
-                  ),
-                ),
-                Text(
-                  'التكلفة: $cost رصيد • رصيدك: ${aiProvider.totalCredits}',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: hasEnough
-                        ? AppColors.success.withValues(alpha: 0.8)
-                        : AppColors.error.withValues(alpha: 0.8),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // معاينة الامتحان المُنشأ
-  // ═══════════════════════════════════════════════════════════════════════
-
-  Widget _buildPreview() {
-    if (_generatedExam == null) return const SizedBox();
-
-    final questions = _generatedExam!['questions'] as List? ?? [];
-    final title = _generatedExam!['title'] as String? ?? 'امتحان';
-    final totalMarks = _generatedExam!['total_marks'] ?? 0;
-    final estimatedTime = _generatedExam!['estimated_time_minutes'] ?? 30;
-
-    return Column(
-      children: [
-        // Header
-        Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: AppColors.success.withValues(alpha: 0.1),
-            border: Border(
-              bottom: BorderSide(
-                color: AppColors.success.withValues(alpha: 0.3),
-              ),
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.check_circle, color: AppColors.success, size: 24.sp),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'تم إنشاء الامتحان بنجاح! ✨',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.success,
-                      ),
-                    ),
-                    Text(
-                      '${questions.length} سؤال • $totalMarks درجة • $estimatedTime دقيقة',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: AppColors.success.withValues(alpha: 0.8),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Questions List
-        Expanded(
-          child: ListView.builder(
-            padding: EdgeInsets.all(16.w),
-            itemCount: questions.length,
-            itemBuilder: (context, index) {
-              final q = questions[index] as Map<String, dynamic>;
-              return _buildQuestionPreview(index + 1, q);
-            },
-          ),
-        ),
-
-        // Bottom Actions
-        Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: AppColors.darkCard,
-            border: Border(top: BorderSide(color: AppColors.darkBorder)),
-          ),
-          child: SafeArea(
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _regenerate,
-                    icon: Icon(Icons.refresh, color: AppColors.textOnDark),
-                    label: Text(
-                      'إعادة إنشاء',
-                      style: TextStyle(color: AppColors.textOnDark),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: AppColors.darkBorder),
-                      padding: EdgeInsets.symmetric(vertical: 14.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: ElevatedButton.icon(
-                      onPressed: _publishExam,
-                      icon: const Icon(Icons.publish),
-                      label: const Text('نشر للطلاب'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        foregroundColor: Colors.white,
-                        shadowColor: Colors.transparent,
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuestionPreview(int num, Map<String, dynamic> question) {
-    final type = question['type'] as String? ?? 'mcq';
-    final text = question['question']?.toString() ?? '';
-
-    // Safely parse options since AI might return String instead of List
-    final optionsRaw = question['options'];
-    List<dynamic> options = [];
-    if (optionsRaw is List) {
-      options = optionsRaw;
-    } else if (optionsRaw is String && optionsRaw.isNotEmpty) {
-      options = [optionsRaw];
-    }
-    final correct = question['correct_answer'] as int? ?? 0;
-    final difficulty = question['difficulty'] as String? ?? 'medium';
-    final marks = question['marks'] ?? 2;
-
-    Color diffColor;
-    switch (difficulty) {
-      case 'easy':
-        diffColor = Colors.green;
-        break;
-      case 'hard':
-        diffColor = Colors.red;
-        break;
-      default:
-        diffColor = Colors.orange;
-    }
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: AppColors.darkCard,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.darkBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            children: [
-              Container(
-                width: 32.w,
-                height: 32.w,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    '$num',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 8.w),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                decoration: BoxDecoration(
-                  color: diffColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
+            if (_selectedFile == null)
+              Padding(
+                padding: EdgeInsets.only(top: 8.h),
                 child: Text(
-                  difficulty == 'easy'
-                      ? 'سهل'
-                      : (difficulty == 'hard' ? 'صعب' : 'متوسط'),
-                  style: TextStyle(
-                    fontSize: 10.sp,
-                    color: diffColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  '(الحد الأقصى 20 ميجابايت)',
+                  style: TextStyle(color: Colors.white24, fontSize: 11.sp),
                 ),
               ),
-              const Spacer(),
-              Text(
-                '$marks درجات',
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  color: AppColors.textOnDarkSecondary,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-
-          // Question
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textOnDark,
-            ),
-          ),
-          SizedBox(height: 12.h),
-
-          // Options
-          if (type == 'mcq' && options.isNotEmpty)
-            ...List.generate(options.length, (i) {
-              final isCorrect = i == correct;
-              return Container(
-                margin: EdgeInsets.only(bottom: 8.h),
-                padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  color: isCorrect
-                      ? AppColors.success.withValues(alpha: 0.1)
-                      : AppColors.darkSurface,
-                  borderRadius: BorderRadius.circular(8.r),
-                  border: Border.all(
-                    color: isCorrect ? AppColors.success : AppColors.darkBorder,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      isCorrect
-                          ? Icons.check_circle
-                          : Icons.radio_button_unchecked,
-                      color: isCorrect
-                          ? AppColors.success
-                          : AppColors.textOnDarkSecondary,
-                      size: 20.sp,
-                    ),
-                    SizedBox(width: 8.w),
-                    Expanded(
-                      child: Text(
-                        options[i].toString(),
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          color: isCorrect
-                              ? AppColors.success
-                              : AppColors.textOnDark,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-
-          // True/False
-          if (type == 'true_false')
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.all(12.w),
-                    decoration: BoxDecoration(
-                      color: correct == 0
-                          ? AppColors.success.withValues(alpha: 0.1)
-                          : AppColors.darkSurface,
-                      borderRadius: BorderRadius.circular(8.r),
-                      border: Border.all(
-                        color: correct == 0
-                            ? AppColors.success
-                            : AppColors.darkBorder,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'صح',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: correct == 0
-                              ? AppColors.success
-                              : AppColors.textOnDark,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.all(12.w),
-                    decoration: BoxDecoration(
-                      color: correct == 1
-                          ? AppColors.success.withValues(alpha: 0.1)
-                          : AppColors.darkSurface,
-                      borderRadius: BorderRadius.circular(8.r),
-                      border: Border.all(
-                        color: correct == 1
-                            ? AppColors.success
-                            : AppColors.darkBorder,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'خطأ',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: correct == 1
-                              ? AppColors.success
-                              : AppColors.textOnDark,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // Actions
-  // ═══════════════════════════════════════════════════════════════════════
-
-  Future<void> _generate() async {
-    if (widget.knowledgeBaseId == null && _selectedFile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'الرجاء اختيار محتوى من قاعدة المعرفة أو إرفاق ملف PDF',
+  Widget _buildSettingsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'إعدادات الامتحان',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.bold,
           ),
         ),
-      );
-      return;
-    }
+        SizedBox(height: 16.h),
 
-    final aiProvider = context.read<AIProvider>();
-    String? filePath;
-    String? extractedText;
+        // Question Count
+        _buildTextField(
+          label: 'عدد الأسئلة',
+          controller: _questionCountController,
+          icon: Icons.format_list_numbered,
+          keyboardType: TextInputType.number,
+        ),
 
-    // Upload file if selected and extract text locally
-    if (_selectedFile != null && widget.knowledgeBaseId == null) {
-      setState(() => _isUploading = true);
+        SizedBox(height: 16.h),
 
-      // Extract text from PDF
-      try {
-        final PdfDocument document = PdfDocument(
-          inputBytes: await _selectedFile!.readAsBytes(),
-        );
-        extractedText = PdfTextExtractor(document).extractText();
-        document.dispose();
-      } catch (e) {
-        debugPrint('Error extracting PDF text: $e');
-      }
+        // Difficulty
+        _buildLabel('مستوى الصعوبة'),
+        Row(
+          children: [
+            _buildChoiceChip('easy', 'سهل'),
+            SizedBox(width: 8.w),
+            _buildChoiceChip('medium', 'متوسط'),
+            SizedBox(width: 8.w),
+            _buildChoiceChip('hard', 'صعب'),
+          ],
+        ),
 
-      filePath = await aiProvider.uploadDocumentToStorage(_selectedFile!);
+        SizedBox(height: 16.h),
 
-      setState(() => _isUploading = false);
+        // Type
+        _buildLabel('نوع التوليد'),
+        Row(
+          children: [
+            _buildTypeChip('exam', 'امتحان'),
+            SizedBox(width: 8.w),
+            _buildTypeChip('quiz', 'كويز'),
+          ],
+        ),
+      ],
+    );
+  }
 
-      if (filePath == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('فشل رفع الملف. الرجاء المحاولة مرة أخرى.'),
+  Widget _buildLabel(String text) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.h),
+      child: Text(
+        text,
+        style: TextStyle(color: Colors.white70, fontSize: 13.sp),
+      ),
+    );
+  }
+
+  Widget _buildChoiceChip(String value, String label) {
+    final isSelected = _selectedDifficulty == value;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (val) => setState(() => _selectedDifficulty = value),
+      backgroundColor: Colors.white.withOpacity(0.05),
+      selectedColor: const Color(0xFF8B5CF6),
+      labelStyle: TextStyle(
+        color: isSelected ? Colors.white : Colors.white60,
+        fontSize: 12.sp,
+      ),
+    );
+  }
+
+  Widget _buildTypeChip(String value, String label) {
+    final isSelected = _selectedType == value;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (val) => setState(() => _selectedType = value),
+      backgroundColor: Colors.white.withOpacity(0.05),
+      selectedColor: const Color(0xFF8B5CF6).withOpacity(0.6),
+      labelStyle: TextStyle(
+        color: isSelected ? Colors.white : Colors.white60,
+        fontSize: 12.sp,
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required TextEditingController controller,
+    required IconData icon,
+    TextInputType? keyboardType,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.white38),
+        prefixIcon: Icon(icon, color: const Color(0xFF8B5CF6)),
+        filled: true,
+        fillColor: const Color(0xFF161B22),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGenerateButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 54.h,
+      child: ElevatedButton(
+        onPressed: _generate,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF8B5CF6),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          elevation: 0,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.auto_awesome, color: Colors.white),
+            SizedBox(width: 10.w),
+            Text(
+              'ابدأ التوليد السحري',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          );
-        }
-        return;
-      }
-    }
-
-    final result = await aiProvider.generateExam(
-      knowledgeBaseId: widget.knowledgeBaseId,
-      difficulty: _difficulty,
-      questionCount: _questionCount,
-      examType: _examType,
-      filePath: filePath,
-      extractedText: extractedText,
-    );
-
-    if (mounted) {
-      if (result != null) {
-        setState(() {
-          _generatedExam = result;
-          _isGenerated = true;
-        });
-      } else if (aiProvider.generationError != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(aiProvider.generationError!),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
-  }
-
-  void _regenerate() {
-    setState(() {
-      _isGenerated = false;
-      _generatedExam = null;
-    });
-  }
-
-  Future<void> _publishExam() async {
-    if (_generatedExam == null) return;
-
-    final aiProvider = context.read<AIProvider>();
-    final centerProvider = context.read<CenterProvider>();
-
-    String finalTitle = _generatedExam!['title'] ?? 'امتحان بالذكاء الاصطناعي';
-    if (finalTitle.trim().isEmpty) finalTitle = 'امتحان بالذكاء الاصطناعي';
-
-    // 1. Save to Bank (Optional but good for history)
-    await aiProvider.saveGeneratedExam(
-      centerId: centerProvider.currentCenterId!,
-      knowledgeBaseId: widget.knowledgeBaseId,
-      title: finalTitle,
-      examType: _examType,
-      difficulty: _difficulty,
-      examData: _generatedExam!,
-    );
-
-    // 2. Navigate to CreateAssignmentScreen for Publishing (Matching manual flow exactly)
-    if (mounted) {
-      // Map AI questions to the format expected by CreateAssignmentScreen
-      final questionsList = (_generatedExam!['questions'] as List).map((q) {
-        String type = q['type'] == 'true_false' ? 'true_false' : 'mcq';
-        
-        List<String> optionsParams = [];
-        final optionsRaw = q['options'];
-        if (optionsRaw is List) {
-          optionsParams = optionsRaw.map((e) => e.toString()).toList();
-        }
-
-        if (type == 'true_false') {
-          optionsParams = ['صح', 'خطأ'];
-        }
-
-        int correctIndex = 0;
-        if (q['correct_answer'] is int) correctIndex = q['correct_answer'];
-
-        return {
-          'id': DateTime.now().millisecondsSinceEpoch.toString(),
-          'question': q['question']?.toString() ?? '',
-          'type': type,
-          'options': optionsParams,
-          'correct': correctIndex,
-          'correct_answer': type == 'true_false'
-              ? (correctIndex == 0 ? 'صح' : 'خطأ')
-              : (optionsParams.isNotEmpty && correctIndex < optionsParams.length
-                    ? optionsParams[correctIndex]
-                    : ''),
-          'marks': q['marks'] ?? 2,
-          'difficulty': q['difficulty'] ?? _difficulty,
-        };
-      }).toList();
-
-      final minutes = _generatedExam!['estimated_time_minutes'] ?? 30;
-      final maxScore = _generatedExam!['total_marks'] ?? 100;
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => CreateAssignmentScreen(
-            type: _examType == 'assignment'
-                ? 'assignment'
-                : (_examType == 'quiz' ? 'quiz' : 'exam'),
-            initialTitle: finalTitle,
-            initialQuestions: questionsList,
-            initialDuration: minutes,
-            initialMaxScore: maxScore,
-          ),
+          ],
         ),
-      );
-    }
+      ),
+    );
   }
 }

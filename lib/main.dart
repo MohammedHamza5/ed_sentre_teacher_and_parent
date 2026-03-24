@@ -122,6 +122,9 @@ class EdSentreApp extends StatelessWidget {
 
         // AI Provider - للمساعد الذكي (يستخدم Edge Function للأمان)
         ChangeNotifierProvider(create: (_) => AIProvider(repository)),
+
+        // AI Exam Provider - للتوليد من الملفات
+        ChangeNotifierProvider(create: (_) => AiExamProvider(Supabase.instance.client)),
       ],
       // ✅ Consumer<AppSettingsProvider> يضمن إعادة بناء MaterialApp
       //    فوراً عند تغيير الـ ThemeMode من شاشة الإعدادات

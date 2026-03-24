@@ -89,20 +89,18 @@ ${content}
 
     console.log(`Calling Gemini with task: ${task}`);
     
-    // Using gemini-1.5-flash-latest as it supports up to 1M tokens, perfect for 50 page PDFs
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+    // Combine system prompt and user prompt into one part for maximum compatibility
+    const combinedPrompt = `${baseSystemPrompt}\n\n${finalPrompt}`;
+
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     const bodyVariables: any = {
       contents: [
         {
           role: 'user',
-          parts: [{ text: finalPrompt }]
+          parts: [{ text: combinedPrompt }]
         }
       ],
-      systemInstruction: {
-        role: 'user',
-        parts: [{ text: baseSystemPrompt }]
-      },
       generationConfig: {
         temperature: temperature,
       }
