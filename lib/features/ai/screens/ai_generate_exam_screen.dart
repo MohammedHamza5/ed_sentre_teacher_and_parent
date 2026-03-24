@@ -64,7 +64,11 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
 
     if (widget.knowledgeBaseId != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('التوليد من قاعدة المعرفة النصية قيد التطوير حالياً. يرجى استخدام ملف PDF.')),
+        const SnackBar(
+          content: Text(
+            'التوليد من قاعدة المعرفة النصية قيد التطوير حالياً. يرجى استخدام ملف PDF.',
+          ),
+        ),
       );
       return;
     }

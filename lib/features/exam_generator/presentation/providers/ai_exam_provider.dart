@@ -22,27 +22,29 @@ class AiExamProvider extends ChangeNotifier {
   Map<String, dynamic>? _exam;
   double _progress = 0;
 
-  GenState get state      => _state;
-  String?  get error      => _error;
+  GenState get state => _state;
+  String? get error => _error;
   Map<String, dynamic>? get exam => _exam;
-  double   get progress   => _progress;
+  double get progress => _progress;
 
-  bool get isLoading => _state == GenState.reading   ||
-                        _state == GenState.uploading  ||
-                        _state == GenState.generating;
+  bool get isLoading =>
+      _state == GenState.reading ||
+      _state == GenState.uploading ||
+      _state == GenState.generating;
   bool get hasResult => _state == GenState.success;
-  bool get hasError  => _state == GenState.error;
+  bool get hasError => _state == GenState.error;
 
   String get statusMessage {
     if (_state == GenState.error) return _error ?? 'حدث خطأ غير متوقع';
     if (_state == GenState.success) return 'تم إنشاء الامتحان بنجاح! 🎉';
     if (_state == GenState.idle) return '';
-    return _statusDetail ?? switch (_state) {
-      GenState.reading    => 'جاري قراءة الملف...',
-      GenState.uploading  => 'جاري تجهيز البيانات للذكاء الاصطناعي...',
-      GenState.generating => 'المساعد الذكي يقوم بإنشاء الأسئلة حالياً...',
-      _ => '',
-    };
+    return _statusDetail ??
+        switch (_state) {
+          GenState.reading => 'جاري قراءة الملف...',
+          GenState.uploading => 'جاري تجهيز البيانات للذكاء الاصطناعي...',
+          GenState.generating => 'المساعد الذكي يقوم بإنشاء الأسئلة حالياً...',
+          _ => '',
+        };
   }
 
   // ── توليد من PDF ────────────────────────────────────────────────────────
@@ -61,7 +63,7 @@ class AiExamProvider extends ChangeNotifier {
       // 1. قراءة الملف
       _statusDetail = 'جاري قراءة بيانات ملف الـ PDF...';
       notifyListeners();
-      
+
       final bytes = await compute(_readFileBytes, pdfFile.path);
       if (bytes.isEmpty) {
         throw Exception('فشل في قراءة محتوى الملف. تأكد أن الملف ليس تالفاً.');
@@ -69,9 +71,10 @@ class AiExamProvider extends ChangeNotifier {
 
       // حساب الحجم
       final sizeMB = bytes.length / (1024 * 1024);
-      _statusDetail = 'تمت القراءة بنجاح. الحجم: ${sizeMB.toStringAsFixed(1)} MB';
+      _statusDetail =
+          'تمت القراءة بنجاح. الحجم: ${sizeMB.toStringAsFixed(1)} MB';
       notifyListeners();
-      
+
       if (sizeMB > 19.5) {
         throw Exception(
           'حجم الملف (${sizeMB.toStringAsFixed(1)} MB) كبير جداً.\n'
@@ -82,15 +85,19 @@ class AiExamProvider extends ChangeNotifier {
       // 2. التحويل والتحضير
       _set(GenState.uploading, 'جاري تحويل الملف إلى صيغة رقمية (Base64)...');
       _setProgress(0.2);
-      
+
       final base64Pdf = base64Encode(bytes);
-      
-      _statusDetail = 'جاري إرسال الطلب إلى خادم الذكاء الاصطناعي (Edge Function)...';
+
+      _statusDetail =
+          'جاري إرسال الطلب إلى خادم الذكاء الاصطناعي (Edge Function)...';
       _setProgress(0.4);
       notifyListeners();
 
       // 3. التواصل مع AI
-      _set(GenState.generating, 'جاري التواصل مع Gemini AI... قد يستغرق هذا دقيقة.');
+      _set(
+        GenState.generating,
+        'جاري التواصل مع Gemini AI... قد يستغرق هذا دقيقة.',
+      );
       _setProgress(0.6);
 
       final result = await _callEdgeFunction(
@@ -111,9 +118,11 @@ class AiExamProvider extends ChangeNotifier {
 
       _setProgress(1.0);
       _exam = result;
-      _set(GenState.success, 'تم توليد ${result['questions']?.length} سؤال بنجاح!');
+      _set(
+        GenState.success,
+        'تم توليد ${result['questions']?.length} سؤال بنجاح!',
+      );
       return result;
-
     } catch (e) {
       _error = _friendlyError(e.toString());
       _set(GenState.error);
@@ -164,7 +173,7 @@ class AiExamProvider extends ChangeNotifier {
     _state = GenState.idle;
     _error = null;
     _statusDetail = null;
-    _exam  = null;
+    _exam = null;
     _progress = 0;
     notifyListeners();
   }
@@ -193,7 +202,7 @@ class AiExamProvider extends ChangeNotifier {
       'difficulty': difficulty,
     };
     if (pdfBase64 != null) body['pdfBase64'] = pdfBase64;
-    if (content   != null) body['content']   = content;
+    if (content != null) body['content'] = content;
 
     _statusDetail = 'جاري استدعاء وظيفة الحوسبة السحابية...';
     notifyListeners();
@@ -205,7 +214,8 @@ class AiExamProvider extends ChangeNotifier {
 
     // استخرج data
     final data = response.data;
-    if (data == null) throw Exception('تلقينا رداً فارغاً من الخادم. حاول مرة أخرى.');
+    if (data == null)
+      throw Exception('تلقينا رداً فارغاً من الخادم. حاول مرة أخرى.');
 
     final map = data is Map<String, dynamic> ? data : <String, dynamic>{};
 
@@ -223,8 +233,10 @@ class AiExamProvider extends ChangeNotifier {
 
   Map<String, dynamic> _parseExam(String raw, String difficulty) {
     var s = raw.trim();
-    if (s.startsWith('```json')) s = s.substring(7);
-    else if (s.startsWith('```')) s = s.substring(3);
+    if (s.startsWith('```json'))
+      s = s.substring(7);
+    else if (s.startsWith('```'))
+      s = s.substring(3);
     if (s.endsWith('```')) s = s.substring(0, s.length - 3);
     s = s.trim();
 
@@ -248,33 +260,36 @@ class AiExamProvider extends ChangeNotifier {
           : <String>['صح', 'خطأ'];
 
       final rawCA = q['correct_answer'];
-      final correct = rawCA is int ? rawCA : int.tryParse(rawCA?.toString() ?? '0') ?? 0;
+      final correct = rawCA is int
+          ? rawCA
+          : int.tryParse(rawCA?.toString() ?? '0') ?? 0;
 
       questions.add({
-        'id':            q['id']?.toString() ?? 'q_${i + 1}',
-        'type':          q['type']?.toString() ?? 'mcq',
-        'text':          q['text']?.toString() ?? q['question']?.toString() ?? '',
-        'options':       opts,
+        'id': q['id']?.toString() ?? 'q_${i + 1}',
+        'type': q['type']?.toString() ?? 'mcq',
+        'text': q['text']?.toString() ?? q['question']?.toString() ?? '',
+        'options': opts,
         'correct_answer': correct,
-        'explanation':   q['explanation']?.toString() ?? 'راجع المحتوى للإجابة الصحيحة.',
-        'hint':          q['hint']?.toString() ?? 'فكر في المفاهيم الأساسية.',
-        'difficulty':    q['difficulty']?.toString() ?? difficulty,
-        'marks':         (q['marks'] as num?)?.toInt() ?? 2,
+        'explanation':
+            q['explanation']?.toString() ?? 'راجع المحتوى للإجابة الصحيحة.',
+        'hint': q['hint']?.toString() ?? 'فكر في المفاهيم الأساسية.',
+        'difficulty': q['difficulty']?.toString() ?? difficulty,
+        'marks': (q['marks'] as num?)?.toInt() ?? 2,
       });
     }
 
-    return {
-      ...parsed,
-      'questions': questions,
-    };
+    return {...parsed, 'questions': questions};
   }
 
   String _friendlyError(String raw) {
-    if (raw.contains('GEMINI_API_KEY'))    return 'مفتاح API غير مضبوط. راجع Supabase secrets.';
-    if (raw.contains('quota') || raw.contains('429')) return 'تجاوزت حد Gemini اليومي. انتظر قليلاً.';
+    if (raw.contains('GEMINI_API_KEY'))
+      return 'مفتاح API غير مضبوط. راجع Supabase secrets.';
+    if (raw.contains('quota') || raw.contains('429'))
+      return 'تجاوزت حد Gemini اليومي. انتظر قليلاً.';
     if (raw.contains('19.5') || raw.contains('كبير جداً')) return raw;
-    if (raw.contains('فارغ') || raw.contains('empty')) return 'الملف لا يحتوي على محتوى مقروء.';
-    if (raw.contains('timeout'))           return 'انتهت مهلة الطلب. جرب ملفاً أصغر.';
+    if (raw.contains('فارغ') || raw.contains('empty'))
+      return 'الملف لا يحتوي على محتوى مقروء.';
+    if (raw.contains('timeout')) return 'انتهت مهلة الطلب. جرب ملفاً أصغر.';
     if (raw.length > 150) return '${raw.substring(0, 150)}...';
     return raw;
   }
