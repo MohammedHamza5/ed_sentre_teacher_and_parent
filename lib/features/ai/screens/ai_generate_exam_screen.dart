@@ -1,17 +1,15 @@
 import 'dart:io';
 
+import 'package:ed_sentre_techer_and_parent/core/config/app_colors.dart';
+import 'package:ed_sentre_techer_and_parent/features/ai/screens/exam_preview_screen.dart';
 import 'package:ed_sentre_techer_and_parent/features/exam_generator/presentation/providers/ai_exam_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
-// NOTE: I'll need to make sure the import path for the provider is correct relative to the screen.
-// Since the screen is in lib/features/ai/screens/ and the provider is in lib/features/exam_generator/presentation/providers/
-// The path should be: ../../exam_generator/presentation/providers/ai_exam_provider.dart
-
-// I'll use the user provided code for AIGenerateExamScreen but with corrected imports.
-
+/// شاشة توليد الامتحانات بالذكاء الاصطناعي
+/// المعلم يختار ملف PDF + إعدادات → يتم التوليد → ينتقل لشاشة المعاينة والنشر
 class AIGenerateExamScreen extends StatefulWidget {
   final String? knowledgeBaseId;
   final String? knowledgeTitle;
@@ -88,49 +86,59 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
     );
 
     if (result != null && mounted) {
-      final questions = result['questions'] as List;
-      _showSuccessDialog(questions.length);
+      // NOTE: بدلاً من إظهار dialog بسيط، ننتقل لشاشة المعاينة الكاملة
+      final published = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ChangeNotifierProvider.value(
+            value: provider,
+            child: ExamPreviewScreen(examData: result),
+          ),
+        ),
+      );
+
+      if (published == true && mounted) {
+        provider.reset();
+        Navigator.pop(context, true);
+      }
     } else if (mounted && provider.hasError) {
       _showErrorDialog(provider.error ?? 'فشل التوليد لأسباب تقنية');
     }
-  }
-
-  void _showSuccessDialog(int count) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF161B22),
-        title: const Text('تم بنجاح! 🎉', style: TextStyle(color: Colors.white)),
-        content: Text('تم توليد $count سؤال بجودة عالية من الملف المرفق.',
-            style: const TextStyle(color: Colors.white70)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('حسناً', style: TextStyle(color: Color(0xFF8B5CF6))),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showErrorDialog(String error) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF161B22),
-        title: const Text('عذراً، حدث خطأ ❌', style: TextStyle(color: Colors.white)),
-        content: Text(error, style: const TextStyle(color: Colors.white70)),
+        backgroundColor: AppColors.darkCard,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        title: Text(
+          'عذراً، حدث خطأ ❌',
+          style: TextStyle(color: AppColors.textOnDark),
+        ),
+        content: Text(
+          error,
+          style: TextStyle(color: AppColors.textOnDarkSecondary),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('إغلاق', style: TextStyle(color: Colors.redAccent)),
+            child: Text(
+              'إغلاق',
+              style: TextStyle(color: AppColors.error),
+            ),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _generate();
             },
-            child: const Text('إعادة المحاولة', style: TextStyle(color: Colors.white)),
+            child: Text(
+              'إعادة المحاولة',
+              style: TextStyle(color: AppColors.textOnDark),
+            ),
           ),
         ],
       ),
@@ -142,11 +150,15 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
     final provider = context.watch<AiExamProvider>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1117),
+      backgroundColor: AppColors.darkBackground,
       appBar: AppBar(
-        title: const Text('مولد الامتحانات الذكي'),
+        title: Text(
+          'مولد الامتحانات الذكي',
+          style: TextStyle(color: AppColors.textOnDark),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        iconTheme: IconThemeData(color: AppColors.textOnDark),
       ),
       body: Stack(
         children: [
@@ -155,6 +167,8 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _buildHeaderCard(),
+                SizedBox(height: 24.h),
                 _buildUploadCard(),
                 SizedBox(height: 24.h),
                 _buildSettingsSection(),
@@ -173,6 +187,60 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
     );
   }
 
+  Widget _buildHeaderCard() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        gradient: AppColors.premiumRoyal,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Icon(Icons.auto_awesome,
+                color: Colors.white, size: 28.sp),
+          ),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'إنشاء امتحان بالذكاء الاصطناعي',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'ارفع ملف PDF وسيُنشئ لك أسئلة احترافية',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12.sp,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildLoadingState(AiExamProvider provider) {
     return Center(
       child: Padding(
@@ -183,11 +251,11 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
             Container(
               padding: EdgeInsets.all(24.r),
               decoration: BoxDecoration(
-                color: const Color(0xFF161B22),
+                color: AppColors.darkCard,
                 borderRadius: BorderRadius.circular(24.r),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF8B5CF6).withOpacity(0.2),
+                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
                     blurRadius: 20,
                     spreadRadius: 5,
                   ),
@@ -206,7 +274,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
                     provider.statusMessage,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppColors.textOnDark,
                       fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
                     ),
@@ -219,13 +287,18 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
                         value: provider.progress,
                         minHeight: 8.h,
                         backgroundColor: Colors.white10,
-                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF8B5CF6),
+                        ),
                       ),
                     ),
                     SizedBox(height: 8.h),
                     Text(
                       '${(provider.progress * 100).toInt()}% اكتمل',
-                      style: TextStyle(color: Colors.white38, fontSize: 12.sp),
+                      style: TextStyle(
+                        color: AppColors.textOnDarkHint,
+                        fontSize: 12.sp,
+                      ),
                     ),
                   ],
                 ],
@@ -234,7 +307,10 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
             SizedBox(height: 24.h),
             TextButton(
               onPressed: () => provider.reset(),
-              child: const Text('إلغاء العملية', style: TextStyle(color: Colors.white54)),
+              child: Text(
+                'إلغاء العملية',
+                style: TextStyle(color: AppColors.textOnDarkHint),
+              ),
             ),
           ],
         ),
@@ -249,12 +325,12 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
         width: double.infinity,
         padding: EdgeInsets.symmetric(vertical: 40.h),
         decoration: BoxDecoration(
-          color: const Color(0xFF161B22),
+          color: AppColors.darkCard,
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: _selectedFile != null
                 ? const Color(0xFF8B5CF6)
-                : Colors.white10,
+                : AppColors.darkBorder,
             width: 2,
           ),
         ),
@@ -267,15 +343,17 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
               size: 48.sp,
               color: _selectedFile != null
                   ? const Color(0xFF8B5CF6)
-                  : Colors.white30,
+                  : AppColors.textOnDarkHint,
             ),
             SizedBox(height: 12.h),
             Text(
               _selectedFile != null
-                  ? _selectedFile!.path.split('/').last
-                  : 'اصغط لاختيار ملف PDF المنهج',
+                  ? _selectedFile!.path.split(Platform.pathSeparator).last
+                  : 'اضغط لاختيار ملف PDF المنهج',
               style: TextStyle(
-                color: _selectedFile != null ? Colors.white : Colors.white30,
+                color: _selectedFile != null
+                    ? AppColors.textOnDark
+                    : AppColors.textOnDarkHint,
                 fontSize: 14.sp,
               ),
             ),
@@ -284,7 +362,10 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
                 padding: EdgeInsets.only(top: 8.h),
                 child: Text(
                   '(الحد الأقصى 20 ميجابايت)',
-                  style: TextStyle(color: Colors.white24, fontSize: 11.sp),
+                  style: TextStyle(
+                    color: AppColors.textOnDarkHint,
+                    fontSize: 11.sp,
+                  ),
                 ),
               ),
           ],
@@ -300,7 +381,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
         Text(
           'إعدادات الامتحان',
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.textOnDark,
             fontSize: 18.sp,
             fontWeight: FontWeight.bold,
           ),
@@ -349,7 +430,10 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
       padding: EdgeInsets.only(bottom: 8.h),
       child: Text(
         text,
-        style: TextStyle(color: Colors.white70, fontSize: 13.sp),
+        style: TextStyle(
+          color: AppColors.textOnDarkSecondary,
+          fontSize: 13.sp,
+        ),
       ),
     );
   }
@@ -360,10 +444,10 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
       label: Text(label),
       selected: isSelected,
       onSelected: (val) => setState(() => _selectedDifficulty = value),
-      backgroundColor: Colors.white.withOpacity(0.05),
+      backgroundColor: AppColors.darkCard,
       selectedColor: const Color(0xFF8B5CF6),
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : Colors.white60,
+        color: isSelected ? Colors.white : AppColors.textOnDarkSecondary,
         fontSize: 12.sp,
       ),
     );
@@ -375,10 +459,10 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
       label: Text(label),
       selected: isSelected,
       onSelected: (val) => setState(() => _selectedType = value),
-      backgroundColor: Colors.white.withOpacity(0.05),
-      selectedColor: const Color(0xFF8B5CF6).withOpacity(0.6),
+      backgroundColor: AppColors.darkCard,
+      selectedColor: const Color(0xFF8B5CF6).withValues(alpha: 0.6),
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : Colors.white60,
+        color: isSelected ? Colors.white : AppColors.textOnDarkSecondary,
         fontSize: 12.sp,
       ),
     );
@@ -393,13 +477,13 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.white),
+      style: TextStyle(color: AppColors.textOnDark),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.white38),
+        labelStyle: TextStyle(color: AppColors.textOnDarkHint),
         prefixIcon: Icon(icon, color: const Color(0xFF8B5CF6)),
         filled: true,
-        fillColor: const Color(0xFF161B22),
+        fillColor: AppColors.darkCard,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide.none,
