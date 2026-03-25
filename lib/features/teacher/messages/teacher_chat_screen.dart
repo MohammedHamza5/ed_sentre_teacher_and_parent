@@ -34,6 +34,15 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
     _scrollController.addListener(_onScroll);
     _loadMessages(reset: true);
     _subscribeToMessages();
+    _markAsRead();
+  }
+
+  Future<void> _markAsRead() async {
+    try {
+      await context.read<SupabaseRepository>().markMessagesAsRead(widget.conversation.id);
+    } catch (e) {
+      debugPrint('Error marking messages as read: $e');
+    }
   }
 
   @override

@@ -277,10 +277,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       alignment: Alignment.centerLeft,
                       child: TextButton(
                         onPressed: () {
-                          // TODO: Implement forgot password
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('سيتم إضافة هذه الخاصية قريباً'),
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text('نسيت كلمة المرور؟', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.sp)),
+                              content: Text('الرجاء التواصل مع إدارة النظام عبر منصة الإدارة أو الدعم الفني لإعادة تعيين كلمة المرور بصلاحياتك.', style: TextStyle(fontSize: 14.sp)),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('حسناً'),
+                                ),
+                              ],
                             ),
                           );
                         },
@@ -368,7 +376,20 @@ class _LoginScreenState extends State<LoginScreen> {
               Center(
                 child: TextButton.icon(
                   onPressed: () {
-                    // TODO: Open support chat or email
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text('التواصل مع الدعم الفني', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.sp)),
+                        content: Text('يرجى التواصل مع إدارة النظام عبر البريد الإلكتروني support@edsentre.com أو عبر الواتس آب للإبلاغ عن أي مشكلات فنية.', style: TextStyle(fontSize: 14.sp)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('حسناً'),
+                          ),
+                        ],
+                      ),
+                    );
                   },
                   icon: const Icon(Icons.support_agent_outlined),
                   label: Text(

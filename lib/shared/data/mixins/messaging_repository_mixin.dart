@@ -37,11 +37,7 @@ mixin MessagingRepositoryMixin on BaseRepository {
         .from('conversations')
         .select('''
           *,
-          students:student_id(
-            id,
-            user_id,
-            users(full_name, avatar_url)
-          )
+          users!conversations_student_id_fkey(full_name, avatar_url)
         ''')
         .eq('teacher_id', userId)
         .eq('center_id', centerId)
@@ -54,8 +50,7 @@ mixin MessagingRepositoryMixin on BaseRepository {
     final response = await query;
 
     return (response as List).map((e) {
-      final student = e['students'] as Map<String, dynamic>?;
-      final user = student?['users'] as Map<String, dynamic>?;
+      final user = e['users'] as Map<String, dynamic>?;
 
       return ConversationModel.fromJson({
         ...e,
@@ -91,42 +86,23 @@ mixin MessagingRepositoryMixin on BaseRepository {
 
     final studentIds = links.map((l) => l['student_user_id']).toList();
 
-    // 2. Get students' table IDs (conversations use table ID usually, or user ID? check schema)
-    // The previous code in MessagingRepositoryMixin uses student_id which seems to be table ID in getTeacherConversations join
-    // But getTeacherConversations joins `students:student_id`.
-    // Let's verify what student_id is in conversations table.
-    // In getTeacherConversations: students:student_id (id, user_id).
-    // So conversations.student_id is the table ID.
-    // We have student_user_ids. Need to get student table IDs.
+    // 2. studentIds already correspond to users.id which matches conversations.student_id
 
-    final studentsResponse = await client
-        .from('students')
-        .select('id')
-        .inFilter('user_id', studentIds);
-    final studentTableIds = (studentsResponse as List)
-        .map((s) => s['id'])
-        .toList();
-
-    if (studentTableIds.isEmpty) return [];
+    if (studentIds.isEmpty) return [];
 
     // 3. Fetch conversations
     final response = await client
         .from('conversations')
         .select('''
           *,
-          teachers:teacher_id(
-            id,
-            user_id,
-            users:user_id(full_name, avatar_url)
-          )
+          users!conversations_teacher_id_fkey(full_name, avatar_url)
         ''')
-        .inFilter('student_id', studentTableIds)
+        .inFilter('student_id', studentIds)
         .eq('center_id', centerId)
         .order('updated_at', ascending: false);
 
     return (response as List).map((e) {
-      final teacher = e['teachers'] as Map<String, dynamic>?;
-      final user = teacher?['users'] as Map<String, dynamic>?;
+      final user = e['users'] as Map<String, dynamic>?;
 
       return ConversationModel.fromJson({
         ...e,
@@ -261,6 +237,16 @@ mixin MessagingRepositoryMixin on BaseRepository {
   // ═══════════════════════════════════════════════════════════════════════
   // REALTIME SUBSCRIPTIONS
   // ═══════════════════════════════════════════════════════════════════════
+
+  /// Mark messages as read
+  Future<void> markMessagesAsRead(String conversationId) async {
+    try {
+      await client.rpc(
+        'mark_messages_read',
+        params: {'p_conversation_id': conversationId},
+      );
+    } catch (_) {}
+  }
 
   /// Subscribe to messages
   RealtimeChannel subscribeToMessages(
