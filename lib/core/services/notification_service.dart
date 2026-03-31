@@ -1,126 +1,200 @@
 import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+/// NotificationService — Teacher & Parent App
+///
+/// استراتيجية:
+/// 1. Supabase Realtime: يستمع لإشعارات جديدة عبر Postgres Changes
+/// 2. Local Notifications: يعرض إشعار محلي عندما يكون التطبيق مفتوحاً
+/// 3. Device Token: يسجل التوكن لربط الجهاز بالمستخدم
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
+  final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
-  StreamSubscription? _subscription;
+  RealtimeChannel? _channel;
   final StreamController<int> _unreadCountController =
       StreamController<int>.broadcast();
 
   Stream<int> get unreadCountStream => _unreadCountController.stream;
 
-  /// Initialize the service
+  bool _initialized = false;
+
+  /// تهيئة النظام
   Future<void> initialize() async {
-    // 1. Setup Local Notifications
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    if (_initialized) return;
 
-    const DarwinInitializationSettings initializationSettingsDarwin =
-        DarwinInitializationSettings(
-          requestSoundPermission: true,
-          requestBadgePermission: true,
-          requestAlertPermission: true,
-        );
+    // 1. إعداد Local Notifications
+    await _initLocalNotifications();
 
-    const InitializationSettings initializationSettings =
-        InitializationSettings(
-          android: initializationSettingsAndroid,
-          iOS: initializationSettingsDarwin,
-        );
+    // 2. تسجيل device token
+    await _registerDeviceToken();
 
-    await _flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: (details) {
-        // Handle tap
-      },
-    );
+    // 3. بدء الاستماع لـ Realtime
+    _startRealtimeListener();
 
-    // 2. Initial Unread Count
+    // 4. جلب عدد الإشعارات غير المقروءة
     await _updateUnreadCount();
 
-    // 3. Start Listening
-    _startListening();
+    _initialized = true;
+    debugPrint('🔔 [NotificationService] Initialized for Teacher/Parent');
   }
 
-  void _startListening() {
-    _subscription?.cancel();
+  /// إعداد Local Notifications
+  Future<void> _initLocalNotifications() async {
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const darwinSettings = DarwinInitializationSettings(
+      requestSoundPermission: true,
+      requestBadgePermission: true,
+      requestAlertPermission: true,
+    );
+
+    const initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: darwinSettings,
+    );
+
+    await _localNotifications.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: _onNotificationTapped,
+    );
+  }
+
+  /// معالجة النقر على الإشعار
+  void _onNotificationTapped(NotificationResponse details) {
+    // NOTE: سيتم ربط هذا بالـ GoRouter لاحقاً
+    debugPrint('🔔 Notification tapped: ${details.payload}');
+  }
+
+  /// تسجيل توكن الجهاز في Supabase
+  Future<void> _registerDeviceToken() async {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) return;
 
-    _subscription = Supabase.instance.client
-        .from('notifications')
-        .stream(primaryKey: ['id'])
-        .eq('user_id', user.id)
-        .order('created_at', ascending: false)
-        .listen(
-          (data) {
-            if (data.isNotEmpty) {
-              final latest = data.first;
-              // Simple check: Only notify if created recently (< 20s)
-              final createdAt = DateTime.tryParse(
-                latest['created_at'].toString(),
-              );
-              if (createdAt != null &&
-                  DateTime.now().difference(createdAt).inSeconds < 20) {
-                _showLocalNotification(latest);
-              }
+    try {
+      // NOTE: بدون FCM نستخدم user_id + platform كمعرف
+      // عندما نضيف FCM لاحقاً سنستبدل هذا بـ FCM Token
+      final deviceToken =
+          '${user.id}_mobile_${Platform.operatingSystem}';
+
+      await Supabase.instance.client.rpc('upsert_device_token', params: {
+        'p_token': deviceToken,
+        'p_platform': Platform.operatingSystem,
+        'p_device_type': 'mobile',
+        'p_app_type': 'teacher',
+      });
+      debugPrint('✅ [NotificationService] Device token registered');
+    } catch (e) {
+      debugPrint('⚠️ [NotificationService] Failed to register token: $e');
+    }
+  }
+
+  /// إلغاء توكن الجهاز عند تسجيل الخروج
+  Future<void> deactivateToken() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final deviceToken =
+          '${user.id}_mobile_${Platform.operatingSystem}';
+      await Supabase.instance.client
+          .rpc('deactivate_device_token', params: {'p_token': deviceToken});
+    } catch (e) {
+      debugPrint('⚠️ [NotificationService] Failed to deactivate token: $e');
+    }
+  }
+
+  /// بدء الاستماع لإشعارات جديدة عبر Realtime Postgres Changes
+  void _startRealtimeListener() {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    _channel?.unsubscribe();
+
+    _channel = Supabase.instance.client
+        .channel('notifications_${user.id}')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'notifications',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'user_id',
+            value: user.id,
+          ),
+          callback: (payload) {
+            final newRecord = payload.newRecord;
+            if (newRecord.isNotEmpty) {
+              _showLocalNotification(newRecord);
+              _updateUnreadCount();
             }
-            _updateUnreadCount();
           },
-          onError: (e) {
-            if (kDebugMode) debugPrint('Notification Stream Error: $e');
-          },
-        );
+        )
+        .subscribe();
   }
 
-  Future<void> _updateUnreadCount() async {
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) return;
-
-    final response = await Supabase.instance.client
-        .from('notifications')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('is_read', false);
-
-    final count = response.length;
-    _unreadCountController.add(count);
-  }
-
+  /// عرض إشعار محلي
   Future<void> _showLocalNotification(Map<String, dynamic> notification) async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-          'ed_sentre_parent_channel',
-          'Ed Sentre Updates',
-          channelDescription: 'Important updates for parents',
-          importance: Importance.max,
-          priority: Priority.high,
-          showWhen: true,
-        );
-
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(
-      android: androidPlatformChannelSpecifics,
+    const androidDetails = AndroidNotificationDetails(
+      'edsentre_teacher_channel',
+      'EdSentre Teacher',
+      channelDescription: 'إشعارات المعلم وولي الأمر',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: true,
     );
 
-    await _flutterLocalNotificationsPlugin.show(
-      (notification['id'] as String).hashCode,
-      notification['title'],
-      notification['body'],
-      platformChannelSpecifics,
-      payload: notification['data'].toString(),
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _localNotifications.show(
+      notification['id'].toString().hashCode,
+      notification['title'] ?? 'إشعار جديد',
+      notification['body'] ?? '',
+      details,
+      payload: notification['data']?.toString(),
     );
   }
 
+  /// تحديث عدد الإشعارات غير المقروءة
+  Future<void> _updateUnreadCount() async {
+    try {
+      final count = await Supabase.instance.client.rpc(
+        'get_unread_notifications_count',
+      );
+      _unreadCountController.add(count as int);
+    } catch (e) {
+      debugPrint('⚠️ [NotificationService] Failed to update count: $e');
+    }
+  }
+
+  /// إعادة الاتصال (بعد تسجيل الدخول)
+  Future<void> reconnect() async {
+    await _registerDeviceToken();
+    _startRealtimeListener();
+    await _updateUnreadCount();
+  }
+
+  /// تنظيف الموارد
   void dispose() {
-    _subscription?.cancel();
+    _channel?.unsubscribe();
     _unreadCountController.close();
   }
 }

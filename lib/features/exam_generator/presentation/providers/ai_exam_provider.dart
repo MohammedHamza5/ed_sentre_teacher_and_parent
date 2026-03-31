@@ -42,8 +42,7 @@ class AiExamProvider extends ChangeNotifier {
         switch (_state) {
           GenState.reading => 'جاري قراءة الملف...',
           GenState.uploading => 'جاري تجهيز البيانات للذكاء الاصطناعي...',
-          GenState.generating =>
-            'المساعد الذكي يقوم بإنشاء الأسئلة حالياً...',
+          GenState.generating => 'المساعد الذكي يقوم بإنشاء الأسئلة حالياً...',
           GenState.saving => 'جاري حفظ الامتحان...',
           _ => '',
         };
@@ -68,8 +67,7 @@ class AiExamProvider extends ChangeNotifier {
 
       final bytes = await compute(_readFileBytes, pdfFile.path);
       if (bytes.isEmpty) {
-        throw Exception(
-            'فشل في قراءة محتوى الملف. تأكد أن الملف ليس تالفاً.');
+        throw Exception('فشل في قراءة محتوى الملف. تأكد أن الملف ليس تالفاً.');
       }
 
       // حساب الحجم
@@ -86,8 +84,7 @@ class AiExamProvider extends ChangeNotifier {
       }
 
       // 2. التحويل والتحضير
-      _set(GenState.uploading,
-          'جاري تحويل الملف إلى صيغة رقمية (Base64)...');
+      _set(GenState.uploading, 'جاري تحويل الملف إلى صيغة رقمية (Base64)...');
       _setProgress(0.2);
 
       final base64Pdf = base64Encode(bytes);
@@ -98,8 +95,10 @@ class AiExamProvider extends ChangeNotifier {
       notifyListeners();
 
       // 3. التواصل مع AI
-      _set(GenState.generating,
-          'جاري التواصل مع Gemini AI... قد يستغرق هذا دقيقة.');
+      _set(
+        GenState.generating,
+        'جاري التواصل مع Gemini AI... قد يستغرق هذا دقيقة.',
+      );
       _setProgress(0.6);
 
       final result = await _callEdgeFunction(
@@ -120,8 +119,10 @@ class AiExamProvider extends ChangeNotifier {
 
       _setProgress(1.0);
       _exam = result;
-      _set(GenState.success,
-          'تم توليد ${result['questions']?.length} سؤال بنجاح!');
+      _set(
+        GenState.success,
+        'تم توليد ${result['questions']?.length} سؤال بنجاح!',
+      );
       return result;
     } catch (e) {
       _error = _friendlyError(e.toString());
@@ -172,6 +173,7 @@ class AiExamProvider extends ChangeNotifier {
   Future<String?> saveAndPublishExam({
     required String centerId,
     required String groupId,
+    required String courseId,
     required String title,
     String? description,
     required String examType,
@@ -189,7 +191,8 @@ class AiExamProvider extends ChangeNotifier {
       final userId = supabase.auth.currentUser?.id;
       if (userId == null) throw Exception('لم يتم تسجيل الدخول');
 
-      final questions = editedQuestions ?? (_exam?['questions'] as List<dynamic>? ?? []);
+      final questions =
+          editedQuestions ?? (_exam?['questions'] as List<dynamic>? ?? []);
       final totalMarks = questions.fold<int>(
         0,
         (sum, q) => sum + ((q as Map)['marks'] as int? ?? 2),
@@ -231,11 +234,15 @@ class AiExamProvider extends ChangeNotifier {
           .insert({
             'center_id': centerId,
             'group_id': groupId,
+            'course_id': courseId,
             'teacher_user_id': userId,
             'title': title,
             'description': description ?? 'امتحان منشأ بالذكاء الاصطناعي',
             'type': examType == 'quiz' ? 'quiz' : 'exam',
             'max_score': totalMarks,
+            'due_date': DateTime.now()
+                .add(const Duration(days: 7))
+                .toIso8601String(),
             'questions': questions,
             'time_limit_minutes': timeLimitMinutes,
             'settings': {
@@ -243,6 +250,8 @@ class AiExamProvider extends ChangeNotifier {
               'ai_exam_id': aiExamId,
               'show_answers_after': showAnswersAfter,
               'shuffle_questions': shuffleQuestions,
+              'publish_at': DateTime.now().toIso8601String(),
+              'display_mode': 'all',
             },
           })
           .select('id')
@@ -255,8 +264,7 @@ class AiExamProvider extends ChangeNotifier {
       _setProgress(0.8);
       notifyListeners();
 
-      final formattedQuestions =
-          questions.asMap().entries.map((entry) {
+      final formattedQuestions = questions.asMap().entries.map((entry) {
         final q = entry.value as Map<String, dynamic>;
 
         String type = 'mcq';
@@ -365,12 +373,10 @@ class AiExamProvider extends ChangeNotifier {
       throw Exception('تلقينا رداً فارغاً من الخادم. حاول مرة أخرى.');
     }
 
-    final map =
-        data is Map<String, dynamic> ? data : <String, dynamic>{};
+    final map = data is Map<String, dynamic> ? data : <String, dynamic>{};
 
     if (map['success'] == false || map['error'] != null) {
-      final remoteErr =
-          map['error']?.toString() ?? 'خطأ غير معروف من خادم AI';
+      final remoteErr = map['error']?.toString() ?? 'خطأ غير معروف من خادم AI';
       throw Exception(remoteErr);
     }
 
@@ -416,23 +422,18 @@ class AiExamProvider extends ChangeNotifier {
       questions.add({
         'id': q['id']?.toString() ?? 'q_${i + 1}',
         'type': q['type']?.toString() ?? 'mcq',
-        'text':
-            q['text']?.toString() ?? q['question']?.toString() ?? '',
+        'text': q['text']?.toString() ?? q['question']?.toString() ?? '',
         'options': opts,
         'correct_answer': correct,
-        'explanation': q['explanation']?.toString() ??
-            'راجع المحتوى للإجابة الصحيحة.',
-        'hint': q['hint']?.toString() ??
-            'فكر في المفاهيم الأساسية.',
+        'explanation':
+            q['explanation']?.toString() ?? 'راجع المحتوى للإجابة الصحيحة.',
+        'hint': q['hint']?.toString() ?? 'فكر في المفاهيم الأساسية.',
         'difficulty': q['difficulty']?.toString() ?? difficulty,
         'marks': (q['marks'] as num?)?.toInt() ?? 2,
       });
     }
 
-    return {
-      ...parsed,
-      'questions': questions,
-    };
+    return {...parsed, 'questions': questions};
   }
 
   String _friendlyError(String raw) {

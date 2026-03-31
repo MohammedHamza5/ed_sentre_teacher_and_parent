@@ -35,7 +35,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
   // ─── البيانات القابلة للتعديل ──────────────────────────────
   List<Map<String, dynamic>> _questions = [];
   final Set<String> _editingIds = {};
-  
+
   // Controllers لحفظ حالة التعديل لكل سؤال (مفتاح: question id)
   final Map<String, Map<String, TextEditingController>> _editControllers = {};
   final Map<String, int> _editCorrectAnswers = {};
@@ -45,7 +45,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
     super.initState();
     _titleController.text =
         widget.examData['title']?.toString() ?? 'امتحان بالذكاء الاصطناعي';
-    
+
     final raw = widget.examData['questions'];
     if (raw is List) {
       _questions = raw.map((e) {
@@ -54,15 +54,16 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
         return q;
       }).toList();
     }
-    
+
     _durationController.text =
         (widget.examData['estimated_time_minutes'] ?? _questions.length * 2)
             .toString();
-            
+
     _loadGroups();
   }
 
-  String _generateId() => 'q_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(1000)}';
+  String _generateId() =>
+      'q_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(1000)}';
 
   @override
   void dispose() {
@@ -124,13 +125,15 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
     }
 
     final duration = int.tryParse(_durationController.text);
-    final examType = widget.examData['exam_type']?.toString() ??
+    final examType =
+        widget.examData['exam_type']?.toString() ??
         widget.examData['examType']?.toString() ??
         'exam';
 
     final assignmentId = await provider.saveAndPublishExam(
       centerId: centerId,
       groupId: _selectedGroup!.id,
+      courseId: _selectedGroup!.courseId,
       title: _titleController.text.trim(),
       description: _descriptionController.text.trim().isEmpty
           ? null
@@ -154,9 +157,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
   }
 
   void _showSnack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   void _showSuccessDialog() {
@@ -226,17 +227,19 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
   void _startEditing(Map<String, dynamic> q) {
     final id = q['id'].toString();
     final options = (q['options'] as List?)?.cast<String>() ?? [];
-    
+
     _editControllers[id] = {
       'text': TextEditingController(text: q['text']?.toString() ?? ''),
-      'explanation': TextEditingController(text: q['explanation']?.toString() ?? ''),
+      'explanation': TextEditingController(
+        text: q['explanation']?.toString() ?? '',
+      ),
       'marks': TextEditingController(text: (q['marks'] ?? 2).toString()),
     };
-    
+
     for (int i = 0; i < options.length; i++) {
       _editControllers[id]!['opt_$i'] = TextEditingController(text: options[i]);
     }
-    
+
     _editCorrectAnswers[id] = q['correct_answer'] as int? ?? 0;
 
     setState(() {
@@ -247,7 +250,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
   void _saveEditing(Map<String, dynamic> q) {
     final id = q['id'].toString();
     final controllers = _editControllers[id]!;
-    
+
     final optionsCount = q['type'] == 'true_false' ? 2 : 4;
     final newOptions = <String>[];
     for (int i = 0; i < optionsCount; i++) {
@@ -268,7 +271,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
       }
       _editingIds.remove(id);
     });
-    
+
     _disposeControllers(id);
   }
 
@@ -298,9 +301,11 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
     final newQ = Map<String, dynamic>.from(q);
     newQ['id'] = _generateId();
     newQ['text'] = '${newQ['text']} (نسخة)';
-    
+
     setState(() {
-      final index = _questions.indexWhere((element) => element['id'] == q['id']);
+      final index = _questions.indexWhere(
+        (element) => element['id'] == q['id'],
+      );
       if (index != -1) {
         _questions.insert(index + 1, newQ);
       } else {
@@ -336,19 +341,14 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
       appBar: AppBar(
         title: Text(
           'محرر الامتحانات الذكي',
-          style: TextStyle(
-            color: AppColors.textOnDark,
-            fontSize: 18.sp,
-          ),
+          style: TextStyle(color: AppColors.textOnDark, fontSize: 18.sp),
         ),
         backgroundColor: AppColors.darkSurface,
         elevation: 0,
         iconTheme: IconThemeData(color: AppColors.textOnDark),
       ),
       body: _isLoadingGroups
-          ? Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            )
+          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
           : Column(
               children: [
                 Expanded(
@@ -363,7 +363,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                         SizedBox(height: 20.h),
                         _buildQuestionsHeader(),
                         SizedBox(height: 12.h),
-                        
+
                         // NOTE: السحب والإفلات لإعادة ترتيب الأسئلة (Surprise Feature 1)
                         if (_questions.isEmpty)
                           Center(
@@ -371,7 +371,9 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                               padding: EdgeInsets.all(32.r),
                               child: Text(
                                 'لا توجد أسئلة، قم بإضافة سؤال جديد.',
-                                style: TextStyle(color: AppColors.textOnDarkHint),
+                                style: TextStyle(
+                                  color: AppColors.textOnDarkHint,
+                                ),
                               ),
                             ),
                           )
@@ -396,10 +398,12 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                                   decoration: BoxDecoration(
                                     boxShadow: [
                                       BoxShadow(
-                                        color: AppColors.primary.withValues(alpha: 0.3),
+                                        color: AppColors.primary.withValues(
+                                          alpha: 0.3,
+                                        ),
                                         blurRadius: 10,
                                         spreadRadius: 2,
-                                      )
+                                      ),
                                     ],
                                   ),
                                   child: child,
@@ -418,9 +422,9 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                               );
                             },
                           ),
-                          
+
                         SizedBox(height: 16.h),
-                        
+
                         // Add new question button
                         Center(
                           child: OutlinedButton.icon(
@@ -433,7 +437,10 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12.r),
                               ),
-                              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 24.w,
+                                vertical: 12.h,
+                              ),
                             ),
                           ),
                         ),
@@ -442,13 +449,15 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                     ),
                   ),
                 ),
-                
+
                 // Bottom Publish Button Panel
                 Container(
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
                     color: AppColors.darkSurface,
-                    border: Border(top: BorderSide(color: AppColors.darkBorder)),
+                    border: Border(
+                      top: BorderSide(color: AppColors.darkBorder),
+                    ),
                   ),
                   child: _buildPublishButton(),
                 ),
@@ -486,7 +495,11 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: Icon(Icons.auto_awesome, color: Colors.white, size: 28.sp),
+                child: Icon(
+                  Icons.auto_awesome,
+                  color: Colors.white,
+                  size: 28.sp,
+                ),
               ),
               SizedBox(width: 14.w),
               Expanded(
@@ -521,8 +534,8 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                 widget.examData['difficulty']?.toString() == 'easy'
                     ? 'سهل'
                     : widget.examData['difficulty']?.toString() == 'hard'
-                        ? 'صعب'
-                        : 'متوسط',
+                    ? 'صعب'
+                    : 'متوسط',
                 'صعوبة',
                 Icons.trending_up,
               ),
@@ -620,7 +633,10 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                   value: _selectedGroup,
                   isExpanded: true,
                   dropdownColor: AppColors.darkElevated,
-                  style: TextStyle(color: AppColors.textOnDark, fontSize: 14.sp),
+                  style: TextStyle(
+                    color: AppColors.textOnDark,
+                    fontSize: 14.sp,
+                  ),
                   items: _groups.map((g) {
                     return DropdownMenuItem(value: g, child: Text(g.groupName));
                   }).toList(),
@@ -697,7 +713,11 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
           ),
         ),
         const Spacer(),
-        Icon(Icons.drag_indicator, color: AppColors.textOnDarkHint, size: 16.sp),
+        Icon(
+          Icons.drag_indicator,
+          color: AppColors.textOnDarkHint,
+          size: 16.sp,
+        ),
         SizedBox(width: 4.w),
         Text(
           'اسحب للترتيب',
@@ -729,68 +749,98 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
             children: [
               ReorderableDragStartListener(
                 index: index,
-                child: Icon(Icons.drag_indicator, color: AppColors.textOnDarkHint),
-              ),
-              SizedBox(width: 8.w),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(6.r),
-                ),
-                child: Text(
-                  'سؤال ${index + 1}',
-                  style: TextStyle(
-                    color: AppColors.primary,
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Icon(
+                  Icons.drag_indicator,
+                  color: AppColors.textOnDarkHint,
                 ),
               ),
               SizedBox(width: 8.w),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                decoration: BoxDecoration(
-                  color: type.contains('true')
-                      ? AppColors.warning.withValues(alpha: 0.15)
-                      : AppColors.info.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4.r),
-                ),
-                child: Text(
-                  type.contains('true') ? 'صح/خطأ' : 'اختيار',
-                  style: TextStyle(
-                    color: type.contains('true')
-                        ? AppColors.warning
-                        : AppColors.info,
-                    fontSize: 10.sp,
-                  ),
+              Expanded(
+                child: Wrap(
+                  spacing: 8.w,
+                  runSpacing: 4.h,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8.w,
+                        vertical: 3.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                      child: Text(
+                        'سؤال ${index + 1}',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 6.w,
+                        vertical: 2.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: type.contains('true')
+                            ? AppColors.warning.withValues(alpha: 0.15)
+                            : AppColors.info.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                      child: Text(
+                        type.contains('true') ? 'صح/خطأ' : 'اختيار',
+                        style: TextStyle(
+                          color: type.contains('true')
+                              ? AppColors.warning
+                              : AppColors.info,
+                          fontSize: 10.sp,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${q['marks'] ?? 2} درجة',
+                      style: TextStyle(
+                        color: AppColors.textOnDarkHint,
+                        fontSize: 11.sp,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(width: 8.w),
-              Text(
-                '${q['marks'] ?? 2} درجة',
-                style: TextStyle(color: AppColors.textOnDarkHint, fontSize: 11.sp),
-              ),
-              const Spacer(),
               // Actions
               IconButton(
-                icon: Icon(Icons.copy_rounded, color: AppColors.info, size: 20.sp),
+                icon: Icon(
+                  Icons.copy_rounded,
+                  color: AppColors.info,
+                  size: 20.sp,
+                ),
                 tooltip: 'استنساخ السؤال',
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
                 onPressed: () => _duplicateQuestion(q),
               ),
-              SizedBox(width: 12.w),
+              SizedBox(width: 8.w),
               IconButton(
-                icon: Icon(Icons.edit_rounded, color: AppColors.warning, size: 20.sp),
+                icon: Icon(
+                  Icons.edit_rounded,
+                  color: AppColors.warning,
+                  size: 20.sp,
+                ),
                 tooltip: 'تعديل',
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
                 onPressed: () => _startEditing(q),
               ),
-              SizedBox(width: 12.w),
+              SizedBox(width: 8.w),
               IconButton(
-                icon: Icon(Icons.delete_outline, color: AppColors.error, size: 20.sp),
+                icon: Icon(
+                  Icons.delete_outline,
+                  color: AppColors.error,
+                  size: 20.sp,
+                ),
                 tooltip: 'حذف',
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
@@ -803,7 +853,11 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
           // Question text
           Text(
             q['text']?.toString() ?? '',
-            style: TextStyle(color: AppColors.textOnDark, fontSize: 14.sp, height: 1.5),
+            style: TextStyle(
+              color: AppColors.textOnDark,
+              fontSize: 14.sp,
+              height: 1.5,
+            ),
           ),
           SizedBox(height: 10.h),
 
@@ -833,7 +887,9 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                       color: isCorrect ? AppColors.success : Colors.transparent,
                       borderRadius: BorderRadius.circular(6.r),
                       border: Border.all(
-                        color: isCorrect ? AppColors.success : AppColors.textOnDarkHint,
+                        color: isCorrect
+                            ? AppColors.success
+                            : AppColors.textOnDarkHint,
                       ),
                     ),
                     child: Center(
@@ -854,7 +910,9 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                     child: Text(
                       e.value,
                       style: TextStyle(
-                        color: isCorrect ? AppColors.success : AppColors.textOnDarkSecondary,
+                        color: isCorrect
+                            ? AppColors.success
+                            : AppColors.textOnDarkSecondary,
                         fontSize: 13.sp,
                       ),
                     ),
@@ -876,7 +934,11 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.lightbulb_outline, color: AppColors.warning, size: 16.sp),
+                  Icon(
+                    Icons.lightbulb_outline,
+                    color: AppColors.warning,
+                    size: 16.sp,
+                  ),
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
@@ -932,15 +994,26 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                 child: TextField(
                   controller: controllers['marks'],
                   keyboardType: TextInputType.number,
-                  style: TextStyle(color: AppColors.textOnDark, fontSize: 13.sp),
+                  style: TextStyle(
+                    color: AppColors.textOnDark,
+                    fontSize: 13.sp,
+                  ),
                   decoration: InputDecoration(
                     labelText: 'الدرجة',
-                    labelStyle: TextStyle(color: AppColors.textOnDarkHint, fontSize: 11.sp),
+                    labelStyle: TextStyle(
+                      color: AppColors.textOnDarkHint,
+                      fontSize: 11.sp,
+                    ),
                     isDense: true,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 8.h,
+                    ),
                     filled: true,
                     fillColor: AppColors.darkInput,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
                   ),
                 ),
               ),
@@ -957,7 +1030,9 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
               labelText: 'نص السؤال',
               filled: true,
               fillColor: AppColors.darkInput,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
             ),
           ),
           SizedBox(height: 12.h),
@@ -965,7 +1040,10 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
           // Options Edit
           Text(
             'حدد الإجابة الصحيحة واكتب الخيارات:',
-            style: TextStyle(color: AppColors.textOnDarkSecondary, fontSize: 12.sp),
+            style: TextStyle(
+              color: AppColors.textOnDarkSecondary,
+              fontSize: 12.sp,
+            ),
           ),
           SizedBox(height: 8.h),
           ...List.generate(optionsCount, (i) {
@@ -979,7 +1057,9 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                     groupValue: _editCorrectAnswers[id],
                     activeColor: AppColors.success,
                     fillColor: WidgetStateProperty.resolveWith((states) {
-                      if (states.contains(WidgetState.selected)) return AppColors.success;
+                      if (states.contains(WidgetState.selected)) {
+                        return AppColors.success;
+                      }
                       return AppColors.textOnDarkHint;
                     }),
                     onChanged: (val) {
@@ -990,7 +1070,9 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                     child: TextField(
                       controller: controllers['opt_$i'],
                       style: TextStyle(
-                        color: isCorrect ? AppColors.success : AppColors.textOnDark,
+                        color: isCorrect
+                            ? AppColors.success
+                            : AppColors.textOnDark,
                         fontSize: 13.sp,
                       ),
                       decoration: InputDecoration(
@@ -999,7 +1081,10 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                         fillColor: isCorrect
                             ? AppColors.success.withValues(alpha: 0.1)
                             : AppColors.darkInput,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 10.h,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
                           borderSide: isCorrect
@@ -1023,7 +1108,9 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
               labelText: 'شرح الإجابة (اختياري)',
               filled: true,
               fillColor: AppColors.darkInput,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
             ),
           ),
           SizedBox(height: 16.h),
@@ -1034,16 +1121,24 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
             children: [
               TextButton(
                 onPressed: () => _cancelEditing(id),
-                child: Text('إلغاء', style: TextStyle(color: AppColors.textOnDarkHint)),
+                child: Text(
+                  'إلغاء',
+                  style: TextStyle(color: AppColors.textOnDarkHint),
+                ),
               ),
               SizedBox(width: 8.w),
               ElevatedButton.icon(
                 onPressed: () => _saveEditing(q),
                 icon: const Icon(Icons.check, color: Colors.white, size: 18),
-                label: const Text('حفظ التعديل', style: TextStyle(color: Colors.white)),
+                label: const Text(
+                  'حفظ التعديل',
+                  style: TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.success,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
                 ),
               ),
             ],
@@ -1058,7 +1153,9 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
       width: double.infinity,
       height: 54.h,
       child: ElevatedButton(
-        onPressed: _isPublishing || _editingIds.isNotEmpty ? null : _publishExam,
+        onPressed: _isPublishing || _editingIds.isNotEmpty
+            ? null
+            : _publishExam,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.success,
           disabledBackgroundColor: AppColors.success.withValues(alpha: 0.3),
