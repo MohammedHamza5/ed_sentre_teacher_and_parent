@@ -189,6 +189,13 @@ class TeacherAppDrawer extends StatelessWidget {
               gradient: AppColors.premiumEmerald,
               isActive: location.startsWith('/teacher/attendance'),
             ),
+            _DrawerItem(
+              icon: Icons.menu_book_rounded,
+              label: 'إدارة المناهج',
+              route: '/teacher/curriculum',
+              gradient: AppColors.premiumOcean,
+              isActive: location.startsWith('/teacher/curriculum'),
+            ),
           ],
         ),
         _DrawerSection(

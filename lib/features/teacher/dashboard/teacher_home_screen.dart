@@ -698,6 +698,11 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
         route: '/teacher/materials',
       ),
       _QuickAction(
+        icon: Icons.menu_book_rounded,
+        label: 'المناهج',
+        route: '/teacher/curriculum',
+      ),
+      _QuickAction(
         icon: Icons.bar_chart_rounded,
         label: 'التقارير',
         route: '/teacher/reports',

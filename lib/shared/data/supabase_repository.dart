@@ -12,6 +12,7 @@ import 'mixins/messaging_repository_mixin.dart';
 import 'mixins/notification_repository_mixin.dart';
 import 'mixins/storage_repository_mixin.dart';
 import 'mixins/ai_repository_mixin.dart';
+import 'mixins/curriculum_repository_mixin.dart';
 
 /// SupabaseRepository - Facade Pattern
 /// All methods are now organized into domain-specific mixins for maintainability.
@@ -27,6 +28,7 @@ import 'mixins/ai_repository_mixin.dart';
 /// - NotificationRepositoryMixin: Notifications and realtime
 /// - StorageRepositoryMixin: Generic file storage operations
 /// - AIRepositoryMixin: AI Smart Enrollment and analysis
+/// - CurriculumRepositoryMixin: Subjects, chapters, and lessons CRUD
 class SupabaseRepository extends BaseRepository
     with
         SafeRepositoryMixin,
@@ -38,7 +40,8 @@ class SupabaseRepository extends BaseRepository
         MessagingRepositoryMixin,
         NotificationRepositoryMixin,
         StorageRepositoryMixin,
-        AIRepositoryMixin {
+        AIRepositoryMixin,
+        CurriculumRepositoryMixin {
   final SupabaseClient _client;
 
   SupabaseRepository(this._client, [Box? cacheBox]) : super(cacheBox);

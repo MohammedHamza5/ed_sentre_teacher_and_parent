@@ -22,6 +22,8 @@ import 'features/teacher/dashboard/teacher_home_screen.dart';
 import 'features/teacher/schedule/teacher_schedule_screen.dart';
 import 'features/teacher/attendance/teacher_attendance_screen.dart';
 import 'features/teacher/students/teacher_students_screen.dart';
+import 'features/teacher/curriculum/curriculum_management_screen.dart';
+import 'features/teacher/curriculum/subject_detail_management_screen.dart';
 import 'features/teacher/screens/groups/teacher_groups_screen.dart';
 import 'features/teacher/groups/teacher_group_details_screen.dart';
 
@@ -178,6 +180,25 @@ class AppRouter {
                 path: 'students',
                 name: 'teacher-students',
                 builder: (context, state) => const TeacherStudentsScreen(),
+              ),
+              GoRoute(
+                path: 'curriculum',
+                name: 'teacher-curriculum',
+                builder: (context, state) => const CurriculumManagementScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':subjectId',
+                    name: 'teacher-subject-details',
+                    builder: (context, state) {
+                      final subjectId = state.pathParameters['subjectId']!;
+                      final extra = state.extra as Map<String, dynamic>?;
+                      return SubjectDetailManagementScreen(
+                        subjectId: subjectId,
+                        subjectData: extra,
+                      );
+                    },
+                  ),
+                ],
               ),
               GoRoute(
                 path: 'assignments',
