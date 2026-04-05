@@ -276,7 +276,7 @@ class _UploadMaterialDialogState extends State<UploadMaterialDialog> {
                           height: 20.h,
                           width: 20.h,
                           child: const CircularProgressIndicator(
-                            color: Colors.white,
+                            backgroundColor: Colors.white,
                             strokeWidth: 2,
                           ),
                         )
@@ -299,7 +299,11 @@ class _UploadMaterialDialogState extends State<UploadMaterialDialog> {
           Icon(
             icon,
             size: 16.sp,
-            color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            color: isSelected
+                ? Colors.white
+                : Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
           ),
           SizedBox(width: 4.w),
           Text(label),
@@ -312,7 +316,9 @@ class _UploadMaterialDialogState extends State<UploadMaterialDialog> {
       backgroundColor: Colors.white,
       selectedColor: Theme.of(context).colorScheme.primary,
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+        color: isSelected
+            ? Colors.white
+            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
     );

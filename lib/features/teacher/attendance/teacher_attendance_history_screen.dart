@@ -132,7 +132,7 @@ class _TeacherAttendanceHistoryScreenState
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                     child: Center(
                       child: CircularProgressIndicator(
-                        color: Theme.of(context).colorScheme.primary,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                   );
@@ -145,10 +145,15 @@ class _TeacherAttendanceHistoryScreenState
                     leading: Container(
                       padding: EdgeInsets.all(10.w),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10.r),
                       ),
-                      child: Icon(Icons.date_range, color: Theme.of(context).colorScheme.primary),
+                      child: Icon(
+                        Icons.date_range,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                     title: Text(
                       DateFormat('EEEE, d MMMM', 'ar').format(date),

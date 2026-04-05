@@ -52,7 +52,7 @@ class GlassMorphismCard extends StatelessWidget {
                     BoxShadow(
                       color:
                           (neonColor ?? Theme.of(context).colorScheme.primary)
-                              .withOpacity(0.3),
+                              .withValues(alpha: 0.3),
                       blurRadius: 20,
                       spreadRadius: 2,
                     ),
@@ -75,7 +75,7 @@ class GlassMorphismCard extends StatelessWidget {
                   gradient: gradient,
                   borderRadius: BorderRadius.circular(borderRadius ?? 24.r),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     width: hasNeonBorder ? 1.5 : 1,
                   ),
                 ),
@@ -84,8 +84,8 @@ class GlassMorphismCard extends StatelessWidget {
                   child: InkWell(
                     onTap: onTap,
                     borderRadius: BorderRadius.circular(borderRadius ?? 24.r),
-                    highlightColor: Colors.white.withOpacity(0.1),
-                    splashColor: Colors.white.withOpacity(0.2),
+                    highlightColor: Colors.white.withValues(alpha: 0.1),
+                    splashColor: Colors.white.withValues(alpha: 0.2),
                     child: Container(
                       padding: padding ?? EdgeInsets.all(20.w),
                       child: child,
@@ -145,7 +145,9 @@ class PremiumStatCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: gradient,
                   color: gradient == null
-                      ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                      ? Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.1)
                       : null,
                   borderRadius: BorderRadius.circular(14.r),
                 ),
@@ -182,7 +184,9 @@ class PremiumStatCard extends StatelessWidget {
             title,
             style: TextStyle(
               fontSize: 13.sp,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.7),
               fontWeight: FontWeight.w600,
               fontFamily: 'Cairo',
             ),
@@ -194,7 +198,9 @@ class PremiumStatCard extends StatelessWidget {
               subtitle!,
               style: TextStyle(
                 fontSize: 11.sp,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.5),
                 fontFamily: 'Cairo',
               ),
             ),
@@ -258,7 +264,7 @@ class _FloatingActionMenuState extends State<FloatingActionMenu> {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
             blurRadius: 10,
             spreadRadius: 2,
           ),
@@ -290,7 +296,7 @@ class _FloatingActionMenuState extends State<FloatingActionMenu> {
             Theme.of(context).colorScheme.surface,
         shape: BoxShape.circle,
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
         ),
       ),
       child: Material(
@@ -372,7 +378,7 @@ class PremiumSectionHeader extends StatelessWidget {
                               color: titleGradient == null
                                   ? Theme.of(
                                       context,
-                                    ).colorScheme.primary.withOpacity(0.1)
+                                    ).colorScheme.primary.withValues(alpha: 0.1)
                                   : null,
                               borderRadius: BorderRadius.circular(12.r),
                             ),
@@ -408,7 +414,7 @@ class PremiumSectionHeader extends StatelessWidget {
                           fontSize: 14.sp,
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withOpacity(0.7),
+                          ).colorScheme.onSurface.withValues(alpha: 0.7),
                           fontFamily: 'Cairo',
                         ),
                       ),
@@ -446,7 +452,7 @@ class PremiumSectionHeader extends StatelessWidget {
             Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
         ),
       ),
       child: Material(

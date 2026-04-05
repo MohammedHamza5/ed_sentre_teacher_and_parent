@@ -111,8 +111,12 @@ mixin AssignmentRepositoryMixin on BaseRepository {
   ) async {
     final response = await client
         .from('assignment_submissions')
-        .select('*, users(full_name, avatar_url)')
-        .eq('assignment_id', assignmentId);
+        .select(
+          '*, users!assignment_submissions_student_user_id_fkey(full_name, avatar_url)',
+        )
+        .eq('assignment_id', assignmentId)
+        .neq('status', 'in_progress')
+        .order('submitted_at', ascending: false);
 
     return (response as List).map((e) {
       final user = e['users'] as Map<String, dynamic>?;

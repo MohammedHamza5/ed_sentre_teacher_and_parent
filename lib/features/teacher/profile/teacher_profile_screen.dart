@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
-import '../../../shared/widgets/app_drawer.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import 'package:cached_network_image/cached_network_image.dart';
+
+import '../../../core/config/app_colors.dart';
 import '../../../shared/models/models.dart';
 import '../../auth/provider/auth_provider.dart';
 import '../provider/teacher_provider.dart';
 import '../../../core/providers/center_provider.dart';
-import '../../../shared/widgets/premium_widgets.dart';
-import '../../../shared/widgets/premium_plus_widgets.dart';
+import '../../../core/widgets/genius/glass_card.dart';
+import '../../../core/widgets/genius/genius_button.dart';
+
 import '../../settings/presentation/screens/settings_screen.dart';
 import '../../ai/screens/ai_assistant_screen.dart';
 
-
-/// 🎨 Teacher Profile Screen - Premium Dark Mode Design
+/// 🎨 Teacher Profile Screen - Forest Dark Edition
 class TeacherProfileScreen extends StatefulWidget {
   const TeacherProfileScreen({super.key});
 
@@ -34,24 +36,27 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     final centerProvider = context.watch<CenterProvider>();
 
     if (user == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        backgroundColor: AppColors.forestDeep,
+        body: Center(
+          child: CircularProgressIndicator(
+            backgroundColor: AppColors.accentVivid,
+          ),
+        ),
+      );
     }
 
     final currentCenter = centerProvider.currentCenter;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.forestDeep,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // ═══════════════════════════════════════════════════════════
           // HEADER
-          // ═══════════════════════════════════════════════════════════
           SliverToBoxAdapter(child: _buildHeader(user, teacher)),
 
-          // ═══════════════════════════════════════════════════════════
           // STATS CARDS
-          // ═══════════════════════════════════════════════════════════
           SliverPadding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             sliver: SliverToBoxAdapter(
@@ -59,9 +64,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
             ),
           ),
 
-          // ═══════════════════════════════════════════════════════════
           // CENTER CARD
-          // ═══════════════════════════════════════════════════════════
           if (currentCenter != null)
             SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
@@ -70,9 +73,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
               ),
             ),
 
-          // ═══════════════════════════════════════════════════════════
           // ACTIONS
-          // ═══════════════════════════════════════════════════════════
           SliverPadding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             sliver: SliverToBoxAdapter(
@@ -86,153 +87,114 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // HEADER
-  // ═══════════════════════════════════════════════════════════════════════════
-
   Widget _buildHeader(UserModel user, TeacherModel? teacher) {
     return Container(
       padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-      decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary),
+      decoration: const BoxDecoration(
+        color: AppColors.forestPrimary,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+        ),
+      ),
       child: Stack(
         children: [
-          // Drawer menu button (top-left)
           Positioned(
             top: MediaQuery.of(context).padding.top + 12,
             left: 16,
-            child: DrawerMenuButton(isTeacher: true),
+            child: const SizedBox.shrink(),
           ),
-          // Decorative circles
-          Positioned(
-            top: -60,
-            right: -60,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.08),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -40,
-            left: -40,
-            child: Container(
-              width: 150,
-              height: 150,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.05),
-              ),
-            ),
-          ),
-
-          // Content
           Padding(
             padding: EdgeInsets.all(24.w).copyWith(bottom: 40.h),
             child: Column(
               children: [
                 SizedBox(height: 20.h),
-                // Avatar
                 Container(
                   padding: EdgeInsets.all(4.w),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.white.withValues(alpha: 0.4),
-                        Colors.white.withValues(alpha: 0.1),
-                      ],
+                    border: Border.all(
+                      color: AppColors.accentVivid.withValues(alpha: 0.5),
+                      width: 3,
                     ),
                   ),
                   child: CircleAvatar(
                     radius: 52.r,
-                    backgroundColor:
-                        Theme.of(context).cardTheme.color ??
-                        Theme.of(context).colorScheme.surface,
-                    backgroundImage: user.avatarUrl != null
-                        ? NetworkImage(user.avatarUrl!)
-                        : null,
-                    child: user.avatarUrl == null
-                        ? Text(
+                    backgroundColor: AppColors.darkSurface,
+                    child: user.avatarUrl != null
+                        ? ClipOval(
+                            child: CachedNetworkImage(
+                              imageUrl: user.avatarUrl!,
+                              width: 104.r,
+                              height: 104.r,
+                              fit: BoxFit.cover,
+                              memCacheWidth: 208,
+                              memCacheHeight: 208,
+                              errorWidget: (_, __, ___) => Icon(
+                                Icons.person,
+                                color: AppColors.textMuted,
+                                size: 48.sp,
+                              ),
+                            ),
+                          )
+                        : Text(
                             _getInitials(user.fullName),
                             style: TextStyle(
                               fontSize: 36.sp,
-                              color: Colors.white,
+                              color: AppColors.textDisplay,
                               fontWeight: FontWeight.bold,
                             ),
-                          )
-                        : null,
+                          ),
                   ),
                 ).animate().fadeIn().scale(begin: const Offset(0.8, 0.8)),
                 SizedBox(height: 16.h),
 
-                // Name with Badge
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      user.fullName ?? 'المعلم',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      user.fullName,
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textDisplay,
+                          ),
                     ).animate().fadeIn().slideY(begin: 0.2),
                     SizedBox(width: 8.w),
-                    Container(
-                      padding: EdgeInsets.all(5.w),
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.orange.withOpacity(0.4),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.verified,
-                        color: Colors.white,
-                        size: 14.sp,
-                      ),
+                    Icon(
+                      Icons.verified,
+                      color: AppColors.emeraldGreen,
+                      size: 24.sp,
                     ).animate().fadeIn(delay: 200.ms).scale(),
                   ],
                 ),
                 SizedBox(height: 6.h),
 
-                // Invitation Code & Phone
                 Text(
                   'كود الدعوة: ${user.email?.replaceAll('@edsentre.com', '') ?? ''}',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14.sp,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
                 ).animate().fadeIn(delay: 250.ms),
                 SizedBox(height: 4.h),
                 Text(
                   'الهاتف: ${user.phone ?? "غير محدد"}',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 13.sp,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
                 ).animate().fadeIn(delay: 250.ms),
                 SizedBox(height: 12.h),
 
-                // Role Badge
                 Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: 20.w,
                     vertical: 8.h,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
+                    color: AppColors.accentVivid.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(24.r),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.25),
+                      color: AppColors.accentVivid.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Row(
@@ -240,14 +202,14 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                     children: [
                       Icon(
                         Icons.school_rounded,
-                        color: Colors.white,
+                        color: AppColors.accentVivid,
                         size: 16.sp,
                       ),
                       SizedBox(width: 8.w),
                       Text(
                         'معلم ومرشد',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.accentVivid,
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -263,30 +225,22 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     );
   }
 
-  String _getInitials(String name) {
+  String _getInitials(String? name) {
+    if (name == null || name.isEmpty) return 'م';
     final parts = name.split(' ');
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}';
-    }
-    return name.isNotEmpty ? name[0] : 'م';
+    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}';
+    return name[0];
   }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // STATS CARDS
-  // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildStatsCards(
     TeacherProvider teacherProvider,
     CenterProvider centerProvider,
   ) {
     return Transform.translate(
-      offset: Offset(0, -30.h),
-      child: GlassMorphismCard(
+      offset: Offset(0, -20.h),
+      child: GlassCard(
+        color: AppColors.darkSurface.withValues(alpha: 0.9),
         padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
-        hasNeonBorder: true,
-        neonColor: Theme.of(context).colorScheme.primary,
-        blurStrength: 20,
-        borderRadius: 24.r,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -294,38 +248,21 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
               icon: Icons.people_rounded,
               value: '${teacherProvider.totalUniqueStudents}',
               label: 'طالب',
-              gradient: LinearGradient(
-                colors: [
-                  Theme.of(context).colorScheme.primary,
-                  Theme.of(context).colorScheme.primary.withOpacity(0.8),
-                ],
-              ),
+              color: AppColors.infoPurple,
             ),
             _buildStatDivider(),
             _buildStatItem(
               icon: Icons.groups_rounded,
               value: '${teacherProvider.totalActiveGroups}',
               label: 'مجموعة',
-              gradient: LinearGradient(
-                colors: [
-                  Theme.of(context).colorScheme.secondary,
-                  Theme.of(context).colorScheme.secondary.withOpacity(0.8),
-                ],
-              ),
+              color: AppColors.emeraldGreen,
             ),
             _buildStatDivider(),
             _buildStatItem(
               icon: Icons.business_rounded,
               value: '${centerProvider.availableCenters.length}',
               label: 'سنتر',
-              gradient: LinearGradient(
-                colors: [
-                  Theme.of(context).colorScheme.primaryContainer,
-                  Theme.of(
-                    context,
-                  ).colorScheme.primaryContainer.withOpacity(0.8),
-                ],
-              ),
+              color: AppColors.accentVivid,
             ),
           ],
         ),
@@ -337,7 +274,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     required IconData icon,
     required String value,
     required String label,
-    required Gradient gradient,
+    required Color color,
   }) {
     return Expanded(
       child: Column(
@@ -345,38 +282,25 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
           Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
-              gradient: gradient,
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(14.r),
-              boxShadow: [
-                BoxShadow(
-                  color: (gradient as LinearGradient).colors.first.withOpacity(
-                    0.3,
-                  ),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
             ),
-            child: Icon(icon, color: Colors.white, size: 24.sp),
+            child: Icon(icon, color: color, size: 24.sp),
           ),
           SizedBox(height: 10.h),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 24.sp,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface,
-              fontFamily: 'Cairo',
+              color: AppColors.textDisplay,
             ),
           ),
           SizedBox(height: 2.h),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-              fontFamily: 'Cairo',
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.labelMedium?.copyWith(color: AppColors.textMuted),
           ),
         ],
       ),
@@ -387,36 +311,25 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     return Container(
       height: 50.h,
       width: 1,
-      color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+      color: AppColors.glassBorderHighlight,
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CENTER CARD
-  // ═══════════════════════════════════════════════════════════════════════════
-
   Widget _buildCenterCard(dynamic center) {
-    return GlassMorphismCard(
-      gradient: LinearGradient(
-        colors: [
-          Theme.of(context).colorScheme.primary,
-          Theme.of(context).colorScheme.primary.withOpacity(0.8),
-        ],
-      ),
-      hasNeonBorder: true,
-      neonColor: Colors.blueAccent,
+    return GlassCard(
+      color: AppColors.forestPrimary.withValues(alpha: 0.6),
       padding: EdgeInsets.all(16.w),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(14.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: AppColors.accentVivid.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(14.r),
             ),
             child: Icon(
               Icons.business_rounded,
-              color: Colors.white,
+              color: AppColors.accentVivid,
               size: 28.sp,
             ),
           ),
@@ -427,20 +340,15 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
               children: [
                 Text(
                   'السنتر الحالي',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: 13.sp,
-                    fontFamily: 'Cairo',
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelSmall?.copyWith(color: AppColors.textMuted),
                 ),
                 SizedBox(height: 4.h),
                 Text(
                   center.name ?? 'غير محدد',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18.sp,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    fontFamily: 'Cairo',
                   ),
                 ),
               ],
@@ -448,17 +356,13 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
           ),
           Icon(
             Icons.arrow_forward_ios_rounded,
-            color: Colors.white54,
+            color: AppColors.textMuted,
             size: 18.sp,
           ),
         ],
       ),
     ).animate().fadeIn().slideX(begin: 0.1);
   }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // ACTIONS SECTION
-  // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildActionsSection(
     BuildContext context,
@@ -469,19 +373,17 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PremiumSectionHeader(
-          title: 'الإعدادات',
-          icon: Icons.settings_rounded,
-          subtitle: 'تخصيص تجربتك',
-          titleGradient: LinearGradient(
-            colors: [
-              Theme.of(context).colorScheme.primary,
-              Theme.of(context).colorScheme.primary,
-            ],
+        SizedBox(height: 8.h),
+        Text(
+          'الإعدادات',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: AppColors.textDisplay,
           ),
         ),
-        SizedBox(height: 12.h),
-        GlassMorphismCard(
+        SizedBox(height: 16.h),
+        GlassCard(
+          color: AppColors.forestPrimary.withValues(alpha: 0.4),
           padding: EdgeInsets.all(12.w),
           child: Column(
             children: [
@@ -489,14 +391,17 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                 icon: Icons.person_outline_rounded,
                 title: 'تعديل الملف الشخصي',
                 subtitle: 'تحديث البيانات والصورة',
+                color: AppColors.accentVivid,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const SettingsScreen()),
                 ),
               ),
+              _buildDivider(),
               _buildActionTile(
                 icon: Icons.auto_awesome,
                 title: 'المولد الذكي للامتحانات',
                 subtitle: 'المساعد الذكي للمعلم',
+                color: AppColors.infoPurple,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const AIAssistantScreen()),
                 ),
@@ -506,17 +411,22 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                 icon: Icons.qr_code_2_rounded,
                 title: 'بطاقة المعلم',
                 subtitle: 'عرض QR code للتحقق',
+                color: AppColors.emeraldGreen,
                 onTap: () => _showQRDialog(context, user, teacher),
               ),
               _buildDivider(),
               _buildActionTile(
                 icon: Icons.dark_mode_rounded,
                 title: 'الوضع الليلي',
-                subtitle: 'مفعّل حالياً',
+                subtitle: 'Forest Dark مفعل بصفة دائمة',
+                color: AppColors.textDisplay,
                 trailing: Switch(
                   value: true,
-                  activeColor: Theme.of(context).colorScheme.primary,
-                  onChanged: (_) {},
+                  activeColor: AppColors.accentVivid,
+                  activeTrackColor: AppColors.accentVivid.withValues(
+                    alpha: 0.3,
+                  ),
+                  onChanged: null,
                 ),
               ),
               _buildDivider(),
@@ -524,6 +434,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                 icon: Icons.logout_rounded,
                 title: 'تسجيل الخروج',
                 subtitle: 'الخروج من الحساب',
+                color: AppColors.errorRed,
                 isDestructive: true,
                 onTap: () => _showLogoutDialog(context, authProvider),
               ),
@@ -538,52 +449,40 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     required IconData icon,
     required String title,
     required String subtitle,
+    required Color color,
     VoidCallback? onTap,
     Widget? trailing,
     bool isDestructive = false,
   }) {
-    final color = isDestructive
-        ? Theme.of(context).colorScheme.error
-        : Theme.of(context).colorScheme.onSurface;
-    final iconBg = isDestructive
-        ? Theme.of(context).colorScheme.error.withOpacity(0.1)
-        : Theme.of(context).colorScheme.primary.withOpacity(0.1);
-    final iconColor = isDestructive
-        ? Theme.of(context).colorScheme.error
-        : Theme.of(context).colorScheme.primary;
-
     return ListTile(
       onTap: onTap,
       contentPadding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
       leading: Container(
         padding: EdgeInsets.all(10.w),
         decoration: BoxDecoration(
-          color: iconBg,
+          color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12.r),
         ),
-        child: Icon(icon, color: iconColor, size: 22.sp),
+        child: Icon(icon, color: color, size: 22.sp),
       ),
       title: Text(
         title,
-        style: TextStyle(
-          fontSize: 15.sp,
-          fontWeight: FontWeight.w600,
-          color: color,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          color: isDestructive ? AppColors.errorRed : AppColors.textDisplay,
         ),
       ),
       subtitle: Text(
         subtitle,
-        style: TextStyle(
-          fontSize: 12.sp,
-          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-        ),
+        style: Theme.of(
+          context,
+        ).textTheme.labelSmall?.copyWith(color: AppColors.textMuted),
       ),
       trailing:
           trailing ??
           Icon(
             Icons.arrow_forward_ios_rounded,
             size: 16.sp,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+            color: AppColors.textMuted,
           ),
     );
   }
@@ -592,13 +491,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     return Divider(
       height: 1,
       indent: 60.w,
-      color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+      color: AppColors.glassBorderHighlight,
     );
   }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // DIALOGS
-  // ═══════════════════════════════════════════════════════════════════════════
 
   void _showQRDialog(
     BuildContext context,
@@ -606,93 +501,88 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     TeacherModel? teacher,
   ) {
     final data = teacher?.id ?? user.id;
-    final name = teacher?.displayName ?? user.fullName ?? 'المعلم';
+    final name = teacher?.displayName ?? user.fullName;
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => Dialog(
-        backgroundColor:
-            Theme.of(context).cardTheme.color ??
-            Theme.of(context).colorScheme.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28.r),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(28.w),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconContainer(
-                icon: Icons.verified_user_rounded,
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).colorScheme.primary,
-                    Theme.of(context).colorScheme.primary,
-                  ],
-                ),
-                size: 32.sp,
-                padding: 14,
-              ),
-              SizedBox(height: 20.h),
-              Text(
-                'بطاقة المعلم',
-                style: TextStyle(
-                  fontSize: 22.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-              SizedBox(height: 6.h),
-              Text(
-                'امسح الكود للتحقق من الهوية',
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withOpacity(0.7),
-                ),
-              ),
-              SizedBox(height: 28.h),
-
-              // QR Container
-              Container(
-                padding: EdgeInsets.all(16.w),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: QrImageView(
-                  data: data,
-                  version: QrVersions.auto,
-                  size: 180.w,
-                  eyeStyle: QrEyeStyle(
-                    eyeShape: QrEyeShape.square,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  dataModuleStyle: QrDataModuleStyle(
-                    dataModuleShape: QrDataModuleShape.square,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-              SizedBox(height: 20.h),
-
-              Text(
-                name,
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-              SizedBox(height: 24.h),
-
-              GradientButton(
-                text: 'إغلاق',
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: AppColors.darkSurface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+          border: Border(
+            top: BorderSide(color: AppColors.glassBorderHighlight),
           ),
+        ),
+        padding: EdgeInsets.all(24.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: AppColors.textMuted.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 24.h),
+            Icon(
+              Icons.qr_code_rounded,
+              size: 48.sp,
+              color: AppColors.accentVivid,
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'بطاقة المعلم',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              'امسح الكود للتحقق من الهوية',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+            ),
+            SizedBox(height: 24.h),
+            Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: QrImageView(
+                data: data,
+                version: QrVersions.auto,
+                size: 180.w,
+                eyeStyle: const QrEyeStyle(
+                  eyeShape: QrEyeShape.square,
+                  color: AppColors.forestDeep,
+                ),
+                dataModuleStyle: const QrDataModuleStyle(
+                  dataModuleShape: QrDataModuleShape.square,
+                  color: AppColors.forestDeep,
+                ),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              name,
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 32.h),
+            SizedBox(
+              width: double.infinity,
+              child: GeniusButton(
+                label: 'إغلاق',
+                onPressed: () => Navigator.pop(context),
+                variant: GeniusButtonVariant.glass,
+              ),
+            ),
+            SizedBox(height: 24.h),
+          ],
         ),
       ),
     );
@@ -702,47 +592,38 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor:
-            Theme.of(context).cardTheme.color ??
-            Theme.of(context).colorScheme.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24.r),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(28.w),
+        backgroundColor: Colors.transparent,
+        child: GlassCard(
+          color: AppColors.darkSurface.withValues(alpha: 0.9),
+          padding: EdgeInsets.all(24.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.error.withOpacity(0.1),
+                  color: AppColors.errorRed.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.logout_rounded,
-                  color: Theme.of(context).colorScheme.error,
+                  color: AppColors.errorRed,
                   size: 32.sp,
                 ),
               ),
               SizedBox(height: 20.h),
               Text(
                 'تسجيل الخروج',
-                style: TextStyle(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10.h),
               Text(
                 'هل أنت متأكد من تسجيل الخروج؟',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withOpacity(0.7),
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
               ),
               SizedBox(height: 28.h),
               Row(
@@ -752,11 +633,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 14.h),
-                        side: BorderSide(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.outline.withOpacity(0.1),
-                        ),
+                        side: BorderSide(color: AppColors.glassBorderHighlight),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14.r),
                         ),
@@ -764,11 +641,8 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                       child: Text(
                         'إلغاء',
                         style: TextStyle(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withOpacity(0.7),
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w600,
+                          color: AppColors.textDisplay,
+                          fontSize: 16.sp,
                         ),
                       ),
                     ),
@@ -782,7 +656,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                         if (context.mounted) context.go('/login');
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.error,
+                        backgroundColor: AppColors.errorRed,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14.r),
@@ -792,8 +666,8 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                         'خروج',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),

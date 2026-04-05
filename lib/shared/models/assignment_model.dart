@@ -174,6 +174,7 @@ class SubmissionModel {
   final String? feedback;
   final String? gradedBy;
   final DateTime? gradedAt;
+  final String status;
 
   // Additional fields from joins
   final String? studentName;
@@ -190,6 +191,7 @@ class SubmissionModel {
     this.feedback,
     this.gradedBy,
     this.gradedAt,
+    this.status = 'submitted',
     this.studentName,
     this.studentAvatar,
   });
@@ -203,17 +205,22 @@ class SubmissionModel {
       fileUrls: (json['file_urls'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
-      submittedAt: DateTime.parse(json['submitted_at'] as String),
+      submittedAt: json['submitted_at'] != null
+          ? DateTime.parse(json['submitted_at'] as String)
+          : DateTime.now(),
       score: (json['score'] as num?)?.toDouble(),
       feedback: json['feedback'] as String?,
       gradedBy: json['graded_by'] as String?,
       gradedAt: json['graded_at'] != null
           ? DateTime.parse(json['graded_at'] as String)
           : null,
+      status: json['status'] as String? ?? 'submitted',
       studentName: json['student_name'] as String?,
       studentAvatar: json['student_avatar'] as String?,
     );
   }
 
-  bool get isGraded => score != null;
+  bool get isGraded => score != null || status == 'graded';
+  bool get isSubmitted => status == 'submitted';
+  bool get isInProgress => status == 'in_progress';
 }

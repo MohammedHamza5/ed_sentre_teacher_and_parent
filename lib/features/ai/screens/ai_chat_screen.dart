@@ -304,7 +304,9 @@ class _AIChatScreenState extends State<AIChatScreen> {
           Expanded(
             child: _isLoadingMessages
                 ? Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
+                    child: CircularProgressIndicator(
+                      backgroundColor: AppColors.primary,
+                    ),
                   )
                 : _messages.isEmpty
                 ? _buildEmptyState()
@@ -626,7 +628,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
                             height: 20.sp,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              backgroundColor: Colors.white,
                             ),
                           )
                         : Icon(Icons.send, color: Colors.white, size: 20.sp),
@@ -733,7 +735,7 @@ class _ConversationHistorySheetState extends State<_ConversationHistorySheet> {
                   child: aiProvider.isLoadingConversations
                       ? Center(
                           child: CircularProgressIndicator(
-                            color: AppColors.primary,
+                            backgroundColor: AppColors.primary,
                           ),
                         )
                       : conversations.isEmpty

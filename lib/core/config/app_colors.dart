@@ -10,6 +10,34 @@ import 'package:flutter/material.dart';
 /// - Subtle gradients for premium feel
 class AppColors {
   // ═══════════════════════════════════════════════════════════════════════════
+  // FOREST DARK AESTHETIC ALIASES (Glassmorphism 2.0)
+  // ═══════════════════════════════════════════════════════════════════════════
+  static const Color forestDeep = Color(0xFF0B1410);
+  static const Color forestPrimary = Color(0xFF13201A);
+  static const Color accentVivid = Color(0xFF2DD4BF);
+  static const Color textDisplay = Color(0xFFF8FAFC);
+  static const Color textMuted = Color(0xFF94A3B8);
+  static const Color errorRed = Color(0xFFEF4444);
+  static const Color warmAmber = Color(0xFFF59E0B);
+  static const Color infoPurple = Color(0xFF8B5CF6);
+  static const Color emeraldGreen = Color(0xFF10B981);
+  static Color get glassBorderHighlight =>
+      const Color(0xFFFFFFFF).withValues(alpha: 0.1);
+
+  // Backward Compatibility Aliases for components & other phases
+  static const Color accentMid = infoPurple;
+  static const Color glassFrost = Color(0x0AFFFFFF);
+  static const Color textDisabled = Color(0xFF475569);
+  static const Color heroGlow = Color(0x332DD4BF);
+  static const Color alertCoral = errorRed;
+  static const Color textBody = textMuted;
+  static const LinearGradient glassWash = glassGradient;
+  static List<BoxShadow> get glassShadow => softGlow;
+  static const Color ambientGlow = Color(0x1A2DD4BF);
+  static const Color textMain = textDisplay;
+  static const Color warningAmber = warmAmber;
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // DARK MODE FOUNDATION (Primary Theme)
   // ═══════════════════════════════════════════════════════════════════════════
 
@@ -48,7 +76,7 @@ class AppColors {
   static const Color primarySoft = Color(0xFF1E3A5F);
 
   /// Primary Glow - Effects
-  static Color primaryGlow = const Color(0xFF3B82F6).withOpacity(0.4);
+  static Color primaryGlow = const Color(0xFF3B82F6).withValues(alpha: 0.4);
 
   /// Primary Gradient - Premium buttons & headers
   static const LinearGradient primaryGradient = LinearGradient(
@@ -109,16 +137,16 @@ class AppColors {
   // ═══════════════════════════════════════════════════════════════════════════
 
   /// Glass Effect - White overlay
-  static Color glassWhite = Colors.white.withOpacity(0.08);
+  static Color glassWhite = Colors.white.withValues(alpha: 0.08);
 
   /// Glass Effect - Dark overlay
-  static Color glassBlack = Colors.black.withOpacity(0.3);
+  static Color glassBlack = Colors.black.withValues(alpha: 0.3);
 
   /// Glass Border
-  static Color glassBorder = Colors.white.withOpacity(0.12);
+  static Color glassBorder = Colors.white.withValues(alpha: 0.12);
 
   /// Glass Highlight
-  static Color glassHighlight = Colors.white.withOpacity(0.05);
+  static Color glassHighlight = Colors.white.withValues(alpha: 0.05);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // LIGHT MODE COLORS (Secondary Theme)
@@ -295,7 +323,7 @@ class AppColors {
   static const Color shadow = Color(0x1A1E293B);
 
   /// Dark theme shadow (using primary glow)
-  static Color darkShadow = const Color(0xFF3B82F6).withOpacity(0.15);
+  static Color darkShadow = const Color(0xFF3B82F6).withValues(alpha: 0.15);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // DIVIDERS

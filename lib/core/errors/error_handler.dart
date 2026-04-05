@@ -154,7 +154,7 @@ class ErrorHandler {
 
   /// معالجة أخطاء Storage
   AppException _handleStorageError(supabase.StorageException error) {
-    final message = error.message.toLowerCase() ?? '';
+    final message = error.message.toLowerCase();
 
     if (message.contains('too large') || message.contains('size')) {
       return const FileTooLargeException();
@@ -165,7 +165,7 @@ class ErrorHandler {
     }
 
     return FileUploadException(
-      message: error.message ?? 'Storage error',
+      message: error.message,
       originalError: error,
     );
   }

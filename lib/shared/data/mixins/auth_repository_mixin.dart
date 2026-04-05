@@ -17,13 +17,17 @@ mixin AuthRepositoryMixin on BaseRepository {
   User? get currentUser => client.auth.currentUser;
 
   /// Sign in with email, code, or phone fallback
-  Future<AuthResponse> signInWithIdentifier(String identifier, String password) async {
+  Future<AuthResponse> signInWithIdentifier(
+    String identifier,
+    String password,
+  ) async {
     String? emailToUse;
-    
+
     // If it's already an email, use it directly (fallback for old accounts if needed)
     if (identifier.contains('@')) {
       emailToUse = identifier;
-    } else if (identifier.toUpperCase().startsWith('T') || identifier.toUpperCase().startsWith('P')) {
+    } else if (identifier.toUpperCase().startsWith('T') ||
+        identifier.toUpperCase().startsWith('P')) {
       emailToUse = '${identifier.toUpperCase()}@edsentre.com';
     } else {
       // Phone number fallback
@@ -35,14 +39,16 @@ mixin AuthRepositoryMixin on BaseRepository {
         if (response != null && response.toString().isNotEmpty) {
           emailToUse = response.toString();
         } else {
-          throw const AuthException('لم يتم العثور على حساب مرتبط برقم الهاتف هذا.');
+          throw const AuthException(
+            'لم يتم العثور على حساب مرتبط برقم الهاتف هذا.',
+          );
         }
       } catch (e) {
         if (e is AuthException) rethrow;
         throw AuthException('حدث خطأ في البحث برقم الهاتف: $e');
       }
     }
-    
+
     return await client.auth.signInWithPassword(
       email: emailToUse,
       password: password,
@@ -188,9 +194,7 @@ mixin AuthRepositoryMixin on BaseRepository {
               .maybeSingle();
 
           if (kDebugMode) {
-            debugPrint(
-              '📊 [Repo] teacher_invitations result: $teacherInvite',
-            );
+            debugPrint('📊 [Repo] teacher_invitations result: $teacherInvite');
           }
 
           if (teacherInvite != null) {
@@ -254,9 +258,7 @@ mixin AuthRepositoryMixin on BaseRepository {
 
           if (parentInvite != null) {
             if (kDebugMode) {
-              debugPrint(
-                '✅ [Repo] Found in parent_invitations: $parentInvite',
-              );
+              debugPrint('✅ [Repo] Found in parent_invitations: $parentInvite');
             }
             return {
               'valid': true,
@@ -395,9 +397,7 @@ mixin AuthRepositoryMixin on BaseRepository {
           }
         } else {
           if (kDebugMode) {
-            debugPrint(
-              '🔍 Checking Teacher Profile for User: $currentUserId',
-            );
+            debugPrint('🔍 Checking Teacher Profile for User: $currentUserId');
           }
 
           final existingProfile = await client
@@ -424,9 +424,7 @@ mixin AuthRepositoryMixin on BaseRepository {
                 .single();
             teacherProfileId = newProfile['id'];
             if (kDebugMode) {
-              debugPrint(
-                '✅ Created new teacher profile: $teacherProfileId',
-              );
+              debugPrint('✅ Created new teacher profile: $teacherProfileId');
             }
           }
         }

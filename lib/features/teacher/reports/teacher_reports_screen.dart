@@ -1,17 +1,20 @@
-import '../../../shared/widgets/app_drawer.dart';
+import 'dart:ui';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-// Removed AppColors import
+
+import '../../../core/config/app_colors.dart';
 import '../../../core/providers/center_provider.dart';
 import '../provider/teacher_provider.dart';
 import '../../../shared/data/supabase_repository.dart';
-import '../../../shared/widgets/premium_widgets.dart';
-import '../../../shared/widgets/premium_plus_widgets.dart';
 
+import '../../../core/widgets/genius/glass_card.dart';
+import '../../../core/widgets/genius/staggered_list_animator.dart';
+import '../../../shared/widgets/premium_widgets.dart' hide GlassCard;
+
+/// 🟢 Teacher Reports & Analytics Screen - Glassmorphism 2.0 Overhaul
 class TeacherReportsScreen extends StatefulWidget {
   const TeacherReportsScreen({super.key});
 
@@ -31,7 +34,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
   }
 
   Future<void> _loadData() async {
@@ -52,25 +55,20 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
         teacherId = teacherProvider.teacherId;
       }
 
-      if (centerId == null) {
-        throw Exception('لم يتم تحديد السنتر');
-      }
+      if (centerId == null) throw Exception('لم يتم تحديد السنتر');
 
       final stats = await repository.getTeacherOverviewStats(
         centerId,
         teacherId: teacherId,
       );
-
       final attendance = await repository.getTeacherAttendanceTrends(
         centerId,
         teacherId: teacherId,
       );
-
       final assignments = await repository.getTeacherAssignmentTrends(
         centerId,
         teacherId: teacherId,
       );
-
       final performance = await repository.getStudentsPerformance(
         centerId: centerId,
         teacherId: teacherId,
@@ -85,8 +83,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
           _isLoading = false;
         });
       }
-    } catch (e, stack) {
-      debugPrint('📊 [ReportsScreen] ERROR: $e\n$stack');
+    } catch (e) {
       if (mounted) {
         setState(() {
           _error = e.toString();
@@ -99,225 +96,145 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              expandedHeight: 160.h,
-              pinned: true,
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              leading: IconButton(
-                icon: Container(
-                  padding: EdgeInsets.all(6.w),
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  child: Icon(
-                    Icons.arrow_back,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    size: 20,
-                  ),
-                ),
-                onPressed: () => context.go('/teacher'),
-              ),
-              flexibleSpace: FlexibleSpaceBar(
-                background: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                  ),
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        right: -30,
-                        top: -30,
-                        child: Icon(
-                          Icons.analytics_outlined,
-                          size: 160.sp,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onPrimaryContainer.withOpacity(0.06),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: -20,
-                        left: -20,
-                        child: Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onPrimaryContainer.withOpacity(0.05),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: Padding(
-                          padding: EdgeInsets.all(20.w),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.all(8.w),
-                                    decoration: BoxDecoration(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimaryContainer
-                                          .withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(10.r),
-                                    ),
-                                    child: Icon(
-                                      Icons.analytics_rounded,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onPrimaryContainer,
-                                      size: 22.sp,
-                                    ),
-                                  ),
-                                  SizedBox(width: 12.w),
-                                  Text(
-                                    'لوحة المؤشرات',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 22.sp,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 4.h),
-                              Text(
-                                'تحليل شامل للأداء والحضور',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 13.sp,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                IconButton(
-                  icon: Icon(
-                    Icons.refresh,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  onPressed: _loadData,
-                ),
-                Padding(
-                  padding: EdgeInsets.only(left: 8.w),
-                  child: DrawerMenuButton(isTeacher: true),
-                ),
-              ],
-            ),
-          ];
-        },
-        body: _isLoading
-            ? Center(
-                child: CircularProgressIndicator(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              )
+      backgroundColor: AppColors.forestDeep,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: Text(
+          'لوحة المؤشرات',
+          style: Theme.of(context).textTheme.headlineMedium,
+        ),
+        centerTitle: true,
+        backgroundColor: AppColors.forestDeep.withValues(alpha: 0.8),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.textDisplay),
+        flexibleSpace: ClipRRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(color: Colors.transparent),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh_rounded, color: AppColors.accentVivid),
+            onPressed: _loadData,
+          ),
+          Padding(
+            padding: EdgeInsets.only(left: 8.w),
+            child: const SizedBox.shrink(),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        bottom: false,
+        child: _isLoading
+            ? _buildLoader()
             : _error != null
-            ? Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 48.sp,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    SizedBox(height: 12.h),
-                    Text(
-                      _error!,
-                      style: TextStyle(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withOpacity(0.7),
-                      ),
-                    ),
-                    SizedBox(height: 12.h),
-                    GradientButton(
-                      text: 'إعادة المحاولة',
-                      icon: Icons.refresh,
-                      onPressed: _loadData,
-                    ),
-                  ],
-                ),
-              )
+            ? _buildErrorState()
             : RefreshIndicator(
                 onRefresh: _loadData,
-                color: Theme.of(context).colorScheme.primary,
-                backgroundColor:
-                    Theme.of(context).cardTheme.color ??
-                    Theme.of(context).colorScheme.surface,
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.only(bottom: 100.h),
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 16.h),
-                      _buildOverviewCards(),
-                      SizedBox(height: 24.h),
-                      _buildSectionTitle('اتجاهات الحضور (آخر 30 يوم)'),
-                      SizedBox(height: 8.h),
-                      _buildAttendanceChart(),
-                      SizedBox(height: 24.h),
-                      _buildSectionTitle('نشاط الواجبات'),
-                      SizedBox(height: 8.h),
-                      _buildAssignmentsChart(),
-                      SizedBox(height: 24.h),
-                      _buildSectionTitle('أفضل الطلاب أداءً'),
-                      SizedBox(height: 8.h),
-                      _buildTopStudents(),
-                    ],
-                  ),
+                backgroundColor: AppColors.accentVivid,
+                color: AppColors.forestPrimary,
+                child: StaggeredListAnimator(
+                  isList: true,
+                  padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 100.h),
+                  children: [
+                    _buildOverviewCards(),
+                    SizedBox(height: 32.h),
+                    _buildSectionTitle('اتجاهات الحضور (آخر 30 يوم)'),
+                    SizedBox(height: 16.h),
+                    _buildAttendanceChart(),
+                    SizedBox(height: 32.h),
+                    _buildSectionTitle('نشاط الواجبات'),
+                    SizedBox(height: 16.h),
+                    _buildAssignmentsChart(),
+                    SizedBox(height: 32.h),
+                    _buildSectionTitle('أفضل الطلاب أداءً'),
+                    SizedBox(height: 16.h),
+                    _buildTopStudents(),
+                  ],
                 ),
               ),
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildLoader() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Row(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      child: Column(
         children: [
-          Container(
-            width: 3.w,
-            height: 18.h,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-              borderRadius: BorderRadius.circular(2.r),
-            ),
+          Row(
+            children: [
+              Expanded(child: ShimmerLoading(height: 120.h)),
+              SizedBox(width: 12.w),
+              Expanded(child: ShimmerLoading(height: 120.h)),
+              SizedBox(width: 12.w),
+              Expanded(child: ShimmerLoading(height: 120.h)),
+            ],
           ),
-          SizedBox(width: 8.w),
+          SizedBox(height: 32.h),
+          ShimmerLoading(height: 200.h),
+          SizedBox(height: 32.h),
+          ShimmerLoading(height: 200.h),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.error_outline_rounded,
+            size: 64.sp,
+            color: AppColors.errorRed,
+          ),
+          SizedBox(height: 16.h),
           Text(
-            title,
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface,
+            _error ?? 'حدث خطأ غير معروف',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: AppColors.textMuted),
+          ),
+          SizedBox(height: 24.h),
+          ElevatedButton.icon(
+            onPressed: _loadData,
+            icon: const Icon(
+              Icons.refresh_rounded,
+              color: AppColors.forestDeep,
+            ),
+            label: const Text(
+              'إعادة المحاولة',
+              style: TextStyle(
+                color: AppColors.forestDeep,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accentVivid,
             ),
           ),
         ],
       ),
+    ).animate().fadeIn().scale();
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Row(
+      children: [
+        Container(
+          width: 4.w,
+          height: 20.h,
+          decoration: BoxDecoration(
+            color: AppColors.accentVivid,
+            borderRadius: BorderRadius.circular(2.r),
+          ),
+        ),
+        SizedBox(width: 8.w),
+        Text(title, style: Theme.of(context).textTheme.titleLarge),
+      ],
     );
   }
 
@@ -326,113 +243,131 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
 
     final totalStudents = teacherProvider.statsTotalStudents > 0
         ? teacherProvider.statsTotalStudents
-        : getMapValue(_overviewStats, 'total_students');
-
+        : (_overviewStats['total_students'] ?? 0);
     final attendanceRate = teacherProvider.statsAttendanceRate > 0
         ? teacherProvider.statsAttendanceRate
-        : getMapValue(_overviewStats, 'attendance_rate');
+        : (_overviewStats['attendance_rate'] ?? 0);
+    final totalAssignments = _overviewStats['total_assignments'] ?? 0;
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Row(
+    return Row(
+      children: [
+        Expanded(
+          child: _buildStatCard(
+            'الطلاب',
+            '$totalStudents',
+            Icons.people_rounded,
+            AppColors.infoPurple,
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: _buildStatCard(
+            'الحضور',
+            '$attendanceRate%',
+            Icons.check_circle_rounded,
+            AppColors.emeraldGreen,
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: _buildStatCard(
+            'الواجبات',
+            '$totalAssignments',
+            Icons.assignment_rounded,
+            AppColors.accentVivid,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return GlassCard(
+      color: AppColors.forestPrimary.withValues(alpha: 0.4),
+      padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 8.w),
+      child: Column(
         children: [
-          Expanded(
-            child: PremiumStatCard(
-              title: 'الطلاب',
-              value: '$totalStudents',
-              icon: Icons.people,
-              animationDelay: 0,
+          Container(
+            padding: EdgeInsets.all(10.w),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 24.sp),
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(width: 10.w),
-          Expanded(
-            child: PremiumStatCard(
-              title: 'نسبة الحضور',
-              value: '$attendanceRate%',
-              icon: Icons.check_circle,
-              animationDelay: 100,
-            ),
-          ),
-          SizedBox(width: 10.w),
-          Expanded(
-            child: PremiumStatCard(
-              title: 'الواجبات',
-              value: '${getMapValue(_overviewStats, 'total_assignments')}',
-              icon: Icons.assignment,
-              animationDelay: 200,
-            ),
+          SizedBox(height: 4.h),
+          Text(
+            title,
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(color: AppColors.textMuted),
           ),
         ],
       ),
     );
   }
 
-  dynamic getMapValue(Map<String, dynamic> map, String key) {
-    return map[key] ?? 0;
-  }
-
   Widget _buildAttendanceChart() {
-    if (_attendanceTrends.isEmpty) {
-      return _buildNoDataCard('لا توجد بيانات كافية');
-    }
+    if (_attendanceTrends.isEmpty) return _buildNoDataCard();
 
     List<FlSpot> spots = [];
     for (int i = 0; i < _attendanceTrends.length; i++) {
       final dayStats = _attendanceTrends[i];
       final present = dayStats['present'] as int? ?? 0;
       final total = dayStats['total'] as int? ?? 1;
-      final rate = total > 0 ? (present / total) * 100 : 0.0;
-      spots.add(FlSpot(i.toDouble(), rate));
+      spots.add(
+        FlSpot(i.toDouble(), total > 0 ? (present / total) * 100 : 0.0),
+      );
     }
 
-    return Container(
-      height: 200.h,
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      child: GlassMorphismCard(
+    return SizedBox(
+      height: 220.h,
+      child: GlassCard(
+        color: AppColors.forestPrimary.withValues(alpha: 0.4),
         padding: EdgeInsets.all(16.w),
-        hasNeonBorder: true,
-        neonColor: Theme.of(context).colorScheme.primary,
-        animationDelay: 300,
         child: LineChart(
           LineChartData(
             gridData: FlGridData(
               show: true,
-              drawHorizontalLine: true,
               drawVerticalLine: false,
               horizontalInterval: 25,
-              getDrawingHorizontalLine: (value) {
-                return FlLine(
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
-                  strokeWidth: 0.5,
-                );
-              },
+              getDrawingHorizontalLine: (value) =>
+                  FlLine(color: AppColors.glassBorderHighlight, strokeWidth: 1),
             ),
             titlesData: FlTitlesData(
               leftTitles: AxisTitles(
                 sideTitles: SideTitles(
-                  reservedSize: 30,
+                  reservedSize: 36,
                   showTitles: true,
                   interval: 25,
-                  getTitlesWidget: (value, meta) {
-                    return Text(
-                      '${value.toInt()}%',
-                      style: TextStyle(
-                        fontSize: 9.sp,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withOpacity(0.5),
-                      ),
-                    );
-                  },
+                  getTitlesWidget: (value, meta) => Text(
+                    '${value.toInt()}%',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                  ),
                 ),
+              ),
+              bottomTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
               ),
               rightTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
               ),
               topTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-              bottomTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
               ),
             ),
@@ -441,16 +376,15 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
               LineChartBarData(
                 spots: spots,
                 isCurved: true,
-                color: Theme.of(context).colorScheme.primary,
-                barWidth: 3,
-                isStrokeCapRound: true,
+                color: AppColors.emeraldGreen,
+                barWidth: 4,
                 dotData: const FlDotData(show: false),
                 belowBarData: BarAreaData(
                   show: true,
                   gradient: LinearGradient(
                     colors: [
-                      Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                      Theme.of(context).colorScheme.primary.withOpacity(0.0),
+                      AppColors.emeraldGreen.withValues(alpha: 0.3),
+                      AppColors.emeraldGreen.withValues(alpha: 0.0),
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -463,63 +397,47 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
           ),
         ),
       ),
-    ).animate().fadeIn(duration: 500.ms, delay: 200.ms);
+    );
   }
 
   Widget _buildAssignmentsChart() {
-    if (_assignmentTrends.isEmpty) {
-      return _buildNoDataCard('لا توجد بيانات كافية');
-    }
+    if (_assignmentTrends.isEmpty) return _buildNoDataCard();
 
-    return Container(
-      height: 200.h,
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      child: GlassMorphismCard(
+    return SizedBox(
+      height: 220.h,
+      child: GlassCard(
+        color: AppColors.forestPrimary.withValues(alpha: 0.4),
         padding: EdgeInsets.all(16.w),
-        hasNeonBorder: true,
-        neonColor: Theme.of(context).colorScheme.secondary,
-        animationDelay: 400,
         child: BarChart(
           BarChartData(
             gridData: FlGridData(
               show: true,
-              drawHorizontalLine: true,
               drawVerticalLine: false,
               horizontalInterval: 1,
-              getDrawingHorizontalLine: (value) {
-                return FlLine(
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
-                  strokeWidth: 0.5,
-                );
-              },
+              getDrawingHorizontalLine: (value) =>
+                  FlLine(color: AppColors.glassBorderHighlight, strokeWidth: 1),
             ),
             titlesData: FlTitlesData(
               leftTitles: AxisTitles(
                 sideTitles: SideTitles(
+                  reservedSize: 24,
                   showTitles: true,
-                  reservedSize: 30,
                   interval: 1,
-                  getTitlesWidget: (value, meta) {
-                    return Text(
-                      '${value.toInt()}',
-                      style: TextStyle(
-                        fontSize: 9.sp,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withOpacity(0.5),
-                        fontFamily: 'Cairo',
-                      ),
-                    );
-                  },
+                  getTitlesWidget: (value, meta) => Text(
+                    '${value.toInt()}',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                  ),
                 ),
+              ),
+              bottomTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
               ),
               rightTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
               ),
               topTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-              bottomTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
               ),
             ),
@@ -530,8 +448,12 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
                 barRods: [
                   BarChartRodData(
                     toY: (e.value['count'] as int).toDouble(),
-                    color: Theme.of(context).colorScheme.secondary,
-                    width: 14,
+                    gradient: LinearGradient(
+                      colors: [AppColors.accentVivid, AppColors.infoPurple],
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                    ),
+                    width: 16,
                     borderRadius: BorderRadius.circular(6),
                   ),
                 ],
@@ -543,34 +465,26 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
     );
   }
 
-  Widget _buildNoDataCard(String text) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      child: GlassMorphismCard(
-        padding: EdgeInsets.symmetric(vertical: 30.h),
-        backgroundColor:
-            Theme.of(context).cardTheme.color?.withOpacity(0.3) ??
-            Theme.of(context).colorScheme.surface.withOpacity(0.3),
-        child: Center(
-          child: Column(
-            children: [
-              Icon(
-                Icons.bar_chart_outlined,
-                size: 32.sp,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                text,
-                style: TextStyle(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withOpacity(0.5),
-                  fontFamily: 'Cairo',
-                ),
-              ),
-            ],
-          ),
+  Widget _buildNoDataCard() {
+    return GlassCard(
+      color: AppColors.darkSurface.withValues(alpha: 0.4),
+      padding: EdgeInsets.symmetric(vertical: 40.h),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(
+              Icons.bar_chart_rounded,
+              size: 48.sp,
+              color: AppColors.textMuted.withValues(alpha: 0.5),
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              'لا توجد بيانات كافية',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(color: AppColors.textMuted),
+            ),
+          ],
         ),
       ),
     );
@@ -578,102 +492,84 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
 
   Widget _buildTopStudents() {
     final topStudents = _studentsPerformance.take(5).toList();
-    if (topStudents.isEmpty) {
-      return _buildNoDataCard('لا توجد بيانات أداء');
-    }
+    if (topStudents.isEmpty) return _buildNoDataCard();
+
+    final rankColors = [
+      const Color(0xFFFFD700), // Gold
+      const Color(0xFFC0C0C0), // Silver
+      const Color(0xFFCD7F32), // Bronze
+      AppColors.infoPurple,
+      AppColors.infoPurple,
+    ];
 
     return Column(
       children: topStudents.asMap().entries.map((entry) {
         final index = entry.key;
         final student = entry.value;
-        final rankColors = [
-          const Color(0xFFFFD700), // Gold
-          const Color(0xFFC0C0C0), // Silver
-          const Color(0xFFCD7F32), // Bronze
-          Theme.of(context).colorScheme.primaryContainer,
-          Theme.of(context).colorScheme.primaryContainer,
-        ];
-
         return Padding(
-          padding: EdgeInsets.only(bottom: 8.h),
-          child: GlassMorphismCard(
-            padding: EdgeInsets.all(14.w),
-            backgroundColor:
-                Theme.of(context).cardTheme.color?.withOpacity(0.3) ??
-                Theme.of(context).colorScheme.surface.withOpacity(0.3),
-            animationDelay: 80 * index,
+          padding: EdgeInsets.only(bottom: 12.h),
+          child: GlassCard(
+            color: AppColors.forestPrimary.withValues(alpha: 0.4),
+            padding: EdgeInsets.all(16.w),
             child: Row(
               children: [
-                // Rank
                 Container(
-                  width: 36.w,
-                  height: 36.w,
+                  width: 40.w,
+                  height: 40.w,
                   decoration: BoxDecoration(
-                    color: rankColors[index].withOpacity(0.15),
+                    color: rankColors[index].withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: rankColors[index].withOpacity(0.4),
+                      color: rankColors[index].withValues(alpha: 0.4),
                     ),
                   ),
-                  child: Center(
-                    child: Text(
-                      '${index + 1}',
-                      style: TextStyle(
-                        color: rankColors[index],
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14.sp,
-                        fontFamily: 'Cairo',
-                      ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    '${index + 1}',
+                    style: TextStyle(
+                      color: rankColors[index],
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18.sp,
                     ),
                   ),
                 ),
-                SizedBox(width: 12.w),
-                // Name & details
+                SizedBox(width: 16.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         student['name'] ?? 'Unknown',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14.sp,
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontFamily: 'Cairo',
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
-                      SizedBox(height: 2.h),
+                      SizedBox(height: 4.h),
                       Text(
-                        'حضور: ${student['attendance']}% | واجبات: ${student['assignments']}%',
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withOpacity(0.7),
-                          fontFamily: 'Cairo',
+                        'حضور: ${student['attendance']}% • واجبات: ${student['assignments']}%',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: AppColors.textMuted,
                         ),
                       ),
                     ],
                   ),
                 ),
-                // Overall badge
                 Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: 12.w,
                     vertical: 6.h,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.green.withOpacity(0.3)),
+                    color: AppColors.emeraldGreen.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(
+                      color: AppColors.emeraldGreen.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Text(
                     '${student['overall']}%',
                     style: TextStyle(
-                      color: Colors.green,
+                      color: AppColors.emeraldGreen,
                       fontWeight: FontWeight.bold,
-                      fontSize: 12.sp,
-                      fontFamily: 'Cairo',
+                      fontSize: 14.sp,
                     ),
                   ),
                 ),

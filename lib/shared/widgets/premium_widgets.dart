@@ -53,11 +53,13 @@ class GlassCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color:
                       backgroundColor ??
-                      theme.colorScheme.surface.withOpacity(0.7),
+                      theme.colorScheme.surface.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(borderRadius ?? 20.r),
                   border: hasBorder
                       ? Border.all(
-                          color: theme.colorScheme.outline.withOpacity(0.2),
+                          color: theme.colorScheme.outline.withValues(
+                            alpha: 0.2,
+                          ),
                         )
                       : null,
                 ),
@@ -113,8 +115,8 @@ class PremiumCard extends StatelessWidget {
         boxShadow: hasGlow
             ? [
                 BoxShadow(
-                  color: (glowColor ?? theme.colorScheme.primary).withOpacity(
-                    0.2,
+                  color: (glowColor ?? theme.colorScheme.primary).withValues(
+                    alpha: 0.2,
                   ),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
@@ -135,7 +137,7 @@ class PremiumCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(borderRadius ?? 20.r),
               border: hasBorder
                   ? Border.all(
-                      color: theme.colorScheme.outline.withOpacity(0.15),
+                      color: theme.colorScheme.outline.withValues(alpha: 0.15),
                     )
                   : null,
             ),
@@ -181,7 +183,7 @@ class GradientButton extends StatelessWidget {
     final defaultGradient = LinearGradient(
       colors: [
         theme.colorScheme.primary,
-        theme.colorScheme.primary.withOpacity(0.8),
+        theme.colorScheme.primary.withValues(alpha: 0.8),
       ],
     );
 
@@ -194,7 +196,7 @@ class GradientButton extends StatelessWidget {
         boxShadow: hasGlow
             ? [
                 BoxShadow(
-                  color: theme.colorScheme.primary.withOpacity(0.4),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.4),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -212,7 +214,7 @@ class GradientButton extends StatelessWidget {
                     width: 24.w,
                     height: 24.w,
                     child: const CircularProgressIndicator(
-                      color: Colors.white,
+                      backgroundColor: Colors.white,
                       strokeWidth: 2.5,
                     ),
                   )
@@ -271,7 +273,7 @@ class AnimatedStatCard extends StatelessWidget {
     final defaultGradient = LinearGradient(
       colors: [
         theme.colorScheme.primary,
-        theme.colorScheme.primary.withOpacity(0.8),
+        theme.colorScheme.primary.withValues(alpha: 0.8),
       ],
     );
 
@@ -313,7 +315,7 @@ class AnimatedStatCard extends StatelessWidget {
                 title,
                 style: TextStyle(
                   fontSize: 11.sp,
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                   height: 1,
                 ),
                 maxLines: 1,
@@ -354,7 +356,7 @@ class GlowingIcon extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: effectiveColor.withOpacity(0.4),
+            color: effectiveColor.withValues(alpha: 0.4),
             blurRadius: glowRadius,
             spreadRadius: 2,
           ),
@@ -396,7 +398,8 @@ class IconContainer extends StatelessWidget {
       padding: EdgeInsets.all(padding ?? 10.w),
       decoration: BoxDecoration(
         color: gradient == null
-            ? (backgroundColor ?? theme.colorScheme.primary.withOpacity(0.1))
+            ? (backgroundColor ??
+                  theme.colorScheme.primary.withValues(alpha: 0.1))
             : null,
         gradient: gradient,
         borderRadius: BorderRadius.circular(borderRadius ?? 12.r),
@@ -435,7 +438,7 @@ class ShimmerLoading extends StatelessWidget {
         .animate(onPlay: (c) => c.repeat())
         .shimmer(
           duration: 1500.ms,
-          color: theme.colorScheme.outline.withOpacity(0.3),
+          color: theme.colorScheme.outline.withValues(alpha: 0.3),
         );
   }
 }
@@ -487,7 +490,9 @@ class SectionHeader extends StatelessWidget {
               onPressed: onAction,
               style: TextButton.styleFrom(
                 padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
-                backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                backgroundColor: theme.colorScheme.primary.withValues(
+                  alpha: 0.1,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10.r),
                 ),
@@ -542,13 +547,13 @@ class EmptyState extends StatelessWidget {
                 color: theme.colorScheme.surface,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: theme.colorScheme.outline.withOpacity(0.2),
+                  color: theme.colorScheme.outline.withValues(alpha: 0.2),
                 ),
               ),
               child: Icon(
                 icon,
                 size: 48.sp,
-                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
             SizedBox(height: 24.h),
@@ -567,7 +572,7 @@ class EmptyState extends StatelessWidget {
                 subtitle!,
                 style: TextStyle(
                   fontSize: 14.sp,
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -615,10 +620,12 @@ class FloatingNavBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.15),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -641,7 +648,7 @@ class FloatingNavBar extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? theme.colorScheme.primary.withOpacity(0.1)
+                    ? theme.colorScheme.primary.withValues(alpha: 0.1)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(16.r),
               ),
@@ -651,7 +658,7 @@ class FloatingNavBar extends StatelessWidget {
                     isSelected ? item.activeIcon : item.icon,
                     color: isSelected
                         ? theme.colorScheme.primary
-                        : theme.colorScheme.onSurface.withOpacity(0.5),
+                        : theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     size: 24.sp,
                   ),
                   if (isSelected) ...[
@@ -713,7 +720,7 @@ class AvatarWithBorder extends StatelessWidget {
     final defaultGradient = LinearGradient(
       colors: [
         theme.colorScheme.primary,
-        theme.colorScheme.primary.withOpacity(0.8),
+        theme.colorScheme.primary.withValues(alpha: 0.8),
       ],
     );
 
@@ -730,7 +737,7 @@ class AvatarWithBorder extends StatelessWidget {
         child: imageUrl == null
             ? Icon(
                 placeholderIcon ?? Icons.person,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 size: (radius * 0.9).sp,
               )
             : null,
@@ -760,9 +767,9 @@ class StatusBadge extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

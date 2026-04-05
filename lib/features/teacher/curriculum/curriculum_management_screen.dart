@@ -1,20 +1,31 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
+import '../../../core/config/app_colors.dart';
 import '../../../core/providers/center_provider.dart';
 import '../../../shared/data/supabase_repository.dart';
-import '../../../shared/widgets/premium_widgets.dart';
+import '../../../core/widgets/genius/glass_card.dart';
+import '../../../core/widgets/genius/genius_button.dart';
+import '../../../core/widgets/genius/genius_text_field.dart';
+import '../../../core/widgets/genius/staggered_list_animator.dart';
+import '../../../core/widgets/genius/shimmer_skeleton.dart';
+import '../../../shared/widgets/premium_widgets.dart' show EmptyState;
 
+/// 🟢 Curriculum Management Screen - Radical Glassmorphism Overhaul
 class CurriculumManagementScreen extends StatefulWidget {
   const CurriculumManagementScreen({super.key});
 
   @override
-  State<CurriculumManagementScreen> createState() => _CurriculumManagementScreenState();
+  State<CurriculumManagementScreen> createState() =>
+      _CurriculumManagementScreenState();
 }
 
-class _CurriculumManagementScreenState extends State<CurriculumManagementScreen> {
+class _CurriculumManagementScreenState
+    extends State<CurriculumManagementScreen> {
   bool _isLoading = true;
   List<Map<String, dynamic>> _subjects = [];
 
@@ -42,7 +53,7 @@ class _CurriculumManagementScreenState extends State<CurriculumManagementScreen>
 
       final repo = context.read<SupabaseRepository>();
       final subjects = await repo.getCurriculumSubjects(centerId);
-      
+
       if (mounted) {
         setState(() {
           _subjects = subjects;
@@ -52,206 +63,343 @@ class _CurriculumManagementScreenState extends State<CurriculumManagementScreen>
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('خطأ في تحميل المنهج: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('خطأ في تحميل المنهج: $e')));
       }
     }
   }
 
-  void _showAddSubjectDialog() {
+  void _showAddSubjectSheet() {
     final nameCtrl = TextEditingController();
     final gradeCtrl = TextEditingController(text: '1');
     final semCtrl = TextEditingController(text: '1');
-    final colorCtrl = TextEditingController(text: '#4F46E5');
+    final colorCtrl = TextEditingController(text: '#10B981'); // Emerald
     final iconCtrl = TextEditingController(text: '📚');
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('إضافة مادة جديدة', style: TextStyle(fontFamily: 'Cairo')),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameCtrl,
-                decoration: const InputDecoration(labelText: 'اسم المادة (مثال: رياضيات)'),
-              ),
-              TextField(
-                controller: gradeCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'الصف الدراسي (1-12)'),
-              ),
-              TextField(
-                controller: semCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'الفصل الدراسي (1 أو 2)'),
-              ),
-              TextField(
-                controller: iconCtrl,
-                decoration: const InputDecoration(labelText: 'أيقونة (Emoji)'),
-              ),
-              TextField(
-                controller: colorCtrl,
-                decoration: const InputDecoration(labelText: 'لون البطاقة (HEX)'),
-              ),
-            ],
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إلغاء'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final centerId = context.read<CenterProvider>().currentCenterId;
-              if (centerId == null || nameCtrl.text.isEmpty) return;
-              
-              Navigator.pop(context);
-              setState(() => _isLoading = true);
+          child: ClipRRect(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.forestDeep.withValues(alpha: 0.85),
+                  border: Border(
+                    top: BorderSide(color: AppColors.glassBorderHighlight),
+                  ),
+                ),
+                padding: EdgeInsets.all(24.w),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: AppColors.textMuted.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 24.h),
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(10.w),
+                          decoration: BoxDecoration(
+                            color: AppColors.accentVivid.withValues(
+                              alpha: 0.15,
+                            ),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.menu_book_rounded,
+                            color: AppColors.accentVivid,
+                            size: 24.sp,
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Text(
+                          'إضافة مادة جديدة',
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 24.h),
+                    GeniusTextField(
+                      controller: nameCtrl,
+                      label: 'اسم المادة (مثال: رياضيات)',
+                      prefixIcon: Icons.edit_rounded,
+                    ),
+                    SizedBox(height: 16.h),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GeniusTextField(
+                            controller: gradeCtrl,
+                            label: 'الصف (1-12)',
+                            prefixIcon: Icons.school_rounded,
+                            keyboardType: TextInputType.number,
+                          ),
+                        ),
+                        SizedBox(width: 16.w),
+                        Expanded(
+                          child: GeniusTextField(
+                            controller: semCtrl,
+                            label: 'الفصل (1-2)',
+                            prefixIcon: Icons.auto_awesome_motion_rounded,
+                            keyboardType: TextInputType.number,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16.h),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GeniusTextField(
+                            controller: iconCtrl,
+                            label: 'أيقونة (Emoji)',
+                            prefixIcon: Icons.emoji_emotions_rounded,
+                          ),
+                        ),
+                        SizedBox(width: 16.w),
+                        Expanded(
+                          child: GeniusTextField(
+                            controller: colorCtrl,
+                            label: 'لون البطاقة (HEX)',
+                            prefixIcon: Icons.color_lens_rounded,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 32.h),
+                    GeniusButton(
+                      label: 'إضافة المادة',
+                      onPressed: () async {
+                        final centerId = context
+                            .read<CenterProvider>()
+                            .currentCenterId;
+                        if (centerId == null || nameCtrl.text.isEmpty) return;
 
-              try {
-                final repo = context.read<SupabaseRepository>();
-                await repo.addSubject(
-                  centerId: centerId,
-                  name: nameCtrl.text,
-                  gradeLevel: gradeCtrl.text,
-                  semester: int.tryParse(semCtrl.text),
-                  icon: iconCtrl.text,
-                  color: colorCtrl.text,
-                );
-                _loadSubjects();
-              } catch (e) {
-                if (context.mounted) {
-                  setState(() => _isLoading = false);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('خطأ في الإضافة: $e')),
-                  );
-                }
-              }
-            },
-            child: const Text('إضافة'),
+                        Navigator.pop(context);
+                        setState(() => _isLoading = true);
+
+                        try {
+                          final repo = context.read<SupabaseRepository>();
+                          await repo.addSubject(
+                            centerId: centerId,
+                            name: nameCtrl.text,
+                            gradeLevel: gradeCtrl.text,
+                            semester: int.tryParse(semCtrl.text),
+                            icon: iconCtrl.text,
+                            color: colorCtrl.text,
+                          );
+                          _loadSubjects();
+                        } catch (e) {
+                          if (context.mounted) {
+                            setState(() => _isLoading = false);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('خطأ في الإضافة: $e')),
+                            );
+                          }
+                        }
+                      },
+                    ),
+                    SizedBox(height: 16.h),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.forestDeep,
       appBar: AppBar(
         title: Text(
-          'إدارة المناهج',
-          style: TextStyle(
-            fontSize: 20.sp,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Cairo',
-          ),
+          'المناهج التعليمية',
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
         centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.textDisplay),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddSubjectDialog,
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _showAddSubjectSheet,
+        backgroundColor: AppColors.accentVivid,
+        elevation: 8,
+        label: Text(
+          'مادة جديدة',
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: AppColors.forestDeep,
+          ),
+        ),
+        icon: const Icon(Icons.add_rounded, color: AppColors.forestDeep),
+      ).animate().scale(delay: 400.ms, curve: Curves.easeOutBack),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? __buildLoadingState()
           : _subjects.isEmpty
-              ? EmptyState(
-                  icon: Icons.menu_book_rounded,
-                  title: 'لا يوجد مواد بعد',
-                  subtitle: 'قم بإضافة مادة جديدة للبدء في بناء المنهج',
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadSubjects,
-                  child: ListView.builder(
-                    padding: EdgeInsets.all(16.w),
-                    itemCount: _subjects.length,
-                    itemBuilder: (context, index) {
-                      final subject = _subjects[index];
-                      // Parse hex color safely
-                      Color cardColor = Theme.of(context).colorScheme.primary;
-                      try {
-                        String hexString = subject['color'] ?? '#4F46E5';
-                        if (hexString.startsWith('#')) {
-                          hexString = "FF${hexString.substring(1)}";
-                        }
-                        cardColor = Color(int.parse(hexString, radix: 16));
-                      } catch (_) {}
+          ? _buildEmptyState()
+          : RefreshIndicator(
+              onRefresh: _loadSubjects,
+              backgroundColor: AppColors.accentVivid,
+              color: AppColors.forestPrimary,
+              child: StaggeredListAnimator(
+                isList: true,
+                delayBase: 100.ms,
+                padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 100.h),
+                children: _subjects
+                    .map((subject) => _buildSubjectCard(subject))
+                    .toList(),
+              ),
+            ),
+    );
+  }
 
-                      return Card(
-                        margin: EdgeInsets.only(bottom: 12.h),
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.r),
-                        ),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(16.r),
-                          onTap: () {
-                            context.go(
-                              '/teacher/curriculum/${subject['id']}',
-                              extra: subject,
-                            );
-                          },
-                          child: Padding(
-                            padding: EdgeInsets.all(16.w),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 50.w,
-                                  height: 50.w,
-                                  decoration: BoxDecoration(
-                                    color: cardColor.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(12.r),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    subject['icon'] ?? '📚',
-                                    style: TextStyle(fontSize: 24.sp),
-                                  ),
-                                ),
-                                SizedBox(width: 16.w),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        subject['name'] ?? 'بدون اسم',
-                                        style: TextStyle(
-                                          fontSize: 16.sp,
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: 'Cairo',
-                                          color: Theme.of(context).colorScheme.onSurface,
-                                        ),
-                                      ),
-                                      SizedBox(height: 4.h),
-                                      Text(
-                                        'الصف: ${subject['grade_level'] ?? '-'} | الفصل: ${subject['semester'] ?? '-'}',
-                                        style: TextStyle(
-                                          fontSize: 13.sp,
-                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                          fontFamily: 'Cairo',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  size: 16.sp,
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+  Widget __buildLoadingState() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      child: Column(
+        children: List.generate(
+          4,
+          (index) => Padding(
+            padding: EdgeInsets.only(bottom: 16.h),
+            child: const ShimmerListItem(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: EmptyState(
+        icon: Icons.menu_book_rounded,
+        title: 'لا يوجد مواد بعد',
+        subtitle:
+            'قم بإضافة المناهج الدراسية لطلابك لتبدأ في رفع المحتوى والملزمات',
+      ),
+    ).animate().fadeIn(duration: 400.ms);
+  }
+
+  Widget _buildSubjectCard(Map<String, dynamic> subject) {
+    Color cardAccent = AppColors.accentVivid;
+    try {
+      String hexString = subject['color'] ?? '#10B981';
+      if (hexString.startsWith('#')) hexString = "FF${hexString.substring(1)}";
+      cardAccent = Color(int.parse(hexString, radix: 16));
+    } catch (_) {}
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16.h),
+      child: GlassCard(
+        onTap: () =>
+            context.go('/teacher/curriculum/${subject['id']}', extra: subject),
+        color: AppColors.forestPrimary.withValues(alpha: 0.5),
+        padding: EdgeInsets.all(16.w),
+        child: Row(
+          children: [
+            Container(
+              width: 56.w,
+              height: 56.w,
+              decoration: BoxDecoration(
+                color: cardAccent.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(16.r),
+                border: Border.all(color: cardAccent.withValues(alpha: 0.3)),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                subject['icon'] ?? '📚',
+                style: TextStyle(fontSize: 28.sp),
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    subject['name'] ?? 'بدون اسم',
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
-                ),
+                  SizedBox(height: 6.h),
+                  Row(
+                    children: [
+                      _buildChip(
+                        'الصف ${subject['grade_level'] ?? '-'}',
+                        Icons.school_rounded,
+                        cardAccent,
+                      ),
+                      SizedBox(width: 8.w),
+                      _buildChip(
+                        'الترم ${subject['semester'] ?? '-'}',
+                        Icons.auto_awesome_motion_rounded,
+                        AppColors.infoPurple,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: AppColors.darkSurface.withValues(alpha: 0.5),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 14.sp,
+                color: AppColors.textMuted,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChip(String label, IconData icon, Color color) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12.sp, color: color),
+          SizedBox(width: 4.w),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

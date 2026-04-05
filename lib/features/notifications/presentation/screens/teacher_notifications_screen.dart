@@ -13,10 +13,12 @@ class TeacherNotificationsScreen extends StatefulWidget {
   const TeacherNotificationsScreen({super.key});
 
   @override
-  State<TeacherNotificationsScreen> createState() => _TeacherNotificationsScreenState();
+  State<TeacherNotificationsScreen> createState() =>
+      _TeacherNotificationsScreenState();
 }
 
-class _TeacherNotificationsScreenState extends State<TeacherNotificationsScreen> {
+class _TeacherNotificationsScreenState
+    extends State<TeacherNotificationsScreen> {
   List<NotificationModel> _notifications = [];
   bool _isLoading = true;
   final ScrollController _scrollController = ScrollController();
@@ -97,7 +99,7 @@ class _TeacherNotificationsScreenState extends State<TeacherNotificationsScreen>
     try {
       final repo = context.read<SupabaseRepository>();
       await repo.markNotificationRead(notification.id);
-      
+
       setState(() {
         final index = _notifications.indexWhere((n) => n.id == notification.id);
         if (index != -1) {
@@ -114,12 +116,14 @@ class _TeacherNotificationsScreenState extends State<TeacherNotificationsScreen>
       final repo = context.read<SupabaseRepository>();
       await repo.markAllNotificationsRead();
       setState(() {
-        _notifications = _notifications.map((n) => n.copyWith(isRead: true)).toList();
+        _notifications = _notifications
+            .map((n) => n.copyWith(isRead: true))
+            .toList();
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('فشل تحديد الكل كمقروء')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('فشل تحديد الكل كمقروء')));
     }
   }
 
@@ -128,7 +132,10 @@ class _TeacherNotificationsScreenState extends State<TeacherNotificationsScreen>
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('الإشعارات', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'الإشعارات',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: AppColors.textPrimary,
@@ -145,34 +152,33 @@ class _TeacherNotificationsScreenState extends State<TeacherNotificationsScreen>
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _notifications.isEmpty
-              ? _buildEmptyState()
-              : RefreshIndicator(
-                  onRefresh: () => _loadNotifications(reset: true),
-                  child: ListView.separated(
-                    controller: _scrollController,
-                    padding: EdgeInsets.all(16.w),
-                    itemCount:
-                        _notifications.length + (_isLoadingMore ? 1 : 0),
-                    separatorBuilder: (c, i) => SizedBox(height: 12.h),
-                    itemBuilder: (context, index) {
-                      if (_isLoadingMore && index == _notifications.length) {
-                        return Padding(
-                          padding: EdgeInsets.symmetric(vertical: 12.h),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        );
-                      }
-                      final notification = _notifications[index];
-                      return _buildNotificationCard(notification)
-                          .animate()
-                          .fadeIn(delay: 50.ms * index)
-                          .slideX(begin: 0.2, curve: Curves.easeOut);
-                    },
-                  ),
-                ),
+          ? _buildEmptyState()
+          : RefreshIndicator(
+              onRefresh: () => _loadNotifications(reset: true),
+              child: ListView.separated(
+                controller: _scrollController,
+                padding: EdgeInsets.all(16.w),
+                itemCount: _notifications.length + (_isLoadingMore ? 1 : 0),
+                separatorBuilder: (c, i) => SizedBox(height: 12.h),
+                itemBuilder: (context, index) {
+                  if (_isLoadingMore && index == _notifications.length) {
+                    return Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          backgroundColor: AppColors.primary,
+                        ),
+                      ),
+                    );
+                  }
+                  final notification = _notifications[index];
+                  return _buildNotificationCard(notification)
+                      .animate()
+                      .fadeIn(delay: 50.ms * index)
+                      .slideX(begin: 0.2, curve: Curves.easeOut);
+                },
+              ),
+            ),
     );
   }
 
@@ -187,12 +193,20 @@ class _TeacherNotificationsScreenState extends State<TeacherNotificationsScreen>
               color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.notifications_off_outlined, size: 48.sp, color: AppColors.primary),
+            child: Icon(
+              Icons.notifications_off_outlined,
+              size: 48.sp,
+              color: AppColors.primary,
+            ),
           ),
           SizedBox(height: 16.h),
           Text(
             'لا توجد إشعارات حالياً',
-            style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
           ),
           SizedBox(height: 8.h),
           Text(
@@ -207,24 +221,26 @@ class _TeacherNotificationsScreenState extends State<TeacherNotificationsScreen>
   Widget _buildNotificationCard(NotificationModel notification) {
     return GestureDetector(
       onTap: () async {
-         await _markAsRead(notification);
-         // Todo: Navigate based on notification type/data
+        await _markAsRead(notification);
+        // Todo: Navigate based on notification type/data
       },
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: notification.isRead ? Colors.white : AppColors.primary.withValues(alpha: 0.05),
+          color: notification.isRead
+              ? Colors.white
+              : AppColors.primary.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
-          border: notification.isRead 
+          border: notification.isRead
               ? Border.all(color: AppColors.gray200)
               : Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
           boxShadow: [
-             if (!notification.isRead)
-               BoxShadow(
-                 color: AppColors.primary.withValues(alpha: 0.05),
-                 blurRadius: 10,
-                 offset: const Offset(0, 4),
-               ),
+            if (!notification.isRead)
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
           ],
         ),
         child: Row(
@@ -239,12 +255,14 @@ class _TeacherNotificationsScreenState extends State<TeacherNotificationsScreen>
               ),
               child: Icon(
                 _getIconForType(notification.type),
-                color: notification.isRead ? AppColors.textSecondary : AppColors.primary,
+                color: notification.isRead
+                    ? AppColors.textSecondary
+                    : AppColors.primary,
                 size: 20.sp,
               ),
             ),
             SizedBox(width: 16.w),
-            
+
             // Content
             Expanded(
               child: Column(
@@ -258,7 +276,9 @@ class _TeacherNotificationsScreenState extends State<TeacherNotificationsScreen>
                           notification.title,
                           style: TextStyle(
                             fontSize: 16.sp,
-                            fontWeight: notification.isRead ? FontWeight.w600 : FontWeight.bold,
+                            fontWeight: notification.isRead
+                                ? FontWeight.w600
+                                : FontWeight.bold,
                             color: AppColors.textPrimary,
                           ),
                         ),

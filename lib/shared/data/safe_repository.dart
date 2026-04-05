@@ -24,7 +24,7 @@ mixin SafeRepositoryMixin {
     // التحقق من الشبكة
     if (checkNetwork && !NetworkMonitor.instance.isConnected) {
       log.network('❌ No Internet Connection - Action blocked');
-      return  Result.failure(NoInternetException());
+      return Result.failure(NoInternetException());
     }
 
     int attempts = 0;
@@ -33,7 +33,10 @@ mixin SafeRepositoryMixin {
     while (attempts <= retryCount) {
       try {
         final result = await action();
-        log.data('✅ Action Success (Attempt ${attempts + 1})', data: {'result_type': T.toString()});
+        log.data(
+          '✅ Action Success (Attempt ${attempts + 1})',
+          data: {'result_type': T.toString()},
+        );
         return Result.success(result);
       } on SocketException {
         lastError = const NoInternetException();
@@ -44,7 +47,11 @@ mixin SafeRepositoryMixin {
         // لا نعيد المحاولة للأخطاء غير القابلة للإعادة
         if (!e.canRetry) break;
       } catch (e, stackTrace) {
-        log.error('❌ Action Failed (Attempt ${attempts + 1})', error: e, stackTrace: stackTrace);
+        log.error(
+          '❌ Action Failed (Attempt ${attempts + 1})',
+          error: e,
+          stackTrace: stackTrace,
+        );
         lastError = ErrorHandler.instance.handle(e, stackTrace);
         if (!lastError.canRetry) break;
       }
@@ -68,7 +75,7 @@ mixin SafeRepositoryMixin {
       final result = await action().timeout(timeout);
       return Result.success(result);
     } on TimeoutException {
-      return  Result.failure(TimeoutException());
+      return Result.failure(TimeoutException());
     } catch (e, stackTrace) {
       return Result.failure(ErrorHandler.instance.handle(e, stackTrace));
     }

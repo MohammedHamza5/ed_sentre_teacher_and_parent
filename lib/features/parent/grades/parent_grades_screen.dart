@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../../../core/config/app_colors.dart';
 import '../provider/parent_provider.dart';
 import '../../../shared/models/models.dart';
 
@@ -18,12 +19,10 @@ class _ParentGradesScreenState extends State<ParentGradesScreen> {
   List<StudentGradeView> _grades = [];
 
   // Premium colors
-  static const _gradientStart = Color(0xFFFF9500);
-  static const _gradientEnd = Color(0xFFFFCC00);
-  static const _excellentColor = Color(0xFF34C759);
-  static const _goodColor = Color(0xFF007AFF);
-  static const _averageColor = Color(0xFFFF9500);
-  static const _poorColor = Color(0xFFFF3B30);
+  static const _excellentColor = AppColors.emeraldGreen;
+  static const _goodColor = AppColors.infoPurple;
+  static const _averageColor = AppColors.warningAmber;
+  static const _poorColor = AppColors.errorRed;
 
   @override
   void initState() {
@@ -61,18 +60,10 @@ class _ParentGradesScreenState extends State<ParentGradesScreen> {
     final average = totalMax > 0 ? (totalScore / totalMax * 100) : 0.0;
 
     return Scaffold(
+      backgroundColor: AppColors.forestDeep,
       body: _isLoading
-          ? Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [_gradientStart, _gradientEnd],
-                ),
-              ),
-              child: const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              ),
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.accentVivid),
             )
           : CustomScrollView(
               slivers: [
@@ -80,14 +71,10 @@ class _ParentGradesScreenState extends State<ParentGradesScreen> {
                 SliverToBoxAdapter(
                   child: Container(
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [_gradientStart, _gradientEnd],
-                      ),
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(32),
-                        bottomRight: Radius.circular(32),
+                      gradient: AppColors.premiumSunset,
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(32.r),
+                        bottomRight: Radius.circular(32.r),
                       ),
                     ),
                     child: SafeArea(
@@ -102,7 +89,7 @@ class _ParentGradesScreenState extends State<ParentGradesScreen> {
                               style: TextStyle(
                                 fontSize: 22.sp,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: AppColors.textDisplay,
                               ),
                             ),
                             SizedBox(height: 24.h),
@@ -119,7 +106,7 @@ class _ParentGradesScreenState extends State<ParentGradesScreen> {
                                 children: [
                                   Icon(
                                     Icons.emoji_events,
-                                    color: Colors.white,
+                                    color: AppColors.textDisplay,
                                     size: 48.sp,
                                   ),
                                   SizedBox(width: 20.w),
@@ -132,14 +119,14 @@ class _ParentGradesScreenState extends State<ParentGradesScreen> {
                                         style: TextStyle(
                                           fontSize: 42.sp,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                          color: AppColors.textDisplay,
                                         ),
                                       ),
                                       Text(
                                         'المعدل العام',
                                         style: TextStyle(
                                           fontSize: 14.sp,
-                                          color: Colors.white.withValues(
+                                          color: AppColors.textDisplay.withValues(
                                             alpha: 0.9,
                                           ),
                                         ),
@@ -165,7 +152,7 @@ class _ParentGradesScreenState extends State<ParentGradesScreen> {
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1F2937),
+                        color: AppColors.textDisplay,
                       ),
                     ),
                   ),
@@ -178,23 +165,23 @@ class _ParentGradesScreenState extends State<ParentGradesScreen> {
                       child: Container(
                         padding: EdgeInsets.all(32.w),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: AppColors.darkSurface,
                           borderRadius: BorderRadius.circular(20.r),
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(color: AppColors.darkBorder),
                         ),
                         child: Column(
                           children: [
                             Icon(
                               Icons.assignment_outlined,
                               size: 48.sp,
-                              color: const Color(0xFF9CA3AF),
+                              color: AppColors.textMuted,
                             ),
                             SizedBox(height: 12.h),
                             Text(
                               'لا توجد درجات مسجلة لابنك',
                               style: TextStyle(
                                 fontSize: 16.sp,
-                                color: const Color(0xFF6B7280),
+                                color: AppColors.textMuted,
                               ),
                             ),
                           ],
@@ -230,9 +217,9 @@ class _ParentGradesScreenState extends State<ParentGradesScreen> {
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.darkSurface,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: AppColors.darkBorder),
         boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: 0.1),
@@ -256,7 +243,7 @@ class _ParentGradesScreenState extends State<ParentGradesScreen> {
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1F2937),
+                        color: AppColors.textDisplay,
                       ),
                     ),
                     SizedBox(height: 4.h),
@@ -264,7 +251,7 @@ class _ParentGradesScreenState extends State<ParentGradesScreen> {
                       grade.examType,
                       style: TextStyle(
                         fontSize: 13.sp,
-                        color: const Color(0xFF6B7280),
+                        color: AppColors.textMuted,
                       ),
                     ),
                   ],
@@ -333,7 +320,7 @@ class _ParentGradesScreenState extends State<ParentGradesScreen> {
                 _getGradeLabel(percentage),
                 style: TextStyle(
                   fontSize: 12.sp,
-                  color: const Color(0xFF6B7280),
+                  color: AppColors.textMuted,
                 ),
               ),
             ],

@@ -348,7 +348,11 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
         iconTheme: IconThemeData(color: AppColors.textOnDark),
       ),
       body: _isLoadingGroups
-          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? Center(
+              child: CircularProgressIndicator(
+                backgroundColor: AppColors.primary,
+              ),
+            )
           : Column(
               children: [
                 Expanded(
@@ -1164,7 +1168,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
           ),
         ),
         child: _isPublishing
-            ? const CircularProgressIndicator(color: Colors.white)
+            ? const CircularProgressIndicator(backgroundColor: Colors.white)
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

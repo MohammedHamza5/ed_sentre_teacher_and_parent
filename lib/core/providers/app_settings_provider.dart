@@ -7,12 +7,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// يتيح للمستخدم التبديل بين الوضع الليلي والنهاري ويحفظ الاختيار.
 class AppSettingsProvider extends ChangeNotifier {
   // ─── مفاتيح SharedPreferences ──────────────────────────────────────────
-  static const String _themeModeKey           = 'app_theme_mode';
-  static const String _notificationsKey       = 'app_notifications_enabled';
+  static const String _themeModeKey = 'app_theme_mode';
+  static const String _notificationsKey = 'app_notifications_enabled';
 
   // ─── القيم الافتراضية ──────────────────────────────────────────────────
-  ThemeMode _themeMode           = ThemeMode.dark; // Dark كـ default للتطبيق
-  bool      _notificationsEnabled = true;           // الإشعارات مفعّلة افتراضياً
+  ThemeMode _themeMode = ThemeMode.dark; // Dark كـ default للتطبيق
+  bool _notificationsEnabled = true; // الإشعارات مفعّلة افتراضياً
 
   bool _isInitialized = false;
 
@@ -20,11 +20,11 @@ class AppSettingsProvider extends ChangeNotifier {
 
   ThemeMode get themeMode => _themeMode;
 
-  bool get isDarkMode            => _themeMode == ThemeMode.dark;
-  bool get isLightMode           => _themeMode == ThemeMode.light;
-  bool get isSystemMode          => _themeMode == ThemeMode.system;
-  bool get notificationsEnabled  => _notificationsEnabled;
-  bool get isInitialized         => _isInitialized;
+  bool get isDarkMode => _themeMode == ThemeMode.dark;
+  bool get isLightMode => _themeMode == ThemeMode.light;
+  bool get isSystemMode => _themeMode == ThemeMode.system;
+  bool get notificationsEnabled => _notificationsEnabled;
+  bool get isInitialized => _isInitialized;
 
   // ─── Initialization ────────────────────────────────────────────────────
 
@@ -59,8 +59,9 @@ class AppSettingsProvider extends ChangeNotifier {
 
   /// التبديل بين الوضع الليلي والنهاري مباشرةً
   Future<void> toggleDarkMode() async {
-    _themeMode =
-        _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    _themeMode = _themeMode == ThemeMode.dark
+        ? ThemeMode.light
+        : ThemeMode.dark;
     notifyListeners();
     await _saveThemeMode();
   }

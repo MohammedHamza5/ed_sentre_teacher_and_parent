@@ -20,39 +20,31 @@ class SmartMaterialTile extends StatelessWidget {
     final type = material['file_type'] ?? 'document';
     final course = material['course_name'] ?? 'عام';
     final views = material['download_count'] ?? 0;
-    final date =
-        DateTime.tryParse(material['created_at'] ?? '') ?? DateTime.now();
     final isPublished = material['is_published'] ?? true;
 
     Color color;
     IconData icon;
-    String typeLabel;
 
     switch (type) {
       case 'pdf':
         color = const Color(0xFFFF5252);
         icon = Icons.picture_as_pdf_rounded;
-        typeLabel = 'PDF';
         break;
       case 'video':
         color = const Color(0xFFFF9800);
         icon = Icons.play_circle_fill_rounded;
-        typeLabel = 'VIDEO';
         break;
       case 'image':
         color = const Color(0xFF9C27B0);
         icon = Icons.image_rounded;
-        typeLabel = 'IMG';
         break;
       case 'link':
         color = const Color(0xFF2196F3);
         icon = Icons.link_rounded;
-        typeLabel = 'LINK';
         break;
       default:
         color = const Color(0xFF607D8B);
         icon = Icons.insert_drive_file_rounded;
-        typeLabel = 'DOC';
     }
 
     return GestureDetector(
@@ -115,7 +107,9 @@ class SmartMaterialTile extends StatelessWidget {
                           course,
                           style: TextStyle(
                             fontSize: 11.sp,
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                         ),
                       ],
@@ -129,14 +123,18 @@ class SmartMaterialTile extends StatelessWidget {
                             Icon(
                               Icons.remove_red_eye_outlined,
                               size: 12.sp,
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.5),
                             ),
                             SizedBox(width: 4.w),
                             Text(
                               '$views',
                               style: TextStyle(
                                 fontSize: 11.sp,
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.5),
                               ),
                             ),
                           ],
@@ -150,7 +148,9 @@ class SmartMaterialTile extends StatelessWidget {
                             icon: Icon(
                               Icons.more_horiz,
                               size: 18.sp,
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.5),
                             ),
                             onSelected: onMenuAction,
                             itemBuilder: (c) => [

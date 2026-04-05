@@ -3,13 +3,13 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-// Removed AppColors import
 import '../../../core/providers/center_provider.dart';
 import '../../../shared/data/supabase_repository.dart';
+import '../../../core/config/app_colors.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/widgets/premium_widgets.dart';
-import '../../../shared/widgets/app_drawer.dart';
 import 'teacher_chat_screen.dart';
+import 'teacher_new_chat_screen.dart';
 
 /// Teacher Messages Screen - Premium Dark Mode
 class TeacherMessagesScreen extends StatefulWidget {
@@ -110,9 +110,12 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
       setState(() {
         _filteredConversations = _conversations
             .where(
-              (c) => (c.studentName ?? '').toLowerCase().contains(
-                query.toLowerCase(),
-              ),
+              (c) {
+                final q = query.toLowerCase();
+                return (c.studentName ?? '').toLowerCase().contains(q) ||
+                    (c.parentName ?? '').toLowerCase().contains(q) ||
+                    c.conversationType.displayName.contains(q);
+              },
             )
             .toList();
       });
@@ -132,7 +135,9 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
           _isLoading
               ? SliverFillRemaining(
                   child: Center(
-                    child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+                    child: CircularProgressIndicator(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
                 )
               : _filteredConversations.isEmpty
@@ -154,25 +159,31 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 12.h),
                 child: Center(
-                  child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+                  child: CircularProgressIndicator(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
             ),
           SliverToBoxAdapter(child: SizedBox(height: 80.h)),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('ميزة بدء محادثة جديدة قادمة قريباً'),
-              backgroundColor: (Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface),
-            ),
-          );
-        },
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        child: const Icon(Icons.edit_note, color: Colors.white),
-      ).animate().scale(delay: 300.ms),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: 80.h),
+        child: FloatingActionButton(
+          onPressed: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const TeacherNewChatScreen(),
+              ),
+            );
+            _loadConversations(reset: true);
+          },
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          child: const Icon(Icons.edit_note, color: Colors.white),
+        ).animate().scale(delay: 300.ms),
+      ),
     );
   }
 
@@ -181,13 +192,18 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
       expandedHeight: 130.h,
       floating: false,
       pinned: true,
-      backgroundColor: (Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface),
+      backgroundColor:
+          (Theme.of(context).cardTheme.color ??
+          Theme.of(context).colorScheme.surface),
       automaticallyImplyLeading: false,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Theme.of(context).colorScheme.secondary, Theme.of(context).colorScheme.secondary.withOpacity(0.8)],
+              colors: [
+                Theme.of(context).colorScheme.secondary,
+                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.8),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -262,7 +278,7 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
         ),
         Padding(
           padding: EdgeInsets.only(left: 8.w),
-          child: DrawerMenuButton(isTeacher: true),
+          child: const SizedBox.shrink(),
         ),
       ],
     );
@@ -273,20 +289,33 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
       padding: EdgeInsets.all(16.w),
       child: Container(
         decoration: BoxDecoration(
-          color: (Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface),
+          color:
+              (Theme.of(context).cardTheme.color ??
+              Theme.of(context).colorScheme.surface),
           borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
+          ),
         ),
         child: TextField(
           controller: _searchController,
           onChanged: _filterConversations,
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14.sp),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 14.sp,
+          ),
           decoration: InputDecoration(
             hintText: 'بحث عن طالب...',
-            hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
+            hintStyle: TextStyle(
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.5),
+            ),
             prefixIcon: Icon(
               Icons.search,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.5),
               size: 20.sp,
             ),
             filled: false,
@@ -326,13 +355,17 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
                         border: Border.all(
                           color: hasUnread
                               ? Theme.of(context).colorScheme.secondary
-                              : Theme.of(context).colorScheme.outline.withOpacity(0.5),
+                              : Theme.of(
+                                  context,
+                                ).colorScheme.outline.withValues(alpha: 0.5),
                           width: 2,
                         ),
                       ),
                       child: CircleAvatar(
                         radius: 24.r,
-                        backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.1),
                         backgroundImage: conversation.studentAvatar != null
                             ? NetworkImage(conversation.studentAvatar!)
                             : null,
@@ -344,7 +377,9 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
                                 style: TextStyle(
                                   fontSize: 18.sp,
                                   fontWeight: FontWeight.bold,
-                                  color: (Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface),
+                                  color:
+                                      (Theme.of(context).cardTheme.color ??
+                                      Theme.of(context).colorScheme.surface),
                                 ),
                               )
                             : null,
@@ -360,7 +395,9 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
                           color: Colors.green,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: (Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface),
+                            color:
+                                (Theme.of(context).cardTheme.color ??
+                                Theme.of(context).colorScheme.surface),
                             width: 2,
                           ),
                         ),
@@ -377,9 +414,34 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
                     children: [
                       Row(
                         children: [
+                          if (conversation.conversationType ==
+                              ConversationType.parentTeacher)
+                            Container(
+                              margin: EdgeInsets.only(left: 6.w),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 6.w,
+                                vertical: 2.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.infoPurple
+                                    .withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(6.r),
+                              ),
+                              child: Text(
+                                'ولي أمر',
+                                style: TextStyle(
+                                  color: AppColors.infoPurple,
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                           Expanded(
                             child: Text(
-                              conversation.studentName ?? 'طالب',
+                              conversation.conversationType ==
+                                      ConversationType.parentTeacher
+                                  ? '${conversation.parentName ?? 'ولي أمر'} (${conversation.studentName ?? 'طالب'})'
+                                  : conversation.studentName ?? 'طالب',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 15.sp,
@@ -392,7 +454,9 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
                               _formatDate(conversation.lastMessageAt!),
                               style: TextStyle(
                                 fontSize: 11.sp,
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.5),
                               ),
                             ),
                         ],
@@ -402,13 +466,14 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
                         children: [
                           Expanded(
                             child: Text(
-                              conversation.lastMessage ?? 'مرفق',
+                              conversation.lastMessage ?? 'ابدأ المحادثة...',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: hasUnread
                                     ? Theme.of(context).colorScheme.onSurface
-                                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                    : Theme.of(context).colorScheme.onSurface
+                                          .withValues(alpha: 0.7),
                                 fontWeight: hasUnread
                                     ? FontWeight.w600
                                     : FontWeight.normal,
@@ -423,7 +488,13 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
                                 vertical: 3.h,
                               ),
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(colors: [Theme.of(context).colorScheme.secondary, Theme.of(context).colorScheme.secondary.withOpacity(0.8)]),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Theme.of(context).colorScheme.secondary,
+                                    Theme.of(context).colorScheme.secondary
+                                        .withValues(alpha: 0.8),
+                                  ],
+                                ),
                                 borderRadius: BorderRadius.circular(12.r),
                               ),
                               child: Text(
@@ -457,14 +528,22 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
           Container(
             padding: EdgeInsets.all(28.w),
             decoration: BoxDecoration(
-              color: (Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface),
+              color:
+                  (Theme.of(context).cardTheme.color ??
+                  Theme.of(context).colorScheme.surface),
               shape: BoxShape.circle,
-              border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+              border: Border.all(
+                color: Theme.of(
+                  context,
+                ).colorScheme.outline.withValues(alpha: 0.5),
+              ),
             ),
             child: Icon(
               Icons.chat_bubble_outline,
               size: 56.sp,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
           SizedBox(height: 16.h),
@@ -481,7 +560,9 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
             'ستظهر المحادثات مع أولياء الأمور هنا',
             style: TextStyle(
               fontSize: 14.sp,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
         ],

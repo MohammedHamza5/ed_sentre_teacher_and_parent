@@ -125,10 +125,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
-              'إغلاق',
-              style: TextStyle(color: AppColors.error),
-            ),
+            child: Text('إغلاق', style: TextStyle(color: AppColors.error)),
           ),
           TextButton(
             onPressed: () {
@@ -209,8 +206,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
-            child: Icon(Icons.auto_awesome,
-                color: Colors.white, size: 28.sp),
+            child: Icon(Icons.auto_awesome, color: Colors.white, size: 28.sp),
           ),
           SizedBox(width: 14.w),
           Expanded(
@@ -228,10 +224,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
                 SizedBox(height: 4.h),
                 Text(
                   'ارفع ملف PDF وسيُنشئ لك أسئلة احترافية',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12.sp,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 12.sp),
                 ),
               ],
             ),
@@ -267,7 +260,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
                   CircularProgressIndicator(
                     value: provider.progress > 0 ? provider.progress : null,
                     strokeWidth: 6,
-                    color: const Color(0xFF8B5CF6),
+                    backgroundColor: const Color(0xFF8B5CF6),
                   ),
                   SizedBox(height: 24.h),
                   Text(
@@ -430,10 +423,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
       padding: EdgeInsets.only(bottom: 8.h),
       child: Text(
         text,
-        style: TextStyle(
-          color: AppColors.textOnDarkSecondary,
-          fontSize: 13.sp,
-        ),
+        style: TextStyle(color: AppColors.textOnDarkSecondary, fontSize: 13.sp),
       ),
     );
   }

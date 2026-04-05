@@ -48,12 +48,15 @@ class DrawerMenuButton extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(10.w),
         decoration: BoxDecoration(
-          color: effectiveColor.withOpacity(0.1),
+          color: effectiveColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: effectiveColor.withOpacity(0.2), width: 1),
+          border: Border.all(
+            color: effectiveColor.withValues(alpha: 0.2),
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: effectiveColor.withOpacity(0.1),
+              color: effectiveColor.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -65,7 +68,7 @@ class DrawerMenuButton extends StatelessWidget {
           children: [
             _Bar(width: 22, color: effectiveColor),
             SizedBox(height: 5.h),
-            _Bar(width: 14, color: effectiveColor.withOpacity(0.8)),
+            _Bar(width: 14, color: effectiveColor.withValues(alpha: 0.8)),
             SizedBox(height: 5.h),
             _Bar(width: 22, color: effectiveColor),
           ],
@@ -123,8 +126,8 @@ class TeacherAppDrawer extends StatelessWidget {
         phone: userPhone,
         avatarUrl: avatarUrl,
         roleLabel: 'معلم',
-        roleColor: AppColors.primary,
-        gradient: AppColors.primaryGradient,
+        roleColor: AppColors.accentVivid,
+        gradient: AppColors.secondaryGradient,
         stats: [
           _StatChip(
             label: 'مجموعة',
@@ -282,7 +285,7 @@ class ParentAppDrawer extends StatelessWidget {
     final centerName = parent.selectedCenter?.centerName ?? 'سنتر';
 
     const parentGradient = LinearGradient(
-      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+      colors: [AppColors.emeraldGreen, AppColors.accentVivid],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     );
@@ -294,7 +297,7 @@ class ParentAppDrawer extends StatelessWidget {
         phone: userPhone,
         avatarUrl: avatarUrl,
         roleLabel: 'ولي أمر',
-        roleColor: const Color(0xFF8B5CF6),
+        roleColor: AppColors.accentVivid,
         gradient: parentGradient,
         stats: const [],
       ),
@@ -505,14 +508,14 @@ class _DrawerShell extends StatelessWidget {
           bottomLeft: Radius.circular(28.r),
         ),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.darkSurface.withOpacity(0.92),
+              color: AppColors.forestPrimary.withValues(alpha: 0.88),
               border: Border(
                 left: BorderSide(
-                  color: Colors.white.withOpacity(0.08),
-                  width: 1,
+                  color: AppColors.glassBorderHighlight,
+                  width: 1.5,
                 ),
               ),
             ),
@@ -553,7 +556,7 @@ class _DrawerShell extends StatelessWidget {
                       horizontal: 12.w,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.03),
+                      color: Colors.white.withValues(alpha: 0.03),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Row(
@@ -580,7 +583,7 @@ class _DrawerShell extends StatelessWidget {
 
                 // ── Divider ──────────────────────────────────────
                 Divider(
-                  color: AppColors.darkBorder.withOpacity(0.5),
+                  color: AppColors.darkBorder.withValues(alpha: 0.5),
                   thickness: 1,
                   height: 1,
                 ),
@@ -639,7 +642,7 @@ class _DrawerHeader extends StatelessWidget {
           borderRadius: BorderRadius.circular(24.r),
           boxShadow: [
             BoxShadow(
-              color: gradient.colors.first.withOpacity(0.4),
+              color: gradient.colors.first.withValues(alpha: 0.4),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -673,7 +676,7 @@ class _DrawerHeader extends StatelessWidget {
                           vertical: 4.h,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                         child: Text(
@@ -694,7 +697,7 @@ class _DrawerHeader extends StatelessWidget {
                   child: Container(
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -708,7 +711,7 @@ class _DrawerHeader extends StatelessWidget {
             ),
             if (stats.isNotEmpty) ...[
               SizedBox(height: 16.h),
-              Divider(color: Colors.white.withOpacity(0.2), height: 1),
+              Divider(color: Colors.white.withValues(alpha: 0.2), height: 1),
               SizedBox(height: 16.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -744,10 +747,13 @@ class _UserAvatar extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.5),
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -786,7 +792,7 @@ class _AvatarFallback extends StatelessWidget {
               .join()
         : '?';
     return Container(
-      color: Colors.white.withOpacity(0.15),
+      color: Colors.white.withValues(alpha: 0.15),
       child: Center(
         child: Text(
           initials,
@@ -831,12 +837,12 @@ class _StatChip extends StatelessWidget {
         ),
         Row(
           children: [
-            Icon(icon, color: Colors.white.withOpacity(0.8), size: 12.sp),
+            Icon(icon, color: Colors.white.withValues(alpha: 0.8), size: 12.sp),
             SizedBox(width: 4.w),
             Text(
               label,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 12.sp,
                 fontFamily: 'Cairo',
               ),
@@ -872,7 +878,7 @@ class _DrawerSection extends StatelessWidget {
                 width: 3.w,
                 height: 12.h,
                 decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
+                  gradient: AppColors.secondaryGradient,
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -940,11 +946,11 @@ class _DrawerItem extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16.r),
               color: isActive
-                  ? gradient.colors.first.withOpacity(0.12)
+                  ? gradient.colors.first.withValues(alpha: 0.12)
                   : Colors.transparent,
               border: isActive
                   ? Border.all(
-                      color: gradient.colors.first.withOpacity(0.25),
+                      color: gradient.colors.first.withValues(alpha: 0.25),
                       width: 1,
                     )
                   : Border.all(color: Colors.transparent),
@@ -963,7 +969,9 @@ class _DrawerItem extends StatelessWidget {
                     boxShadow: isActive
                         ? [
                             BoxShadow(
-                              color: gradient.colors.first.withOpacity(0.6),
+                              color: gradient.colors.first.withValues(
+                                alpha: 0.6,
+                              ),
                               blurRadius: 8,
                               spreadRadius: 1,
                             ),
@@ -978,12 +986,14 @@ class _DrawerItem extends StatelessWidget {
                     gradient: isActive ? gradient : null,
                     color: isActive
                         ? null
-                        : AppColors.textOnDarkSecondary.withOpacity(0.1),
+                        : AppColors.textOnDarkSecondary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12.r),
                     boxShadow: isActive
                         ? [
                             BoxShadow(
-                              color: gradient.colors.first.withOpacity(0.4),
+                              color: gradient.colors.first.withValues(
+                                alpha: 0.4,
+                              ),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -1024,7 +1034,7 @@ class _DrawerItem extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12.r),
                       boxShadow: [
                         BoxShadow(
-                          color: gradient.colors.last.withOpacity(0.4),
+                          color: gradient.colors.last.withValues(alpha: 0.4),
                           blurRadius: 4,
                         ),
                       ],
@@ -1048,7 +1058,7 @@ class _DrawerItem extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: gradient.colors.last.withOpacity(0.5),
+                          color: gradient.colors.last.withValues(alpha: 0.5),
                           blurRadius: 6,
                         ),
                       ],
@@ -1087,7 +1097,7 @@ class _LogoutButton extends StatelessWidget {
               color: AppColors.errorSoft,
               borderRadius: BorderRadius.circular(14.r),
               border: Border.all(
-                color: AppColors.error.withOpacity(0.3),
+                color: AppColors.error.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),

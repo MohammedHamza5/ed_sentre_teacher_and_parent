@@ -1,17 +1,21 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-// Removed AppColors import
+
+import '../../../core/config/app_colors.dart';
 import '../../auth/provider/auth_provider.dart';
 import '../../../core/providers/center_provider.dart';
 import '../../../shared/data/supabase_repository.dart';
 import '../../../shared/models/group_model.dart';
-import '../../../shared/widgets/premium_widgets.dart';
-import '../../../shared/widgets/app_drawer.dart';
+import '../../../shared/widgets/premium_widgets.dart' show EmptyState;
 import '../provider/teacher_provider.dart';
 
-/// Teacher Attendance Monitor Screen - Premium Dark Mode
+import '../../../core/widgets/genius/glass_card.dart';
+import '../../../core/widgets/genius/shimmer_skeleton.dart';
+
+/// 🟢 Teacher Attendance Monitor Screen - Glassmorphism 2.0 Overhaul
 class TeacherAttendanceScreen extends StatefulWidget {
   final String? groupId;
 
@@ -32,11 +36,10 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
   void initState() {
     super.initState();
     _selectedGroupId = widget.groupId;
-    _loadInitialData();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadInitialData());
   }
 
   Future<void> _loadStudents(String groupId) async {
-    debugPrint('👥 [Attendance] _loadStudents: START for Group ID: $groupId');
     setState(() => _isLoading = true);
 
     final teacherProvider = context.read<TeacherProvider>();
@@ -46,7 +49,6 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
     try {
       students = await repo.getGroupAttendanceForToday(groupId);
     } catch (e) {
-      debugPrint('Error loading attendance data: $e');
       students = teacherProvider.getStudentsForGroup(groupId).map((s) {
         return {
           'id': s['student_id'],
@@ -61,9 +63,6 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
     }
 
     if (students.isEmpty) {
-      debugPrint(
-        '⚠️ [Attendance] Students list empty. Forcing refresh from API...',
-      );
       await teacherProvider.refreshData();
       final refreshedStudents = teacherProvider
           .getStudentsForGroup(groupId)
@@ -79,9 +78,6 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
             };
           })
           .toList();
-      debugPrint(
-        '👥 [Attendance] After refresh: ${refreshedStudents.length} students',
-      );
 
       setState(() {
         _students = refreshedStudents;
@@ -127,13 +123,12 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
     if (_myGroups.isEmpty) return null;
     final now = DateTime.now();
 
-    // Helper to parse time string "HH:MM"
     int parseTime(String time) {
       if (time.isEmpty) return 0;
       try {
         final parts = time.trim().split(':');
         return int.parse(parts[0]) * 60 + int.parse(parts[1]);
-      } catch (e) {
+      } catch (_) {
         return 0;
       }
     }
@@ -150,35 +145,19 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
     ];
     final todayName = dayNames[now.weekday - 1];
 
-    debugPrint('🕒 [Attendance] _findNearestGroup: START');
-    debugPrint('🕒 [Attendance] Current Time: $now ($todayName)');
-
-    // Filter groups that have a schedule TODAY
     final todayGroups = _myGroups.where((g) {
-      final hasSchedule = g.schedules.any(
+      return g.schedules.any(
         (s) => s.dayOfWeek.toLowerCase() == todayName.toLowerCase(),
       );
-      if (hasSchedule) debugPrint('   - Candidate Group: ${g.groupName}');
-      return hasSchedule;
     }).toList();
 
-    debugPrint(
-      '🕒 [Attendance] Today\'s Groups with Schedules: ${todayGroups.length}',
-    );
-
-    if (todayGroups.isEmpty) {
-      debugPrint(
-        '⚠️ [Attendance] No groups scheduled for today. Defaulting to first group.',
-      );
-      return _myGroups.first;
-    }
+    if (todayGroups.isEmpty) return _myGroups.first;
 
     GroupModel? currentClass;
     GroupModel? nextClass;
     int minDiffToNext = 999999;
 
     for (var group in todayGroups) {
-      // Find the specific schedule for today
       final schedule = group.schedules.firstWhere(
         (s) => s.dayOfWeek.toLowerCase() == todayName.toLowerCase(),
         orElse: () => ScheduleItem(
@@ -198,16 +177,11 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
       final startMinutes = parseTime(schedule.startTime);
       final endMinutes = schedule.endTime.isNotEmpty
           ? parseTime(schedule.endTime)
-          : startMinutes + 60; // Default 60 mins
-
-      debugPrint(
-        '   👉 Checking ${group.groupName}: ${schedule.startTime} - ${schedule.endTime}',
-      );
+          : startMinutes + 60;
 
       if (currentTimeMinutes >= startMinutes &&
           currentTimeMinutes <= endMinutes) {
         currentClass = group;
-        debugPrint('   ✅ MATCHED CURRENT CLASS: ${group.groupName}');
         break;
       }
 
@@ -226,14 +200,10 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
     try {
       await _loadStudents(_selectedGroupId!);
     } catch (e) {
-      debugPrint('Error refreshing attendance: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('فشل التحديث: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('فشل التحديث: $e')));
       }
     }
   }
@@ -263,248 +233,130 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          _buildSliverAppBar(),
-          if (_myGroups.isEmpty) ...[
-            SliverToBoxAdapter(child: SizedBox(height: 16.h)),
-            _isLoading
-                ? SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: _buildInlineLoader(),
-                  )
-                : SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: _buildNoGroupsState(),
-                  ),
-          ] else ...[
-            SliverToBoxAdapter(child: SizedBox(height: 16.h)),
-            SliverToBoxAdapter(child: _buildGroupSelector()),
-            SliverToBoxAdapter(child: SizedBox(height: 16.h)),
-            SliverToBoxAdapter(child: _buildStatsSummary()),
-            SliverToBoxAdapter(child: SizedBox(height: 16.h)),
-            if (_isLoading)
-              SliverToBoxAdapter(child: _buildInlineLoader())
-            else if (_students.isEmpty)
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: _buildNoStudentsState(),
-              )
-            else ...[
-              _buildStudentsList(),
-              SliverToBoxAdapter(child: SizedBox(height: 80.h)),
-            ],
-          ],
+      backgroundColor: AppColors.forestDeep,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: Text(
+          'متابعة الحضور',
+          style: Theme.of(context).textTheme.headlineMedium,
+        ),
+        centerTitle: true,
+        backgroundColor: AppColors.forestDeep.withValues(alpha: 0.8),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.textDisplay),
+        flexibleSpace: ClipRRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(color: Colors.transparent),
+          ),
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('جاري التحديث...')));
+              _refreshAttendance();
+            },
+            icon: Icon(
+              Icons.refresh_rounded,
+              color: AppColors.accentVivid,
+              size: 26.sp,
+            ),
+            tooltip: 'تحديث',
+          ),
+          Padding(
+            padding: EdgeInsets.only(left: 8.w),
+            child: const SizedBox.shrink(),
+          ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSliverAppBar() {
-    return SliverAppBar(
-      expandedHeight: 140.h,
-      floating: false,
-      pinned: true,
-      backgroundColor:
-          (Theme.of(context).cardTheme.color ??
-          Theme.of(context).colorScheme.surface),
-      automaticallyImplyLeading: false,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.primary.withOpacity(0.8),
-              ],
-            ),
-          ),
-          child: Stack(
-            children: [
-              // Decorative circles
-              Positioned(
-                top: -40,
-                right: -40,
-                child: Container(
-                  width: 160,
-                  height: 160,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.08),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: -30,
-                left: -20,
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.06),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-              // Content
-              Align(
-                alignment: Alignment.bottomRight,
-                child: Padding(
-                  padding: EdgeInsets.only(right: 20.w, bottom: 16.h),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(8.w),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(10.r),
-                            ),
-                            child: Icon(
-                              Icons.fact_check_outlined,
-                              color: Colors.white,
-                              size: 22.sp,
-                            ),
-                          ),
-                          SizedBox(width: 12.w),
-                          Text(
-                            'متابعة الحضور',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        'مراقبة حضور وغياب الطلاب',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13.sp,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+      body: SafeArea(
+        bottom: false,
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(child: SizedBox(height: 24.h)),
+            if (_myGroups.isEmpty && !_isLoading)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: _buildNoGroupsState(),
+              )
+            else ...[
+              if (_myGroups.isNotEmpty)
+                SliverToBoxAdapter(child: _buildGroupSelector()),
+              if (_myGroups.isNotEmpty)
+                SliverToBoxAdapter(child: SizedBox(height: 24.h)),
+              if (_myGroups.isNotEmpty)
+                SliverToBoxAdapter(child: _buildStatsSummary()),
+              if (_myGroups.isNotEmpty)
+                SliverToBoxAdapter(child: SizedBox(height: 24.h)),
+              if (_isLoading)
+                SliverToBoxAdapter(child: _buildInlineLoader())
+              else if (_students.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _buildNoStudentsState(),
+                )
+              else
+                _buildStudentsList(),
             ],
-          ),
+            SliverToBoxAdapter(child: SizedBox(height: 100.h)),
+          ],
         ),
       ),
-      actions: [
-        IconButton(
-          onPressed: _refreshAttendance,
-          icon: const Icon(Icons.refresh, color: Colors.white),
-          tooltip: 'تحديث',
-        ),
-        Padding(
-          padding: EdgeInsets.only(left: 8.w),
-          child: DrawerMenuButton(isTeacher: true),
-        ),
-      ],
     );
   }
 
   Widget _buildGroupSelector() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: PremiumCard(
-        padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: GlassCard(
+        color: AppColors.forestPrimary.withValues(alpha: 0.6),
+        padding: EdgeInsets.all(20.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Icon(
-                  Icons.class_,
-                  color:
-                      (Theme.of(context).cardTheme.color ??
-                      Theme.of(context).colorScheme.surface),
-                  size: 18.sp,
+                  Icons.class_rounded,
+                  color: AppColors.accentVivid,
+                  size: 20.sp,
                 ),
                 SizedBox(width: 8.w),
                 Text(
-                  'الحصة الحالية',
-                  style: TextStyle(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withOpacity(0.7),
-                    fontSize: 12.sp,
-                  ),
+                  'المجموعة الحالية',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(color: AppColors.textMuted),
                 ),
               ],
             ),
-            SizedBox(height: 10.h),
+            SizedBox(height: 16.h),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
-                ),
+                color: AppColors.darkSurface.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(16.r),
+                border: Border.all(color: AppColors.glassBorderHighlight),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: _selectedGroupId,
                   isExpanded: true,
-                  dropdownColor:
-                      (Theme.of(context).cardTheme.color ??
-                      Theme.of(context).colorScheme.surface),
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  dropdownColor: AppColors.forestDeep,
+                  style: Theme.of(context).textTheme.titleMedium,
                   icon: Icon(
-                    Icons.keyboard_arrow_down,
-                    color:
-                        (Theme.of(context).cardTheme.color ??
-                        Theme.of(context).colorScheme.surface),
+                    Icons.keyboard_arrow_down_rounded,
+                    color: AppColors.accentVivid,
                   ),
                   items: _myGroups.map((group) {
                     return DropdownMenuItem<String>(
                       value: group.id,
-                      child: Builder(
-                        builder: (context) {
-                          final todayDate = DateTime.now();
-                          final dayNames = [
-                            'Monday',
-                            'Tuesday',
-                            'Wednesday',
-                            'Thursday',
-                            'Friday',
-                            'Saturday',
-                            'Sunday',
-                          ];
-                          final todayName = dayNames[todayDate.weekday - 1];
-                          var timeDisplay = group.startTime ?? '';
-
-                          try {
-                            final schedule = group.schedules.firstWhere(
-                              (s) =>
-                                  s.dayOfWeek.toLowerCase() ==
-                                  todayName.toLowerCase(),
-                            );
-                            if (schedule.startTime.isNotEmpty) {
-                              timeDisplay = schedule.startTime;
-                            }
-                          } catch (_) {}
-
-                          return Text(
-                            '${group.groupName} - ${_getDayName(group.dayOfWeek)} $timeDisplay',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          );
-                        },
+                      child: Text(
+                        '${group.groupName} - ${_getDayName(group.dayOfWeek)} ${group.startTime ?? ''}',
+                        style: const TextStyle(color: AppColors.textDisplay),
                       ),
                     );
                   }).toList(),
@@ -521,50 +373,46 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
               ),
             ),
             if (_selectedGroup != null) ...[
-              SizedBox(height: 12.h),
+              SizedBox(height: 16.h),
               Row(
                 children: [
                   _buildInfoChip(
-                    Icons.access_time,
+                    Icons.access_time_rounded,
                     '${_selectedGroup!.startTime ?? ''} - ${_selectedGroup!.endTime ?? ''}',
                   ),
                   SizedBox(width: 12.w),
-                  _buildInfoChip(Icons.people, '${_students.length} طالب'),
+                  _buildInfoChip(
+                    Icons.groups_rounded,
+                    '${_students.length} طالب',
+                  ),
                 ],
               ),
             ],
           ],
         ),
-      ),
-    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0);
+      ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0),
+    );
   }
 
   Widget _buildInfoChip(IconData icon, String text) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
-        ),
+        color: AppColors.accentVivid.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.accentVivid.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            color:
-                (Theme.of(context).cardTheme.color ??
-                Theme.of(context).colorScheme.surface),
-            size: 14.sp,
-          ),
-          SizedBox(width: 4.w),
+          Icon(icon, color: AppColors.accentVivid, size: 16.sp),
+          SizedBox(width: 6.w),
           Text(
             text,
             style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-              fontSize: 12.sp,
+              color: AppColors.textDisplay,
+              fontSize: 13.sp,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -574,33 +422,33 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
 
   Widget _buildStatsSummary() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Row(
         children: [
           Expanded(
             child: _buildStatCard(
-              'حضور',
+              'حاضر',
               _presentCount,
-              Colors.green,
-              Icons.check_circle,
+              AppColors.emeraldGreen,
+              Icons.check_circle_rounded,
             ),
           ),
-          SizedBox(width: 10.w),
+          SizedBox(width: 12.w),
           Expanded(
             child: _buildStatCard(
-              'غياب',
+              'غائب',
               _absentCount,
-              Theme.of(context).colorScheme.error,
-              Icons.cancel,
+              AppColors.errorRed,
+              Icons.cancel_rounded,
             ),
           ),
-          SizedBox(width: 10.w),
+          SizedBox(width: 12.w),
           Expanded(
             child: _buildStatCard(
               'لم يُسجل',
               _pendingCount,
-              Colors.orange,
-              Icons.help_outline,
+              AppColors.warningAmber,
+              Icons.help_outline_rounded,
             ),
           ),
         ],
@@ -609,34 +457,33 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
   }
 
   Widget _buildStatCard(String label, int count, Color color, IconData icon) {
-    return PremiumCard(
-      padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 8.w),
+    return GlassCard(
+      color: AppColors.forestPrimary.withValues(alpha: 0.4),
+      padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 8.w),
       child: Column(
         children: [
           Container(
-            padding: EdgeInsets.all(8.w),
+            padding: EdgeInsets.all(10.w),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 20.sp),
+            child: Icon(icon, color: color, size: 24.sp),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 12.h),
           Text(
             '$count',
-            style: TextStyle(
-              fontSize: 22.sp,
-              fontWeight: FontWeight.bold,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               color: color,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 2.h),
+          SizedBox(height: 4.h),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 11.sp,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.labelMedium?.copyWith(color: AppColors.textMuted),
           ),
         ],
       ),
@@ -652,44 +499,49 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
         return (order[aStatus] ?? 2).compareTo(order[bStatus] ?? 2);
       });
 
-    return SliverList(
-      delegate: SliverChildBuilderDelegate((context, index) {
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
-          child: _buildStudentTile(sortedStudents[index], index),
-        );
-      }, childCount: sortedStudents.length),
+    return SliverPadding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) => _buildStudentTile(sortedStudents[index], index),
+          childCount: sortedStudents.length,
+        ),
+      ),
     );
   }
 
   Widget _buildInlineLoader() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
-      child: PremiumCard(
-        padding: EdgeInsets.symmetric(vertical: 18.h),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: 18.w,
-              height: 18.w,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.2,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            SizedBox(width: 10.w),
-            Text(
-              'جاري التحميل...',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Column(
+        children: List.generate(
+          4,
+          (index) => Padding(
+            padding: EdgeInsets.only(bottom: 16.h),
+            child: const ShimmerListItem(),
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildNoGroupsState() {
+    return Center(
+      child: EmptyState(
+        icon: Icons.class_outlined,
+        title: 'لا توجد مجموعات',
+        subtitle: 'لم يتم تعيين مجموعات لك حتى الآن لإدارة الحضور',
+      ).animate().fadeIn().scale(),
+    );
+  }
+
+  Widget _buildNoStudentsState() {
+    return Center(
+      child: EmptyState(
+        icon: Icons.people_outline,
+        title: 'لا يوجد طلاب',
+        subtitle: 'سيظهر الطلاب المسجلون هنا لمتابعة حضورهم',
+      ).animate().fadeIn().scale(),
     );
   }
 
@@ -705,211 +557,128 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
 
     switch (status) {
       case 'present':
-        statusColor = Colors.green;
-        statusIcon = Icons.check_circle;
+        statusColor = AppColors.emeraldGreen;
+        statusIcon = Icons.check_circle_rounded;
         statusText = 'حاضر';
         break;
       case 'late':
-        statusColor = Colors.orange;
-        statusIcon = Icons.access_time;
+        statusColor = AppColors.warningAmber;
+        statusIcon = Icons.access_time_filled_rounded;
         statusText = 'متأخر';
         break;
       case 'absent':
-        statusColor = Theme.of(context).colorScheme.error;
-        statusIcon = Icons.cancel;
+        statusColor = AppColors.errorRed;
+        statusIcon = Icons.cancel_rounded;
         statusText = 'غائب';
         break;
       default:
-        statusColor = Theme.of(context).colorScheme.onSurface.withOpacity(0.5);
-        statusIcon = Icons.help_outline;
+        statusColor = AppColors.textMuted;
+        statusIcon = Icons.help_outline_rounded;
         statusText = 'لم يُسجل';
     }
 
     return Padding(
-          padding: EdgeInsets.only(bottom: 8.h),
-          child: PremiumCard(
-            padding: EdgeInsets.all(14.w),
-            child: Row(
-              children: [
-                // Avatar
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: statusColor.withValues(alpha: 0.5),
-                      width: 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: statusColor.withValues(alpha: 0.2),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: CircleAvatar(
-                    radius: 22.r,
-                    backgroundColor: statusColor.withValues(alpha: 0.15),
-                    backgroundImage: avatarUrl != null
-                        ? NetworkImage(avatarUrl)
-                        : null,
-                    child: avatarUrl == null
-                        ? Icon(Icons.person, color: statusColor, size: 22.sp)
-                        : null,
-                  ),
-                ),
-                SizedBox(width: 12.w),
-
-                // Name & Time
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        style: TextStyle(
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface,
+      padding: EdgeInsets.only(bottom: 12.h),
+      child:
+          GlassCard(
+                color: AppColors.darkSurface.withValues(alpha: 0.5),
+                padding: EdgeInsets.all(16.w),
+                child: Row(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: statusColor.withValues(alpha: 0.5),
+                          width: 2,
                         ),
-                      ),
-                      if (checkInTime != null)
-                        Text(
-                          'وقت الحضور: $checkInTime',
-                          style: TextStyle(
-                            fontSize: 11.sp,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withOpacity(0.7),
+                        boxShadow: [
+                          BoxShadow(
+                            color: statusColor.withValues(alpha: 0.2),
+                            blurRadius: 10,
                           ),
-                        ),
-                    ],
-                  ),
-                ),
-
-                // Status Badge
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 5.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20.r),
-                    border: Border.all(
-                      color: statusColor.withValues(alpha: 0.3),
+                        ],
+                      ),
+                      child: CircleAvatar(
+                        radius: 24.r,
+                        backgroundColor: statusColor.withValues(alpha: 0.15),
+                        backgroundImage: avatarUrl != null
+                            ? NetworkImage(avatarUrl)
+                            : null,
+                        child: avatarUrl == null
+                            ? Icon(
+                                Icons.person,
+                                color: statusColor,
+                                size: 24.sp,
+                              )
+                            : null,
+                      ),
                     ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(statusIcon, color: statusColor, size: 14.sp),
-                      SizedBox(width: 4.w),
-                      Text(
-                        statusText,
-                        style: TextStyle(
-                          color: statusColor,
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.bold,
+                    SizedBox(width: 16.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          if (checkInTime != null) ...[
+                            SizedBox(height: 4.h),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.schedule_rounded,
+                                  size: 12.sp,
+                                  color: AppColors.textMuted,
+                                ),
+                                SizedBox(width: 4.w),
+                                Text(
+                                  'تسجيل الدخول: $checkInTime',
+                                  style: Theme.of(context).textTheme.labelSmall
+                                      ?.copyWith(color: AppColors.textMuted),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 6.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(16.r),
+                        border: Border.all(
+                          color: statusColor.withValues(alpha: 0.3),
                         ),
                       ),
-                    ],
-                  ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(statusIcon, color: statusColor, size: 16.sp),
+                          SizedBox(width: 6.w),
+                          Text(
+                            statusText,
+                            style: TextStyle(
+                              color: statusColor,
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-        )
-        .animate(delay: Duration(milliseconds: 50 * index))
-        .fadeIn(duration: 300.ms)
-        .slideX(begin: 0.1, end: 0);
-  }
-
-  Widget _buildNoGroupsState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: EdgeInsets.all(24.w),
-            decoration: BoxDecoration(
-              color:
-                  (Theme.of(context).cardTheme.color ??
-                  Theme.of(context).colorScheme.surface),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
-              ),
-            ),
-            child: Icon(
-              Icons.class_outlined,
-              size: 56.sp,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'لا توجد مجموعات',
-            style: TextStyle(
-              fontSize: 18.sp,
-              color: Theme.of(context).colorScheme.onSurface,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'لم يتم تعيين مجموعات لك بعد',
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-            ),
-          ),
-        ],
-      ),
-    ).animate().fadeIn().scale(begin: const Offset(0.9, 0.9));
-  }
-
-  Widget _buildNoStudentsState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: EdgeInsets.all(24.w),
-            decoration: BoxDecoration(
-              color:
-                  (Theme.of(context).cardTheme.color ??
-                  Theme.of(context).colorScheme.surface),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
-              ),
-            ),
-            child: Icon(
-              Icons.people_outline,
-              size: 56.sp,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'لا يوجد طلاب في هذه المجموعة',
-            style: TextStyle(
-              fontSize: 16.sp,
-              color: Theme.of(context).colorScheme.onSurface,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'سيظهر الطلاب المسجلون هنا',
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-            ),
-          ),
-        ],
-      ),
-    ).animate().fadeIn().scale(begin: const Offset(0.9, 0.9));
+              )
+              .animate(delay: Duration(milliseconds: 50 * index))
+              .fadeIn(duration: 300.ms)
+              .slideX(begin: 0.1, end: 0),
+    );
   }
 
   String _getDayName(int? dayIndex) {

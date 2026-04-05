@@ -1,855 +1,243 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
-/// EdSentre Premium Theme Configuration
-/// Dark Mode First Design - RTL Support with Cairo & Roboto fonts
+/// EdSentre Radical Glassmorphism 2.0 Theme Configuration
+/// Forest Dark First Design
 class AppTheme {
-  // Font families
-  static const String arabicFont = 'Cairo';
-  static const String englishFont = 'Roboto';
+  // We use Syne for Display/Headings, and DM Sans for Body.
+  // We use Cairo for Arabic specifically to maintain legibility while being modern.
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // DARK THEME (PRIMARY)
+  // DARK THEME (FOREST DARK - PRIMARY)
   // ═══════════════════════════════════════════════════════════════════════════
 
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      primaryColor: AppColors.primary,
-      scaffoldBackgroundColor: AppColors.darkBackground,
+      primaryColor: AppColors.accentVivid,
+      scaffoldBackgroundColor: AppColors.forestDeep,
 
       // Color Scheme
-      colorScheme: ColorScheme.dark(
-        primary: AppColors.primary,
-        primaryContainer: AppColors.primarySoft,
-        secondary: AppColors.secondary,
-        secondaryContainer: AppColors.secondarySoft,
-        tertiary: AppColors.accent,
-        tertiaryContainer: AppColors.accentSoft,
+      colorScheme: const ColorScheme.dark(
+        primary: AppColors.accentVivid,
+        primaryContainer: AppColors.accentMid,
+        secondary: AppColors.warmAmber,
+        secondaryContainer: AppColors.emeraldGreen,
+        tertiary: AppColors.infoPurple,
         surface: AppColors.darkSurface,
-        error: AppColors.error,
-        errorContainer: AppColors.errorSoft,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
-        onSurface: AppColors.textOnDark,
+        error: AppColors.alertCoral,
+        onPrimary: AppColors.forestDeep,
+        onSecondary: AppColors.forestDeep,
+        onSurface: AppColors.textDisplay,
         onError: Colors.white,
         outline: AppColors.darkBorder,
-        shadow: AppColors.darkShadow,
+        shadow: Colors.black,
       ),
 
-      // AppBar Theme
-      appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.darkBackground,
-        foregroundColor: AppColors.textOnDark,
+      // AppBar Theme (No Background, Glassmorphism handles it)
+      appBarTheme: const AppBarTheme(
+        color: Colors.transparent,
+        foregroundColor: AppColors.textDisplay,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
-        systemOverlayStyle: const SystemUiOverlayStyle(
+        systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.light,
           statusBarBrightness: Brightness.dark,
         ),
-        titleTextStyle: const TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textOnDark,
-        ),
-        iconTheme: const IconThemeData(color: AppColors.textOnDark),
       ),
 
       // Text Theme
-      textTheme: const TextTheme(
-        displayLarge: TextStyle(
-          fontFamily: arabicFont,
+      textTheme: TextTheme(
+        displayLarge: GoogleFonts.syne(
           fontSize: 32,
           fontWeight: FontWeight.bold,
-          color: AppColors.textOnDark,
+          color: AppColors.textDisplay,
         ),
-        displayMedium: TextStyle(
-          fontFamily: arabicFont,
+        displayMedium: GoogleFonts.syne(
           fontSize: 28,
           fontWeight: FontWeight.bold,
-          color: AppColors.textOnDark,
+          color: AppColors.textDisplay,
         ),
-        displaySmall: TextStyle(
-          fontFamily: arabicFont,
+        displaySmall: GoogleFonts.syne(
           fontSize: 24,
           fontWeight: FontWeight.w600,
-          color: AppColors.textOnDark,
+          color: AppColors.textDisplay,
         ),
-        headlineLarge: TextStyle(
-          fontFamily: arabicFont,
+        headlineLarge: GoogleFonts.syne(
           fontSize: 22,
           fontWeight: FontWeight.w600,
-          color: AppColors.textOnDark,
+          color: AppColors.textDisplay,
         ),
-        headlineMedium: TextStyle(
-          fontFamily: arabicFont,
+        headlineMedium: GoogleFonts.syne(
           fontSize: 20,
           fontWeight: FontWeight.w600,
-          color: AppColors.textOnDark,
+          color: AppColors.textDisplay,
         ),
-        headlineSmall: TextStyle(
-          fontFamily: arabicFont,
+        headlineSmall: GoogleFonts.syne(
           fontSize: 18,
           fontWeight: FontWeight.w600,
-          color: AppColors.textOnDark,
+          color: AppColors.textDisplay,
         ),
-        titleLarge: TextStyle(
-          fontFamily: arabicFont,
+        titleLarge: GoogleFonts.syne(
           fontSize: 18,
           fontWeight: FontWeight.w600,
-          color: AppColors.textOnDark,
+          color: AppColors.textDisplay,
         ),
-        titleMedium: TextStyle(
-          fontFamily: arabicFont,
+        titleMedium: GoogleFonts.syne(
           fontSize: 16,
           fontWeight: FontWeight.w500,
-          color: AppColors.textOnDark,
+          color: AppColors.textDisplay,
         ),
-        titleSmall: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textOnDark,
-        ),
-        bodyLarge: TextStyle(
-          fontFamily: arabicFont,
+        bodyLarge: GoogleFonts.dmSans(
           fontSize: 16,
           fontWeight: FontWeight.normal,
-          color: AppColors.textOnDark,
+          color: AppColors.textBody,
         ),
-        bodyMedium: TextStyle(
-          fontFamily: arabicFont,
+        bodyMedium: GoogleFonts.dmSans(
           fontSize: 14,
           fontWeight: FontWeight.normal,
-          color: AppColors.textOnDark,
+          color: AppColors.textBody,
         ),
-        bodySmall: TextStyle(
-          fontFamily: arabicFont,
+        bodySmall: GoogleFonts.dmSans(
           fontSize: 12,
           fontWeight: FontWeight.normal,
-          color: AppColors.textOnDarkSecondary,
+          color: AppColors.textMuted,
         ),
-        labelLarge: TextStyle(
-          fontFamily: arabicFont,
+        labelLarge: GoogleFonts.dmSans(
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: AppColors.textOnDark,
+          color: AppColors.textDisplay,
         ),
-        labelMedium: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 12,
+        labelSmall: GoogleFonts.dmSans(
+          fontSize: 11,
           fontWeight: FontWeight.w500,
-          color: AppColors.textOnDarkSecondary,
-        ),
-        labelSmall: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 10,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textOnDarkHint,
+          color: AppColors.textMuted,
         ),
       ),
 
-      // Card Theme
+      // Card Theme (We will barely use this in favor of GlassCard, but good to have)
       cardTheme: CardThemeData(
-        color: AppColors.darkCard,
+        color: AppColors.darkSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: AppColors.darkBorder.withOpacity(0.5)),
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: AppColors.glassBorderHighlight),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      ),
-
-      // Elevated Button Theme
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          textStyle: const TextStyle(
-            fontFamily: arabicFont,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-
-      // Outlined Button Theme
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          side: BorderSide(
-            color: AppColors.primary.withOpacity(0.5),
-            width: 1.5,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          textStyle: const TextStyle(
-            fontFamily: arabicFont,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-
-      // Text Button Theme
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          textStyle: const TextStyle(
-            fontFamily: arabicFont,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
       ),
 
       // Input Decoration Theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.darkInput,
+        fillColor: AppColors.forestPrimary.withValues(alpha: 0.5),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 18,
+          horizontal: 24,
+          vertical: 20,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.darkBorder),
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: AppColors.darkBorder),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.darkBorder.withOpacity(0.5)),
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: AppColors.darkBorder),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: AppColors.accentVivid, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.error),
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: AppColors.alertCoral),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: AppColors.alertCoral, width: 2),
         ),
-        hintStyle: const TextStyle(
-          fontFamily: arabicFont,
-          color: AppColors.textOnDarkHint,
-          fontSize: 14,
-        ),
-        labelStyle: const TextStyle(
-          fontFamily: arabicFont,
-          color: AppColors.textOnDarkSecondary,
+        hintStyle: GoogleFonts.dmSans(color: AppColors.textMuted, fontSize: 14),
+        labelStyle: GoogleFonts.dmSans(
+          color: AppColors.textBody,
           fontSize: 14,
           fontWeight: FontWeight.w500,
-        ),
-        errorStyle: const TextStyle(
-          fontFamily: arabicFont,
-          color: AppColors.error,
-          fontSize: 12,
-        ),
-        prefixIconColor: AppColors.textOnDarkSecondary,
-        suffixIconColor: AppColors.textOnDarkSecondary,
-      ),
-
-      // Floating Action Button Theme
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        elevation: 4,
-        focusElevation: 6,
-        hoverElevation: 6,
-        splashColor: Colors.white.withOpacity(0.2),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      ),
-
-      // Bottom Navigation Bar Theme
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: AppColors.darkSurface,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textOnDarkHint,
-        type: BottomNavigationBarType.fixed,
-        elevation: 0,
-        selectedLabelStyle: const TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 12,
-        ),
-      ),
-
-      // Navigation Bar Theme (Material 3)
-      navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: AppColors.darkSurface,
-        indicatorColor: AppColors.primarySoft,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        height: 70,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        iconTheme: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: AppColors.primary, size: 26);
-          }
-          return IconThemeData(color: AppColors.textOnDarkHint, size: 24);
-        }),
-        labelTextStyle: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return const TextStyle(
-              fontFamily: arabicFont,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
-            );
-          }
-          return TextStyle(
-            fontFamily: arabicFont,
-            fontSize: 11,
-            color: AppColors.textOnDarkHint,
-          );
-        }),
-      ),
-
-      // Tab Bar Theme
-      tabBarTheme: TabBarThemeData(
-        labelColor: AppColors.primary,
-        unselectedLabelColor: AppColors.textOnDarkSecondary,
-        indicatorColor: AppColors.primary,
-        indicatorSize: TabBarIndicatorSize.label,
-        dividerColor: Colors.transparent,
-        labelStyle: const TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 14,
-        ),
-      ),
-
-      // Chip Theme
-      chipTheme: ChipThemeData(
-        backgroundColor: AppColors.darkElevated,
-        selectedColor: AppColors.primarySoft,
-        disabledColor: AppColors.darkCard,
-        labelStyle: const TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 13,
-          color: AppColors.textOnDark,
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: AppColors.darkBorder.withOpacity(0.5)),
-        ),
-      ),
-
-      // Dialog Theme
-      dialogTheme: DialogThemeData(
-        backgroundColor: AppColors.darkCard,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: AppColors.darkBorder.withOpacity(0.5)),
-        ),
-        titleTextStyle: const TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textOnDark,
-        ),
-        contentTextStyle: const TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 14,
-          color: AppColors.textOnDarkSecondary,
         ),
       ),
 
       // Bottom Sheet Theme
       bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: AppColors.darkSurface,
         elevation: 0,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
         ),
-        dragHandleColor: AppColors.darkBorder,
-        dragHandleSize: const Size(40, 4),
+        dragHandleColor: AppColors.textMuted.withValues(alpha: 0.5),
+        dragHandleSize: const Size(48, 6),
       ),
 
-      // Snackbar Theme
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.darkElevated,
-        contentTextStyle: const TextStyle(
-          fontFamily: arabicFont,
-          color: AppColors.textOnDark,
-          fontSize: 14,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        behavior: SnackBarBehavior.floating,
+      // Dialog Theme
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.darkSurface,
         elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(32),
+          side: BorderSide(color: AppColors.glassBorderHighlight),
+        ),
+        titleTextStyle: GoogleFonts.syne(
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textDisplay,
+        ),
+        contentTextStyle: GoogleFonts.dmSans(
+          fontSize: 14,
+          color: AppColors.textBody,
+        ),
       ),
 
       // Divider Theme
-      dividerTheme: DividerThemeData(
-        color: AppColors.darkBorder.withOpacity(0.5),
+      dividerTheme: const DividerThemeData(
+        color: AppColors.darkBorder,
         thickness: 1,
         space: 1,
       ),
-
-      // List Tile Theme
-      listTileTheme: const ListTileThemeData(
-        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        minLeadingWidth: 24,
-        titleTextStyle: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textOnDark,
-        ),
-        subtitleTextStyle: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 14,
-          color: AppColors.textOnDarkSecondary,
-        ),
-        iconColor: AppColors.textOnDarkSecondary,
-      ),
-
-      // Progress Indicator Theme
-      progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: AppColors.primary,
-        linearTrackColor: AppColors.darkBorder,
-        circularTrackColor: AppColors.darkBorder,
-      ),
-
-      // Slider Theme
-      sliderTheme: SliderThemeData(
-        activeTrackColor: AppColors.primary,
-        inactiveTrackColor: AppColors.darkBorder,
-        thumbColor: AppColors.primary,
-        overlayColor: AppColors.primary.withOpacity(0.2),
-      ),
-
-      // Switch Theme
-      switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return AppColors.primary;
-          }
-          return AppColors.gray500;
-        }),
-        trackColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return AppColors.primarySoft;
-          }
-          return AppColors.darkBorder;
-        }),
-      ),
-
-      // Checkbox Theme
-      checkboxTheme: CheckboxThemeData(
-        fillColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return AppColors.primary;
-          }
-          return Colors.transparent;
-        }),
-        checkColor: WidgetStateProperty.all(Colors.white),
-        side: BorderSide(color: AppColors.darkBorder, width: 2),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-      ),
-
-      // Radio Theme
-      radioTheme: RadioThemeData(
-        fillColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return AppColors.primary;
-          }
-          return AppColors.darkBorder;
-        }),
-      ),
-
-      // Icon Theme
-      iconTheme: const IconThemeData(
-        color: AppColors.textOnDarkSecondary,
-        size: 24,
-      ),
-
-      // Primary Icon Theme
-      primaryIconTheme: const IconThemeData(color: Colors.white, size: 24),
+      iconTheme: const IconThemeData(color: AppColors.textBody, size: 24),
     );
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // LIGHT THEME (SECONDARY)
+  // LIGHT THEME (STUB FOR NOW - WE FOCUS ON DARK)
   // ═══════════════════════════════════════════════════════════════════════════
 
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      primaryColor: AppColors.primary,
+      primaryColor: AppColors.accentMid,
       scaffoldBackgroundColor: AppColors.background,
 
-      // Color Scheme
-      colorScheme: const ColorScheme.light(
-        primary: AppColors.primary,
-        primaryContainer: AppColors.primaryLight,
-        secondary: AppColors.secondary,
-        secondaryContainer: AppColors.secondaryLight,
-        tertiary: AppColors.accent,
-        surface: AppColors.surface,
-        error: AppColors.error,
-        onPrimary: AppColors.textOnPrimary,
-        onSecondary: AppColors.textOnPrimary,
-        onSurface: AppColors.textPrimary,
-        onError: AppColors.textOnPrimary,
-      ),
-
-      // AppBar Theme
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
-        elevation: 0,
-        centerTitle: true,
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
-        titleTextStyle: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-        ),
-        iconTheme: IconThemeData(color: AppColors.textPrimary),
-      ),
-
-      // Text Theme
-      textTheme: const TextTheme(
-        displayLarge: TextStyle(
-          fontFamily: arabicFont,
+      // Basic assignment, same fonts
+      textTheme: TextTheme(
+        displayLarge: GoogleFonts.syne(
           fontSize: 32,
           fontWeight: FontWeight.bold,
           color: AppColors.textPrimary,
         ),
-        displayMedium: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
-        ),
-        displaySmall: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 24,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-        ),
-        headlineLarge: TextStyle(
-          fontFamily: arabicFont,
+        headlineLarge: GoogleFonts.syne(
           fontSize: 22,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        headlineMedium: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-        ),
-        headlineSmall: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-        ),
-        titleLarge: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-        ),
-        titleMedium: TextStyle(
-          fontFamily: arabicFont,
+        bodyLarge: GoogleFonts.dmSans(
           fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textPrimary,
-        ),
-        titleSmall: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textPrimary,
-        ),
-        bodyLarge: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 16,
-          fontWeight: FontWeight.normal,
-          color: AppColors.textPrimary,
-        ),
-        bodyMedium: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 14,
-          fontWeight: FontWeight.normal,
-          color: AppColors.textPrimary,
-        ),
-        bodySmall: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 12,
-          fontWeight: FontWeight.normal,
           color: AppColors.textSecondary,
         ),
-        labelLarge: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textPrimary,
-        ),
-        labelMedium: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textSecondary,
-        ),
-        labelSmall: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 10,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textHint,
-        ),
-      ),
-
-      // Card Theme
-      cardTheme: CardThemeData(
-        color: AppColors.surface,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: AppColors.primary.withOpacity(0.1)),
-        ),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      ),
-
-      // Elevated Button Theme
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.textOnPrimary,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          textStyle: const TextStyle(
-            fontFamily: arabicFont,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-
-      // Outlined Button Theme
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.primary, width: 1.5),
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          textStyle: const TextStyle(
-            fontFamily: arabicFont,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-
-      // Text Button Theme
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          textStyle: const TextStyle(
-            fontFamily: arabicFont,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-
-      // Input Decoration Theme
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: AppColors.surfaceVariant,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 18,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.error),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
-        ),
-        hintStyle: const TextStyle(
-          fontFamily: arabicFont,
-          color: AppColors.textHint,
-          fontSize: 14,
-        ),
-        labelStyle: const TextStyle(
-          fontFamily: arabicFont,
-          color: AppColors.textSecondary,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-        errorStyle: const TextStyle(
-          fontFamily: arabicFont,
-          color: AppColors.error,
-          fontSize: 12,
-        ),
-        prefixIconColor: AppColors.textSecondary,
-        suffixIconColor: AppColors.textSecondary,
-      ),
-
-      // Floating Action Button Theme
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.textOnPrimary,
-        elevation: 6,
-        focusElevation: 8,
-        hoverElevation: 8,
-        splashColor: Colors.white.withOpacity(0.2),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      ),
-
-      // Bottom Navigation Bar Theme
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: AppColors.surface,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textSecondary,
-        type: BottomNavigationBarType.fixed,
-        elevation: 8,
-        selectedLabelStyle: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-        unselectedLabelStyle: TextStyle(fontFamily: arabicFont, fontSize: 12),
-      ),
-
-      // Tab Bar Theme
-      tabBarTheme: const TabBarThemeData(
-        labelColor: AppColors.primary,
-        unselectedLabelColor: AppColors.textSecondary,
-        indicatorColor: AppColors.primary,
-        labelStyle: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
-        unselectedLabelStyle: TextStyle(fontFamily: arabicFont, fontSize: 14),
-      ),
-
-      // Chip Theme
-      chipTheme: ChipThemeData(
-        backgroundColor: AppColors.surfaceVariant,
-        selectedColor: AppColors.primaryLight,
-        labelStyle: const TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 12,
-          color: AppColors.textPrimary,
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: AppColors.primary.withOpacity(0.1)),
-        ),
-      ),
-
-      // Dialog Theme
-      dialogTheme: DialogThemeData(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        titleTextStyle: const TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-        ),
-        contentTextStyle: const TextStyle(
-          fontFamily: arabicFont,
+        bodyMedium: GoogleFonts.dmSans(
           fontSize: 14,
           color: AppColors.textSecondary,
         ),
-      ),
-
-      // Snackbar Theme
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.gray800,
-        contentTextStyle: const TextStyle(
-          fontFamily: arabicFont,
-          color: Colors.white,
-          fontSize: 14,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        behavior: SnackBarBehavior.floating,
-      ),
-
-      // Divider Theme
-      dividerTheme: const DividerThemeData(
-        color: AppColors.divider,
-        thickness: 1,
-        space: 1,
-      ),
-
-      // List Tile Theme
-      listTileTheme: const ListTileThemeData(
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        minLeadingWidth: 24,
-        titleTextStyle: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textPrimary,
-        ),
-        subtitleTextStyle: TextStyle(
-          fontFamily: arabicFont,
-          fontSize: 14,
-          color: AppColors.textSecondary,
-        ),
-      ),
-
-      // Progress Indicator Theme
-      progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: AppColors.primary,
-        linearTrackColor: AppColors.gray200,
-        circularTrackColor: AppColors.gray200,
       ),
     );
   }

@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import '../../../shared/widgets/app_drawer.dart';
-import '../../../core/providers/center_provider.dart';
+
+import '../../../../core/config/app_colors.dart';
+import '../../../../core/providers/center_provider.dart';
 import '../../auth/provider/auth_provider.dart';
-import '../../../shared/data/supabase_repository.dart';
-import '../../../shared/widgets/premium_widgets.dart';
+import '../../../../shared/data/supabase_repository.dart';
+import '../../../../core/widgets/genius/glass_card.dart';
 import 'widgets/smart_material_tile.dart';
 import 'widgets/upload_material_dialog.dart';
 
+/// 🎨 Teacher Materials Screen - Forest Dark Edition
 class TeacherMaterialsScreen extends StatefulWidget {
   const TeacherMaterialsScreen({super.key});
 
@@ -123,15 +125,13 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.forestDeep,
       body: _error != null && !_isLoading
           ? _buildErrorWidget()
           : RefreshIndicator(
               onRefresh: () => _loadData(reset: true),
-              color: Theme.of(context).colorScheme.primary,
-              backgroundColor:
-                  (Theme.of(context).cardTheme.color ??
-                  Theme.of(context).colorScheme.surface),
+              backgroundColor: AppColors.accentVivid,
+              color: AppColors.darkSurface,
               child: CustomScrollView(
                 controller: _scrollController,
                 physics: const BouncingScrollPhysics(),
@@ -146,18 +146,24 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                   if (_isLoadingMore)
                     SliverToBoxAdapter(child: _buildLoadMoreIndicator()),
                   if (!_isLoading)
-                    SliverToBoxAdapter(child: SizedBox(height: 80.h)),
+                    SliverToBoxAdapter(child: SizedBox(height: 100.h)),
                 ],
               ),
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showUploadOptions(context),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: AppColors.accentVivid,
         elevation: 0,
-        icon: const Icon(Icons.cloud_upload_outlined, color: Colors.white),
+        icon: const Icon(
+          Icons.cloud_upload_rounded,
+          color: AppColors.forestDeep,
+        ),
         label: const Text(
           'رفع جديد',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: AppColors.forestDeep,
+          ),
         ),
       ).animate().scale(delay: 300.ms),
     );
@@ -165,102 +171,118 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
 
   Widget _buildSliverAppBar() {
     return SliverAppBar(
-      expandedHeight: 140.h,
+      expandedHeight: 200.h,
       floating: false,
       pinned: true,
-      backgroundColor:
-          (Theme.of(context).cardTheme.color ??
-          Theme.of(context).colorScheme.surface),
+      backgroundColor: AppColors.forestPrimary,
+      iconTheme: const IconThemeData(color: AppColors.textDisplay),
+      title: Text(
+        'المكتبة الرقمية',
+        style: TextStyle(
+          color: AppColors.textDisplay,
+          fontSize: 20.sp,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      centerTitle: true,
       flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF0EA5E9), Color(0xFF38BDF8)],
+        background: Stack(
+          children: [
+            Positioned(
+              right: -50.w,
+              top: -50.h,
+              child: Container(
+                width: 200.w,
+                height: 200.w,
+                decoration: BoxDecoration(
+                  color: AppColors.accentVivid.withValues(alpha: 0.05),
+                  shape: BoxShape.circle,
+                ),
+              ),
             ),
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                top: -30,
-                right: -30,
-                child: Container(
-                  width: 150,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.08),
-                    shape: BoxShape.circle,
-                  ),
+            Positioned(
+              left: -30.w,
+              bottom: -20.h,
+              child: Container(
+                width: 150.w,
+                height: 150.w,
+                decoration: BoxDecoration(
+                  color: AppColors.infoPurple.withValues(alpha: 0.05),
+                  shape: BoxShape.circle,
                 ),
               ),
-              Positioned(
-                bottom: -20,
-                left: -20,
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.06),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomRight,
-                child: Padding(
-                  padding: EdgeInsets.only(right: 20.w, bottom: 16.h),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(8.w),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(10.r),
+            ),
+            SafeArea(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20.w,
+                ).copyWith(bottom: 20.h),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(12.w),
+                          decoration: BoxDecoration(
+                            color: AppColors.accentVivid.withValues(
+                              alpha: 0.15,
                             ),
-                            child: Icon(
-                              Icons.library_books_rounded,
-                              color: Colors.white,
-                              size: 22.sp,
+                            borderRadius: BorderRadius.circular(16.r),
+                            border: Border.all(
+                              color: AppColors.accentVivid.withValues(
+                                alpha: 0.3,
+                              ),
                             ),
                           ),
-                          SizedBox(width: 12.w),
-                          Text(
-                            'المكتبة الرقمية',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: Icon(
+                            Icons.video_library_rounded,
+                            color: AppColors.accentVivid,
+                            size: 28.sp,
                           ),
-                        ],
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        'إدارة المحتوى التعليمي',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13.sp,
                         ),
-                      ),
-                    ],
-                  ),
+                        SizedBox(width: 16.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'محتواك التعليمي',
+                                style: TextStyle(
+                                  color: AppColors.textDisplay,
+                                  fontSize: 24.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: 4.h),
+                              Text(
+                                'إدارة الملفات والمرفقات',
+                                style: TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 13.sp,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.search, color: Colors.white),
+          icon: const Icon(Icons.search_rounded, color: AppColors.textDisplay),
           onPressed: () {},
         ),
         Padding(
           padding: EdgeInsets.only(left: 8.w),
-          child: const DrawerMenuButton(isTeacher: true),
+          child: const SizedBox.shrink(),
         ),
       ],
     );
@@ -274,129 +296,143 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.error.withOpacity(0.1),
+              color: AppColors.forestPrimary,
               shape: BoxShape.circle,
+              border: Border.all(color: AppColors.glassBorderHighlight),
             ),
             child: Icon(
               Icons.error_outline_rounded,
-              size: 48.sp,
-              color: Theme.of(context).colorScheme.error,
+              size: 56.sp,
+              color: AppColors.errorRed,
             ),
-          ),
-          SizedBox(height: 16.h),
+          ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
+          SizedBox(height: 24.h),
           Text(
             'عذراً، حدث خطأ ما',
-            style: TextStyle(
-              fontSize: 18.sp,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface,
+              color: AppColors.textDisplay,
             ),
-          ),
-          SizedBox(height: 8.h),
+          ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
+          SizedBox(height: 12.h),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 32.w),
             child: Text(
               _error ?? '',
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
               textAlign: TextAlign.center,
-            ),
+            ).animate().fadeIn(delay: 300.ms),
           ),
-          SizedBox(height: 24.h),
-          GradientButton(
-            text: 'إعادة المحاولة',
-            icon: Icons.refresh_rounded,
-            onPressed: _loadData,
+          SizedBox(height: 32.h),
+          ElevatedButton.icon(
+            onPressed: () => _loadData(reset: true),
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text(
+              'إعادة المحاولة',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accentVivid,
+              foregroundColor: AppColors.forestDeep,
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+            ),
           ),
         ],
       ),
-    ).animate().fadeIn();
+    );
   }
 
   Widget _buildStatsHeader() {
     final total = _stats['total_materials'] ?? 0;
     final downloads = _stats['total_downloads'] ?? 0;
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Row(
         children: [
           Expanded(
-            child: PremiumCard(
-              padding: EdgeInsets.symmetric(vertical: 18.h),
+            child: GlassCard(
+              color: AppColors.forestPrimary,
+              padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 16.w),
               child: Column(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(10.w),
+                    padding: EdgeInsets.all(12.w),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0EA5E9).withValues(alpha: 0.15),
+                      color: AppColors.infoPurple.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.infoPurple.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Icon(
                       Icons.library_books_rounded,
-                      color: const Color(0xFF0EA5E9),
-                      size: 22.sp,
+                      color: AppColors.infoPurple,
+                      size: 24.sp,
                     ),
                   ),
-                  SizedBox(height: 10.h),
+                  SizedBox(height: 12.h),
                   Text(
                     '$total',
                     style: TextStyle(
-                      fontSize: 22.sp,
-                      fontWeight: FontWeight.w800,
-                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textDisplay,
                     ),
                   ),
-                  SizedBox(height: 2.h),
+                  SizedBox(height: 4.h),
                   Text(
                     'المواد التعليمية',
                     style: TextStyle(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withOpacity(0.7),
-                      fontSize: 11.sp,
+                      color: AppColors.textMuted,
+                      fontSize: 12.sp,
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          SizedBox(width: 12.w),
+          SizedBox(width: 16.w),
           Expanded(
-            child: PremiumCard(
-              padding: EdgeInsets.symmetric(vertical: 18.h),
+            child: GlassCard(
+              color: AppColors.forestPrimary,
+              padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 16.w),
               child: Column(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(10.w),
+                    padding: EdgeInsets.all(12.w),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.15),
+                      color: AppColors.warmAmber.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.warmAmber.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Icon(
                       Icons.cloud_download_rounded,
-                      color: Colors.orange,
-                      size: 22.sp,
+                      color: AppColors.warmAmber,
+                      size: 24.sp,
                     ),
                   ),
-                  SizedBox(height: 10.h),
+                  SizedBox(height: 12.h),
                   Text(
                     '$downloads',
                     style: TextStyle(
-                      fontSize: 22.sp,
-                      fontWeight: FontWeight.w800,
-                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textDisplay,
                     ),
                   ),
-                  SizedBox(height: 2.h),
+                  SizedBox(height: 4.h),
                   Text(
                     'إجمالي التحميلات',
                     style: TextStyle(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withOpacity(0.7),
-                      fontSize: 11.sp,
+                      color: AppColors.textMuted,
+                      fontSize: 12.sp,
                     ),
                   ),
                 ],
@@ -410,16 +446,16 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
 
   Widget _buildFilters() {
     final types = [
-      {'id': 'all', 'label': 'الكل', 'icon': Icons.apps},
-      {'id': 'pdf', 'label': 'PDF', 'icon': Icons.picture_as_pdf},
-      {'id': 'video', 'label': 'فيديو', 'icon': Icons.videocam},
-      {'id': 'image', 'label': 'صور', 'icon': Icons.image},
-      {'id': 'link', 'label': 'روابط', 'icon': Icons.link},
+      {'id': 'all', 'label': 'الكل', 'icon': Icons.apps_rounded},
+      {'id': 'pdf', 'label': 'PDF', 'icon': Icons.picture_as_pdf_rounded},
+      {'id': 'video', 'label': 'فيديو', 'icon': Icons.videocam_rounded},
+      {'id': 'image', 'label': 'صور', 'icon': Icons.image_rounded},
+      {'id': 'link', 'label': 'روابط', 'icon': Icons.link_rounded},
     ];
     return SizedBox(
-      height: 42.h,
+      height: 44.h,
       child: ListView.separated(
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: EdgeInsets.symmetric(horizontal: 20.w),
         scrollDirection: Axis.horizontal,
         itemCount: types.length,
         separatorBuilder: (c, i) => SizedBox(width: 8.w),
@@ -435,25 +471,15 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
               duration: const Duration(milliseconds: 300),
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               decoration: BoxDecoration(
-                gradient: isSelected
-                    ? LinearGradient(
-                        colors: [
-                          Theme.of(context).colorScheme.primary,
-                          Theme.of(
-                            context,
-                          ).colorScheme.primary.withOpacity(0.8),
-                        ],
-                      )
-                    : null,
                 color: isSelected
-                    ? null
-                    : (Theme.of(context).cardTheme.color ??
-                          Theme.of(context).colorScheme.surface),
-                borderRadius: BorderRadius.circular(30.r),
+                    ? AppColors.accentVivid.withValues(alpha: 0.15)
+                    : AppColors.darkSurface.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(20.r),
                 border: Border.all(
                   color: isSelected
-                      ? Colors.transparent
-                      : Theme.of(context).colorScheme.outline.withOpacity(0.5),
+                      ? AppColors.accentVivid
+                      : AppColors.glassBorderHighlight,
+                  width: isSelected ? 2 : 1,
                 ),
               ),
               child: Row(
@@ -461,26 +487,22 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                 children: [
                   Icon(
                     t['icon'] as IconData,
-                    size: 16.sp,
+                    size: 18.sp,
                     color: isSelected
-                        ? Colors.white
-                        : Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withOpacity(0.7),
+                        ? AppColors.accentVivid
+                        : AppColors.textMuted,
                   ),
                   SizedBox(width: 6.w),
                   Text(
                     t['label']! as String,
                     style: TextStyle(
                       color: isSelected
-                          ? Colors.white
-                          : Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withOpacity(0.7),
+                          ? AppColors.accentVivid
+                          : AppColors.textDisplay,
                       fontWeight: isSelected
                           ? FontWeight.bold
-                          : FontWeight.w500,
-                      fontSize: 12.sp,
+                          : FontWeight.w600,
+                      fontSize: 13.sp,
                     ),
                   ),
                 ],
@@ -497,32 +519,18 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
       return SliverFillRemaining(
         hasScrollBody: false,
         child: Center(
-          child: PremiumCard(
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: 18.w,
-                  height: 18.w,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.2,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                SizedBox(width: 10.w),
-                Text(
-                  'جاري التحميل...',
-                  style: TextStyle(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withOpacity(0.7),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(
+                backgroundColor: AppColors.accentVivid,
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                'جاري التحميل...',
+                style: TextStyle(color: AppColors.textMuted, fontSize: 14.sp),
+              ),
+            ],
           ),
         ),
       );
@@ -537,22 +545,14 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
               Container(
                 padding: EdgeInsets.all(28.w),
                 decoration: BoxDecoration(
-                  color:
-                      (Theme.of(context).cardTheme.color ??
-                      Theme.of(context).colorScheme.surface),
+                  color: AppColors.forestPrimary,
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withOpacity(0.5),
-                  ),
+                  border: Border.all(color: AppColors.glassBorderHighlight),
                 ),
                 child: Icon(
                   Icons.folder_open_rounded,
                   size: 56.sp,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withOpacity(0.5),
+                  color: AppColors.infoPurple,
                 ),
               ),
               SizedBox(height: 20.h),
@@ -561,18 +561,13 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
+                  color: AppColors.textDisplay,
                 ),
               ),
               SizedBox(height: 8.h),
               Text(
                 'ابدأ برفع المحتوى التعليمي لطلابك',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withOpacity(0.5),
-                ),
+                style: TextStyle(fontSize: 14.sp, color: AppColors.textMuted),
               ),
             ],
           ),
@@ -581,13 +576,13 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
     }
 
     return SliverPadding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
       sliver: SliverGrid(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           childAspectRatio: 0.75,
-          crossAxisSpacing: 12.w,
-          mainAxisSpacing: 12.h,
+          crossAxisSpacing: 16.w,
+          mainAxisSpacing: 16.h,
         ),
         delegate: SliverChildBuilderDelegate((context, index) {
           final material = _materials[index];
@@ -606,7 +601,7 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
       padding: EdgeInsets.symmetric(vertical: 16.h),
       child: Center(
         child: CircularProgressIndicator(
-          color: Theme.of(context).colorScheme.primary,
+          backgroundColor: AppColors.accentVivid,
         ),
       ),
     );
@@ -648,20 +643,26 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('تم رفع المحتوى بنجاح'),
-            backgroundColor: Colors.green,
+          const SnackBar(
+            content: Text(
+              'تم رفع المحتوى بنجاح',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            backgroundColor: AppColors.emeraldGreen,
           ),
         );
-        _loadData();
+        _loadData(reset: true);
       }
     } catch (e) {
       debugPrint('Error uploading: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('فشل الرفع: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
+            content: Text(
+              'فشل الرفع: $e',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            backgroundColor: AppColors.errorRed,
           ),
         );
         setState(() => _isLoading = false);
@@ -689,35 +690,33 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor:
-            (Theme.of(context).cardTheme.color ??
-            Theme.of(context).colorScheme.surface),
+        backgroundColor: AppColors.forestPrimary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
         title: Text(
           'حذف المحتوى',
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+          style: TextStyle(
+            color: AppColors.textDisplay,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         content: Text(
           'هل أنت متأكد من حذف "${material['title']}"؟',
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-          ),
+          style: TextStyle(color: AppColors.textMuted),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              'إلغاء',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-              ),
-            ),
+            child: Text('إلغاء', style: TextStyle(color: AppColors.textMuted)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
+            style: TextButton.styleFrom(foregroundColor: AppColors.errorRed),
+            child: const Text(
+              'حذف',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            child: const Text('حذف'),
           ),
         ],
       ),
@@ -727,12 +726,17 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
       try {
         final repo = context.read<SupabaseRepository>();
         await repo.deleteStudyMaterial(material['id']);
-        _loadData();
+        _loadData(reset: true);
       } catch (e) {
         debugPrint('Delete error: $e');
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('فشل الحذف: $e')));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('فشل الحذف: $e'),
+              backgroundColor: AppColors.errorRed,
+            ),
+          );
+        }
       }
     }
   }

@@ -263,6 +263,7 @@ mixin TeacherRepositoryMixin on BaseRepository {
             status,
             students!inner(
               id,
+              user_id,
               full_name,
               phone,
               avatar_url,
@@ -310,6 +311,8 @@ mixin TeacherRepositoryMixin on BaseRepository {
 
         return {
           'id': student['id'],
+          'user_id': student['user_id'],
+          'student_user_id': student['user_id'],
           'student_name': student['full_name'],
           'student_phone': student['phone'],
           'student_avatar': student['avatar_url'],

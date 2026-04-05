@@ -226,4 +226,4 @@ typedef UnitResult = Result<Unit>;
 typedef AsyncUnitResult = AsyncResult<Unit>;
 
 /// إنشاء نتيجة وحدة ناجحة
-UnitResult successUnit() =>  Result.success(Unit.value);
+UnitResult successUnit() => Result.success(Unit.value);

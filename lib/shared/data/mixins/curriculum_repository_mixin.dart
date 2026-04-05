@@ -57,16 +57,22 @@ mixin CurriculumRepositoryMixin on BaseRepository {
   }
 
   /// Update an existing subject
-  Future<void> updateSubject(String subjectId, Map<String, dynamic> data) async {
+  Future<void> updateSubject(
+    String subjectId,
+    Map<String, dynamic> data,
+  ) async {
     await client.from('subjects').update(data).eq('id', subjectId);
   }
 
   /// Delete a subject (soft delete)
   Future<void> deleteSubject(String subjectId) async {
-    await client.from('subjects').update({
-      'deleted_at': DateTime.now().toUtc().toIso8601String(),
-      'deleted_by': currentUserId,
-    }).eq('id', subjectId);
+    await client
+        .from('subjects')
+        .update({
+          'deleted_at': DateTime.now().toUtc().toIso8601String(),
+          'deleted_by': currentUserId,
+        })
+        .eq('id', subjectId);
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -108,7 +114,10 @@ mixin CurriculumRepositoryMixin on BaseRepository {
   }
 
   /// Update an existing chapter
-  Future<void> updateChapter(String chapterId, Map<String, dynamic> data) async {
+  Future<void> updateChapter(
+    String chapterId,
+    Map<String, dynamic> data,
+  ) async {
     await client.from('chapters').update(data).eq('id', chapterId);
   }
 

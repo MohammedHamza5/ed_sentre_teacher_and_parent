@@ -3,7 +3,6 @@
 /// Shows per-group revenue, teacher share vs center share, and salary breakdown
 library;
 
-import '../../../shared/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -122,7 +121,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
               height: 180,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.06),
+                color: Colors.white.withValues(alpha: 0.06),
               ),
             ),
           ),
@@ -134,7 +133,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
               height: 120,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.04),
+                color: Colors.white.withValues(alpha: 0.04),
               ),
             ),
           ),
@@ -148,10 +147,10 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                     // Back button
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
+                        color: Colors.white.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(14.r),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                         ),
                       ),
                       child: IconButton(
@@ -181,7 +180,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                             _salaryData['teacher_name'] ?? 'تفاصيل مالية',
                             style: TextStyle(
                               fontSize: 14.sp,
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withValues(alpha: 0.8),
                             ),
                           ).animate(delay: 100.ms).fadeIn().slideX(begin: 0.2),
                         ],
@@ -191,7 +190,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                     Container(
                       padding: EdgeInsets.all(12.w),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
+                        color: Colors.white.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(16.r),
                       ),
                       child: Icon(
@@ -201,7 +200,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                       ),
                     ).animate(delay: 200.ms).fadeIn().scale(),
                     SizedBox(width: 8.w),
-                    DrawerMenuButton(isTeacher: true),
+                    const SizedBox.shrink(),
                   ],
                 ),
                 SizedBox(height: 16.h),
@@ -271,7 +270,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                   fontSize: 14.sp,
                   color: Theme.of(
                     context,
-                  ).colorScheme.onSurface.withOpacity(0.7),
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -327,7 +326,6 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
     final salaryType = _salaryData['salary_type'] ?? 'fixed';
     final percentage =
         (_salaryData['salary_percentage'] as num?)?.toDouble() ?? 0;
-    final status = _salaryData['status'] ?? 'draft';
 
     // Calculate total collected across all groups
     double totalCollected = 0;
@@ -349,7 +347,9 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
             borderRadius: BorderRadius.circular(24.r),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -361,7 +361,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                 'إجمالي نصيبك',
                 style: TextStyle(
                   fontSize: 16.sp,
-                  color: Colors.white.withOpacity(0.85),
+                  color: Colors.white.withValues(alpha: 0.85),
                 ),
               ),
               SizedBox(height: 8.h),
@@ -378,7 +378,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
+                  color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
@@ -412,7 +412,9 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                   gradient: LinearGradient(
                     colors: [
                       Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                      Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.8),
                     ],
                   ),
                 ),
@@ -426,7 +428,9 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                   gradient: LinearGradient(
                     colors: [
                       Theme.of(context).colorScheme.error,
-                      Theme.of(context).colorScheme.error.withOpacity(0.8),
+                      Theme.of(
+                        context,
+                      ).colorScheme.error.withValues(alpha: 0.8),
                     ],
                   ),
                 ),
@@ -451,7 +455,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
             Theme.of(context).cardTheme.color ??
             Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -469,7 +473,9 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
             title,
             style: TextStyle(
               fontSize: 12.sp,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
           SizedBox(height: 4.h),
@@ -540,7 +546,9 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                   gradient: LinearGradient(
                     colors: [
                       Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                      Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.8),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(14.r),
@@ -571,7 +579,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                         fontSize: 12.sp,
                         color: Theme.of(
                           context,
-                        ).colorScheme.onSurface.withOpacity(0.7),
+                        ).colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -637,7 +645,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                       vertical: 4.h,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.15),
+                      color: Colors.green.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
@@ -716,7 +724,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                     fontSize: 11.sp,
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurface.withOpacity(0.7),
+                    ).colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -738,7 +746,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                     fontSize: 11.sp,
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurface.withOpacity(0.7),
+                    ).colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -805,7 +813,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                       'حصة',
                       style: TextStyle(
                         fontSize: 11.sp,
-                        color: Colors.white.withOpacity(0.85),
+                        color: Colors.white.withValues(alpha: 0.85),
                       ),
                     ),
                   ],
@@ -831,7 +839,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                         fontSize: 13.sp,
                         color: Theme.of(
                           context,
-                        ).colorScheme.onSurface.withOpacity(0.7),
+                        ).colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -858,15 +866,18 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 8.w),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10.r),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Column(
           children: [
             Text(
               label,
-              style: TextStyle(fontSize: 10.sp, color: color.withOpacity(0.8)),
+              style: TextStyle(
+                fontSize: 10.sp,
+                color: color.withValues(alpha: 0.8),
+              ),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -934,7 +945,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
             decoration: BoxDecoration(
               color:
                   (isBonus ? Colors.green : Theme.of(context).colorScheme.error)
-                      .withOpacity(0.15),
+                      .withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10.r),
             ),
             child: Icon(
@@ -1001,7 +1012,9 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
         statusIcon = Icons.hourglass_empty_rounded;
         break;
       default:
-        statusColor = Theme.of(context).colorScheme.onSurface.withOpacity(0.7);
+        statusColor = Theme.of(
+          context,
+        ).colorScheme.onSurface.withValues(alpha: 0.7);
         statusText = salaryId != null ? 'محسوب — لم يُصرف بعد' : 'لم يُحسب بعد';
         statusIcon = Icons.info_outline_rounded;
     }
@@ -1012,7 +1025,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
           Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.15),
+              color: statusColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(14.r),
             ),
             child: Icon(statusIcon, color: statusColor, size: 24.sp),
@@ -1028,7 +1041,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                     fontSize: 14.sp,
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurface.withOpacity(0.7),
+                    ).colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                 ),
                 SizedBox(height: 4.h),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:ui' as ui;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -246,50 +245,23 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Widget _buildLogo() {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Container(
-          width: 130.w,
-          height: 130.w,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white.withValues(alpha: 0.35),
-                blurRadius: 24,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20.r),
+      child: Image.asset(
+        'assets/icons/app_icon.png',
+        width: 90.w,
+        height: 90.w,
+        fit: BoxFit.cover,
+        errorBuilder: (c, e, s) => Icon(
+          Icons.school,
+          size: 56.sp,
+          color: AppColors.primary,
         ),
-        Builder(
-          builder: (context) {
-            return SvgPicture.asset(
-                  'assets/icons/app_logo.svg',
-                  width: 72.w,
-                  height: 72.w,
-                  placeholderBuilder: (ctx) => Image.asset(
-                    'assets/icons/app_logo.png',
-                    width: 72.w,
-                    height: 72.w,
-                    errorBuilder: (c, e, s) => Icon(
-                      Icons.school,
-                      size: 56.sp,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                )
-                .animate()
-                .fadeIn(duration: 500.ms)
-                .scale(
-                  begin: const Offset(0.95, 0.95),
-                  end: const Offset(1, 1),
-                );
-          },
-        ),
-      ],
-    );
+      ),
+    ).animate().fadeIn(duration: 500.ms).scale(
+          begin: const Offset(0.95, 0.95),
+          end: const Offset(1, 1),
+        );
   }
 
   Widget _buildGradientText(String text) {

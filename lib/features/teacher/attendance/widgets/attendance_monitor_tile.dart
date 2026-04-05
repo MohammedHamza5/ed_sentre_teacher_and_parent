@@ -29,9 +29,7 @@ class AttendanceMonitorTile extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         decoration: BoxDecoration(
-          color: isPresent
-              ? Colors.green.withValues(alpha: 0.1)
-              : Colors.white,
+          color: isPresent ? Colors.green.withValues(alpha: 0.1) : Colors.white,
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color: isPresent
@@ -88,7 +86,9 @@ class AttendanceMonitorTile extends StatelessWidget {
                       border: Border.all(
                         color: isPresent
                             ? Colors.green
-                            : Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                            : Theme.of(
+                                context,
+                              ).colorScheme.primary.withValues(alpha: 0.2),
                         width: 2.w,
                       ),
                       image: avatarUrl != null
@@ -101,7 +101,9 @@ class AttendanceMonitorTile extends StatelessWidget {
                     child: avatarUrl == null
                         ? Icon(
                             Icons.person,
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.5),
                             size: 20.sp,
                           )
                         : null,
@@ -143,7 +145,9 @@ class AttendanceMonitorTile extends StatelessWidget {
                         fontSize: 9.sp,
                         color: isPresent
                             ? Colors.green
-                            : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                            : Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.5),
                         fontWeight: FontWeight.w600,
                       ),
                     ),

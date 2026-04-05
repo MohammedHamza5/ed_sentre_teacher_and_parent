@@ -104,9 +104,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       iconColor: Colors.indigo,
                       value: settings.isDarkMode,
                       onChanged: (_) {
-                        context
-                            .read<AppSettingsProvider>()
-                            .toggleDarkMode();
+                        context.read<AppSettingsProvider>().toggleDarkMode();
                       },
                     );
                   },
@@ -460,7 +458,7 @@ class _EditProfileFormState extends State<_EditProfileForm> {
                       width: 24.w,
                       height: 24.w,
                       child: const CircularProgressIndicator(
-                        color: Colors.white,
+                        backgroundColor: Colors.white,
                         strokeWidth: 2,
                       ),
                     )
@@ -627,7 +625,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
                         width: 20.w,
                         height: 20.w,
                         child: const CircularProgressIndicator(
-                          color: Colors.white,
+                          backgroundColor: Colors.white,
                           strokeWidth: 2,
                         ),
                       )

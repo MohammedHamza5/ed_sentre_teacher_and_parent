@@ -46,8 +46,8 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
       backgroundColor: AppColors.darkBackground,
       body: RefreshIndicator(
         onRefresh: _loadData,
-        color: AppColors.primary,
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: AppColors.primary,
+        color: AppColors.darkCard,
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(
             parent: AlwaysScrollableScrollPhysics(),
@@ -894,11 +894,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
   void _openGenerateExam(String type) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => AIGenerateExamScreen(
-          examType: type,
-        ),
-      ),
+      MaterialPageRoute(builder: (_) => AIGenerateExamScreen(examType: type)),
     );
   }
 
@@ -1154,7 +1150,7 @@ class _AddKnowledgeSheetState extends State<_AddKnowledgeSheet> {
                               height: 20.w,
                               child: const CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                backgroundColor: Colors.white,
                               ),
                             )
                           : const Text('حفظ'),

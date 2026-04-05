@@ -22,14 +22,17 @@ class NotificationHelper {
     required String date,
   }) async {
     try {
-      await _client.rpc('create_notification_for_group', params: {
-        'p_group_id': groupId,
-        'p_title': '📋 تم تسجيل حضور اليوم',
-        'p_body': 'تم تسجيل حضور $groupName لمادة $courseName ($date)',
-        'p_type': 'attendance',
-        'p_target_app': 'student',
-        'p_data': {'route': '/attendance', 'date': date},
-      });
+      await _client.rpc(
+        'create_notification_for_group',
+        params: {
+          'p_group_id': groupId,
+          'p_title': '📋 تم تسجيل حضور اليوم',
+          'p_body': 'تم تسجيل حضور $groupName لمادة $courseName ($date)',
+          'p_type': 'attendance',
+          'p_target_app': 'student',
+          'p_data': {'route': '/attendance', 'date': date},
+        },
+      );
     } catch (e) {
       debugPrint('⚠️ [NotificationHelper] Attendance notification failed: $e');
     }
@@ -44,14 +47,17 @@ class NotificationHelper {
     required String date,
   }) async {
     try {
-      await _client.rpc('create_notification_for_student_parents', params: {
-        'p_student_id': studentId,
-        'p_center_id': centerId,
-        'p_title': '⚠️ غياب $studentName',
-        'p_body': 'تغيب $studentName عن حصة $courseName يوم $date',
-        'p_type': 'attendance',
-        'p_data': {'route': '/attendance', 'date': date},
-      });
+      await _client.rpc(
+        'create_notification_for_student_parents',
+        params: {
+          'p_student_id': studentId,
+          'p_center_id': centerId,
+          'p_title': '⚠️ غياب $studentName',
+          'p_body': 'تغيب $studentName عن حصة $courseName يوم $date',
+          'p_type': 'attendance',
+          'p_data': {'route': '/attendance', 'date': date},
+        },
+      );
     } catch (e) {
       debugPrint('⚠️ [NotificationHelper] Absence notification failed: $e');
     }
@@ -86,14 +92,17 @@ class NotificationHelper {
     required String examName,
   }) async {
     try {
-      await _client.rpc('create_notification_for_group', params: {
-        'p_group_id': groupId,
-        'p_title': '📝 تم رصد درجات $examName',
-        'p_body': 'تم رصد درجات الامتحان. اطلع على نتيجتك الآن!',
-        'p_type': 'grade',
-        'p_target_app': 'student',
-        'p_data': {'route': '/grades'},
-      });
+      await _client.rpc(
+        'create_notification_for_group',
+        params: {
+          'p_group_id': groupId,
+          'p_title': '📝 تم رصد درجات $examName',
+          'p_body': 'تم رصد درجات الامتحان. اطلع على نتيجتك الآن!',
+          'p_type': 'grade',
+          'p_target_app': 'student',
+          'p_data': {'route': '/grades'},
+        },
+      );
     } catch (e) {
       debugPrint('⚠️ [NotificationHelper] Grade notification failed: $e');
     }
@@ -111,16 +120,19 @@ class NotificationHelper {
     String? deadline,
   }) async {
     try {
-      await _client.rpc('create_notification_for_group', params: {
-        'p_group_id': groupId,
-        'p_title': '📚 واجب جديد: $courseName',
-        'p_body': deadline != null
-            ? '$homeworkTitle — آخر موعد: $deadline'
-            : homeworkTitle,
-        'p_type': 'homework',
-        'p_target_app': 'student',
-        'p_data': {'route': '/homework'},
-      });
+      await _client.rpc(
+        'create_notification_for_group',
+        params: {
+          'p_group_id': groupId,
+          'p_title': '📚 واجب جديد: $courseName',
+          'p_body': deadline != null
+              ? '$homeworkTitle — آخر موعد: $deadline'
+              : homeworkTitle,
+          'p_type': 'homework',
+          'p_target_app': 'student',
+          'p_data': {'route': '/homework'},
+        },
+      );
     } catch (e) {
       debugPrint('⚠️ [NotificationHelper] Homework notification failed: $e');
     }

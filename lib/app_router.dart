@@ -5,12 +5,12 @@ import 'package:ed_sentre_techer_and_parent/features/teacher/materials/teacher_m
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'shared/widgets/app_drawer.dart';
 
 import 'core/utils/app_logger.dart';
 import 'shared/models/enums.dart';
+import 'core/widgets/genius/genius_bottom_nav.dart'; // Glassmorphism nav
 
 // Screens
 import 'features/auth/screens/splash_screen.dart';
@@ -80,15 +80,12 @@ class AppRouter {
       }
 
       // Not authenticated, go to login
-      if (!isAuthenticated &&
-          !isOnLogin &&
-          !isOnSplash) {
+      if (!isAuthenticated && !isOnLogin && !isOnSplash) {
         return '/login';
       }
 
       // Authenticated, redirect based on role
-      if (isAuthenticated &&
-          (isOnLogin || isOnSplash)) {
+      if (isAuthenticated && (isOnLogin || isOnSplash)) {
         if (userRole == UserRole.teacher) {
           return '/teacher';
         } else if (userRole == UserRole.parent) {
@@ -336,8 +333,7 @@ class _TeacherShellScreenState extends State<TeacherShellScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
 
-  // Teacher premium gradient - dark blue to purple
-  static const _teacherGradient = [Color(0xFF3B82F6), Color(0xFF8B5CF6)];
+
 
   // Navigation items
   static const List<_TeacherNavItem> _navItems = [
@@ -406,122 +402,23 @@ class _TeacherShellScreenState extends State<TeacherShellScreen>
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
+    final showDrawer = location == '/teacher';
     final showBottomNav = _shouldShowBottomNav(location);
 
     return Scaffold(
       key: teacherScaffoldKey,
-      drawer: const TeacherAppDrawer(),
+      drawer: showDrawer ? const TeacherAppDrawer() : null,
       extendBody: true,
       body: widget.child,
       bottomNavigationBar: showBottomNav
-          ? Container(
-              margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1A1A25).withValues(alpha: 0.95),
-                borderRadius: BorderRadius.circular(28.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: _teacherGradient[0].withValues(alpha: 0.15),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.08),
-                  width: 1,
-                ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(28.r),
-                child: SafeArea(
-                  top: false,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 8.w,
-                      vertical: 10.h,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: List.generate(_navItems.length, (index) {
-                        return _buildNavItem(index, context);
-                      }),
-                    ),
-                  ),
-                ),
-              ),
+          ? GeniusBottomNav(
+              items: _navItems
+                  .map((item) => NavItem(icon: item.icon, label: item.label))
+                  .toList(),
+              currentIndex: _calculateSelectedIndex(context),
+              onItemSelected: (index) => _onItemTapped(index, context),
             )
           : null,
-    );
-  }
-
-  Widget _buildNavItem(int index, BuildContext context) {
-    final item = _navItems[index];
-    final isSelected = _calculateSelectedIndex(context) == index;
-
-    return GestureDetector(
-      onTap: () => _onItemTapped(index, context),
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOutCubic,
-        padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 16.w : 12.w,
-          vertical: 8.h,
-        ),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: _teacherGradient,
-                )
-              : null,
-          borderRadius: BorderRadius.circular(20.r),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: _teacherGradient[0].withValues(alpha: 0.4),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: Icon(
-                isSelected ? item.activeIcon : item.icon,
-                key: ValueKey(isSelected),
-                color: isSelected ? Colors.white : const Color(0xFF64748B),
-                size: 24.sp,
-              ),
-            ),
-            if (isSelected) ...[
-              SizedBox(width: 6.w),
-              AnimatedOpacity(
-                opacity: isSelected ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 200),
-                child: Text(
-                  item.label,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
     );
   }
 
@@ -569,8 +466,8 @@ class _ParentShellScreenState extends State<ParentShellScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
 
-  // Premium gradient colors
-  static const _primaryGradient = [Color(0xFF667EEA), Color(0xFF764BA2)];
+
+
 
   // Smart navigation items - الشاشات الأهم لولي الأمر
   static const List<_NavItem> _navItems = [
@@ -623,121 +520,20 @@ class _ParentShellScreenState extends State<ParentShellScreen>
 
   @override
   Widget build(BuildContext context) {
+    final location = GoRouterState.of(context).matchedLocation;
+    final showDrawer = location == '/parent';
+
     return Scaffold(
       key: parentScaffoldKey,
-      drawer: const ParentAppDrawer(),
+      drawer: showDrawer ? const ParentAppDrawer() : null,
       extendBody: true,
       body: widget.child,
-      bottomNavigationBar: Container(
-        margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: 0.95),
-              Colors.white.withValues(alpha: 0.85),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(28.r),
-          boxShadow: [
-            BoxShadow(
-              color: _primaryGradient[0].withValues(alpha: 0.15),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.5),
-            width: 1.5,
-          ),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(28.r),
-          child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: List.generate(_navItems.length, (index) {
-                  return _buildNavItem(index, context);
-                }),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(int index, BuildContext context) {
-    final item = _navItems[index];
-    final isSelected = _calculateSelectedIndex(context) == index;
-
-    return GestureDetector(
-      onTap: () => _onItemTapped(index, context),
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOutCubic,
-        padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 16.w : 12.w,
-          vertical: 8.h,
-        ),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: _primaryGradient,
-                )
-              : null,
-          borderRadius: BorderRadius.circular(20.r),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: _primaryGradient[0].withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: Icon(
-                isSelected ? item.activeIcon : item.icon,
-                key: ValueKey(isSelected),
-                color: isSelected ? Colors.white : const Color(0xFF6B7280),
-                size: 24.sp,
-              ),
-            ),
-            if (isSelected) ...[
-              SizedBox(width: 6.w),
-              AnimatedOpacity(
-                opacity: isSelected ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 200),
-                child: Text(
-                  item.label,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
+      bottomNavigationBar: GeniusBottomNav(
+        items: _navItems
+            .map((item) => NavItem(icon: item.icon, label: item.label))
+            .toList(),
+        currentIndex: _calculateSelectedIndex(context),
+        onItemSelected: (index) => _onItemTapped(index, context),
       ),
     );
   }

@@ -6,7 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 class AppAnimations {
   /// Standard duration for most UI transitions
   static const Duration defaultDuration = Duration(milliseconds: 300);
-  
+
   /// Duration for slower, emphasize animations
   static const Duration slowDuration = Duration(milliseconds: 600);
 
@@ -21,7 +21,12 @@ class AppAnimations {
     return child
         .animate(delay: delay)
         .fadeIn(duration: defaultDuration, curve: Curves.easeOut)
-        .slideY(begin: 0.2, end: 0, duration: defaultDuration, curve: Curves.easeOut);
+        .slideY(
+          begin: 0.2,
+          end: 0,
+          duration: defaultDuration,
+          curve: Curves.easeOut,
+        );
   }
 
   /// Scale in animation for dialogs or popups
@@ -32,15 +37,17 @@ class AppAnimations {
     return child
         .animate(delay: delay)
         .fadeIn(duration: defaultDuration)
-        .scale(begin: const Offset(0.9, 0.9), end: const Offset(1, 1), curve: Curves.easeOutBack);
+        .scale(
+          begin: const Offset(0.9, 0.9),
+          end: const Offset(1, 1),
+          curve: Curves.easeOutBack,
+        );
   }
 
   // --- Interactive Animations ---
 
   /// Button press effect (Scale down slightly)
-  static Widget buttonPress({
-    required Widget child,
-  }) {
+  static Widget buttonPress({required Widget child}) {
     // This is a helper, but usually requires a StatefulWidget to trigger.
     // For simple usage, wrap in Animate() in the widget tree.
     return child;

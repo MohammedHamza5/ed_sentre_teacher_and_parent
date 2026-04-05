@@ -36,19 +36,27 @@ enum ExamDifficulty {
 
   String get arabicLabel {
     switch (this) {
-      case ExamDifficulty.easy:   return 'سهل';
-      case ExamDifficulty.medium: return 'متوسط';
-      case ExamDifficulty.hard:   return 'صعب';
-      case ExamDifficulty.mixed:  return 'متنوع';
+      case ExamDifficulty.easy:
+        return 'سهل';
+      case ExamDifficulty.medium:
+        return 'متوسط';
+      case ExamDifficulty.hard:
+        return 'صعب';
+      case ExamDifficulty.mixed:
+        return 'متنوع';
     }
   }
 
   static ExamDifficulty fromString(String? s) {
     switch (s) {
-      case 'easy':   return ExamDifficulty.easy;
-      case 'hard':   return ExamDifficulty.hard;
-      case 'mixed':  return ExamDifficulty.mixed;
-      default:       return ExamDifficulty.medium;
+      case 'easy':
+        return ExamDifficulty.easy;
+      case 'hard':
+        return ExamDifficulty.hard;
+      case 'mixed':
+        return ExamDifficulty.mixed;
+      default:
+        return ExamDifficulty.medium;
     }
   }
 }
@@ -84,8 +92,8 @@ class AiQuestionModel {
   /// Get the correct option text
   String get correctAnswerText =>
       options.isNotEmpty && correctAnswerIndex < options.length
-          ? options[correctAnswerIndex]
-          : '';
+      ? options[correctAnswerIndex]
+      : '';
 
   factory AiQuestionModel.fromJson(Map<String, dynamic> json) {
     // Support both `correct_answer` (int index) and legacy string formats
@@ -116,26 +124,27 @@ class AiQuestionModel {
       text: json['text']?.toString() ?? json['question']?.toString() ?? '',
       options: opts,
       correctAnswerIndex: correctIdx,
-      explanation: json['explanation']?.toString() ??
+      explanation:
+          json['explanation']?.toString() ??
           'راجع المحتوى للتعرف على الإجابة الصحيحة.',
-      hint: json['hint']?.toString() ??
-          'فكر في المفاهيم الأساسية التي تعلمتها.',
+      hint:
+          json['hint']?.toString() ?? 'فكر في المفاهيم الأساسية التي تعلمتها.',
       difficulty: ExamDifficulty.fromString(json['difficulty']?.toString()),
       marks: (json['marks'] as num?)?.toInt() ?? 2,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'type': type == AiQuestionType.trueFalse ? 'true_false' : 'mcq',
-        'text': text,
-        'options': options,
-        'correct_answer': correctAnswerIndex,
-        'explanation': explanation,
-        'hint': hint,
-        'difficulty': difficulty.name,
-        'marks': marks,
-      };
+    'id': id,
+    'type': type == AiQuestionType.trueFalse ? 'true_false' : 'mcq',
+    'text': text,
+    'options': options,
+    'correct_answer': correctAnswerIndex,
+    'explanation': explanation,
+    'hint': hint,
+    'difficulty': difficulty.name,
+    'marks': marks,
+  };
 }
 
 // ─── AiExamModel ──────────────────────────────────────────────────────────────
@@ -160,8 +169,10 @@ class AiExamModel {
   });
 
   int get questionCount => questions.length;
-  int get mcqCount => questions.where((q) => q.type == AiQuestionType.mcq).length;
-  int get trueFalseCount => questions.where((q) => q.type == AiQuestionType.trueFalse).length;
+  int get mcqCount =>
+      questions.where((q) => q.type == AiQuestionType.mcq).length;
+  int get trueFalseCount =>
+      questions.where((q) => q.type == AiQuestionType.trueFalse).length;
 
   factory AiExamModel.fromJson(Map<String, dynamic> json) {
     final rawQuestions = json['questions'];
@@ -198,8 +209,10 @@ class AiExamModel {
     try {
       // Strip markdown fences if present
       var clean = raw.trim();
-      if (clean.startsWith('```json')) clean = clean.substring(7);
-      else if (clean.startsWith('```')) clean = clean.substring(3);
+      if (clean.startsWith('```json')) {
+        clean = clean.substring(7);
+      } else if (clean.startsWith('```'))
+        clean = clean.substring(3);
       if (clean.endsWith('```')) clean = clean.substring(0, clean.length - 3);
       clean = clean.trim();
 
@@ -215,14 +228,14 @@ class AiExamModel {
   }
 
   Map<String, dynamic> toJson() => {
-        'title': title,
-        'subject': subject,
-        'difficulty': difficulty.name,
-        'total_marks': totalMarks,
-        'estimated_time_minutes': estimatedTimeMinutes,
-        'generated_at': generatedAt.toIso8601String(),
-        'questions': questions.map((q) => q.toJson()).toList(),
-      };
+    'title': title,
+    'subject': subject,
+    'difficulty': difficulty.name,
+    'total_marks': totalMarks,
+    'estimated_time_minutes': estimatedTimeMinutes,
+    'generated_at': generatedAt.toIso8601String(),
+    'questions': questions.map((q) => q.toJson()).toList(),
+  };
 
   /// Convert to the format expected by CreateAssignmentScreen
   List<Map<String, dynamic>> toAssignmentQuestions() {

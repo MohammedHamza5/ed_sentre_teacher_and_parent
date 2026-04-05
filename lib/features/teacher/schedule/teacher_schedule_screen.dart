@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../../shared/widgets/app_drawer.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
-// Removed unused AppColors
+import '../../../../core/config/app_colors.dart';
 import '../../auth/provider/auth_provider.dart';
-import '../../../core/providers/center_provider.dart';
-import '../../../shared/data/supabase_repository.dart';
-import '../../../shared/models/group_model.dart';
-import '../../../shared/models/enums.dart';
-import '../../../shared/widgets/premium_widgets.dart';
-import '../../../shared/widgets/premium_plus_widgets.dart';
+import '../../../../core/providers/center_provider.dart';
+import '../../../../shared/data/supabase_repository.dart';
+import '../../../../shared/models/group_model.dart';
+import '../../../../shared/models/enums.dart';
+import '../../../../core/widgets/genius/glass_card.dart';
 
-/// 🎨 Teacher Schedule Screen - Premium Dark Mode Design
+/// 🎨 Teacher Schedule Screen - Forest Dark Edition
 class TeacherScheduleScreen extends StatefulWidget {
   const TeacherScheduleScreen({super.key});
 
@@ -27,13 +26,13 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
   List<GroupModel> _displayedGroups = [];
 
   final List<_DayItem> _days = [
-    _DayItem(index: 0, name: 'السبت', shortName: 'س'),
-    _DayItem(index: 1, name: 'الأحد', shortName: 'ح'),
-    _DayItem(index: 2, name: 'الاثنين', shortName: 'ث'),
-    _DayItem(index: 3, name: 'الثلاثاء', shortName: 'ث'),
-    _DayItem(index: 4, name: 'الأربعاء', shortName: 'ر'),
-    _DayItem(index: 5, name: 'الخميس', shortName: 'خ'),
-    _DayItem(index: 6, name: 'الجمعة', shortName: 'ج'),
+    const _DayItem(index: 0, name: 'السبت', shortName: 'س'),
+    const _DayItem(index: 1, name: 'الأحد', shortName: 'ح'),
+    const _DayItem(index: 2, name: 'الاثنين', shortName: 'ن'),
+    const _DayItem(index: 3, name: 'الثلاثاء', shortName: 'ث'),
+    const _DayItem(index: 4, name: 'الأربعاء', shortName: 'ر'),
+    const _DayItem(index: 5, name: 'الخميس', shortName: 'خ'),
+    const _DayItem(index: 6, name: 'الجمعة', shortName: 'ج'),
   ];
 
   @override
@@ -83,25 +82,21 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
     final filtered = <GroupModel>[];
 
     for (var group in _allGroups) {
-      // 1. Check for specific schedule on this day
       final schedulesOnDay = group.schedules
           .where((s) => s.dayOfWeek.toLowerCase() == selectedDayName)
           .toList();
 
       if (schedulesOnDay.isNotEmpty) {
-        // Create a display group for EACH schedule (in case of multiple sessions/day)
         for (var schedule in schedulesOnDay) {
           filtered.add(
             group.copyWith(
               startTime: schedule.startTime,
               endTime: schedule.endTime,
-              dayOfWeek: selectedDayEnum.value, // Update day to match
+              dayOfWeek: selectedDayEnum.value,
             ),
           );
         }
-      }
-      // 2. Fallback: If no schedules list, check legacy day_of_week
-      else if (group.schedules.isEmpty &&
+      } else if (group.schedules.isEmpty &&
           group.dayOfWeek == _selectedDayIndex) {
         filtered.add(group);
       }
@@ -118,32 +113,36 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.forestDeep,
       appBar: AppBar(
         title: Text(
           'جدول الحصص',
-          style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: AppColors.textDisplay,
+            fontSize: 20.sp,
+            fontWeight: FontWeight.bold,
+          ),
         ),
+        backgroundColor: AppColors.forestDeep,
         elevation: 0,
-        backgroundColor: Colors.transparent,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: AppColors.textDisplay),
         actions: [
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.refresh_rounded,
-              color: Theme.of(context).colorScheme.primary,
+              color: AppColors.accentVivid,
             ),
             onPressed: _loadSchedule,
           ),
-          const DrawerMenuButton(isTeacher: true),
+          const SizedBox.shrink(),
           SizedBox(width: 8.w),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: _loadSchedule,
-        color: Theme.of(context).colorScheme.primary,
-        backgroundColor:
-            Theme.of(context).cardTheme.color ??
-            Theme.of(context).colorScheme.surface,
+        backgroundColor: AppColors.accentVivid,
+        color: AppColors.darkSurface,
         child: Column(
           children: [
             SizedBox(height: 20.h),
@@ -172,15 +171,13 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
     );
   }
 
-  // Header replaced by AppBar
-
   // ═══════════════════════════════════════════════════════════════════════════
   // DAY SELECTOR
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildDaySelector() {
     return SizedBox(
-      height: 95.h,
+      height: 90.h,
       child: ListView.separated(
         padding: EdgeInsets.symmetric(horizontal: 20.w),
         scrollDirection: Axis.horizontal,
@@ -191,68 +188,83 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
           final isSelected = day.index == _selectedDayIndex;
           final hasSession = _hasSessionsOnDay(day.index);
 
-          return Container(
-            width: 68.w,
-            margin: EdgeInsets.symmetric(vertical: 4.h),
-            child: GlassMorphismCard(
-              onTap: () {
-                setState(() {
-                  _selectedDayIndex = day.index;
-                  _filterGroupsByDay();
-                });
-              },
-              padding: EdgeInsets.symmetric(vertical: 12.h),
-              borderRadius: 20.r,
-              backgroundColor: isSelected
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).cardTheme.color,
-              hasNeonBorder: isSelected,
-              neonColor: Theme.of(context).colorScheme.primary,
-              animationDelay: 50 * index,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    day.name,
-                    style: TextStyle(
-                      color: isSelected
-                          ? Theme.of(context).colorScheme.onPrimary
-                          : Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withOpacity(0.7),
-                      fontSize: 13.sp,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                      fontFamily: 'Cairo',
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  if (hasSession)
-                    Container(
-                      width: 6.w,
-                      height: 6.w,
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedDayIndex = day.index;
+                _filterGroupsByDay();
+              });
+            },
+            child:
+                Container(
+                      width: 72.w,
+                      margin: EdgeInsets.symmetric(vertical: 4.h),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? Theme.of(context).colorScheme.onPrimary
-                            : Theme.of(context).colorScheme.secondary,
-                        shape: BoxShape.circle,
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color: Colors.white.withOpacity(0.5),
-                                  blurRadius: 4,
-                                  spreadRadius: 1,
-                                ),
-                              ]
-                            : null,
+                            ? AppColors.accentVivid.withValues(alpha: 0.15)
+                            : AppColors.darkSurface.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(20.r),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColors.accentVivid
+                              : AppColors.glassBorderHighlight,
+                          width: isSelected ? 2 : 1,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            day.name,
+                            style: TextStyle(
+                              color: isSelected
+                                  ? AppColors.accentVivid
+                                  : AppColors.textDisplay,
+                              fontSize: 14.sp,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                          SizedBox(height: 8.h),
+                          if (hasSession)
+                            Container(
+                                  width: 8.w,
+                                  height: 8.w,
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? AppColors.accentVivid
+                                        : AppColors.emeraldGreen,
+                                    shape: BoxShape.circle,
+                                    boxShadow: isSelected
+                                        ? [
+                                            BoxShadow(
+                                              color: AppColors.accentVivid
+                                                  .withValues(alpha: 0.5),
+                                              blurRadius: 6,
+                                              spreadRadius: 2,
+                                            ),
+                                          ]
+                                        : null,
+                                  ),
+                                )
+                                .animate(
+                                  onPlay: (controller) =>
+                                      controller.repeat(reverse: true),
+                                )
+                                .scale(
+                                  duration: 800.ms,
+                                  begin: Offset(0.8, 0.8),
+                                  end: Offset(1.2, 1.2),
+                                )
+                          else
+                            SizedBox(height: 8.h),
+                        ],
                       ),
                     )
-                  else
-                    SizedBox(height: 6.w),
-                ],
-              ),
-            ),
+                    .animate(delay: Duration(milliseconds: 50 * index))
+                    .fadeIn()
+                    .scale(),
           );
         },
       ),
@@ -264,124 +276,119 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildScheduleCard(GroupModel group, int index) {
-    return GlassMorphismCard(
-      margin: EdgeInsets.only(bottom: 16.h),
-      hasNeonBorder: true,
-      neonColor: Theme.of(context).colorScheme.primary,
-      animationDelay: 100 * index,
-      child: Row(
-        children: [
-          // Time Column
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(14.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16.h),
+      child: GlassCard(
+        color: AppColors.darkSurface.withValues(alpha: 0.7),
+        padding: EdgeInsets.zero,
+        child: Row(
+          children: [
+            // Time Column
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
+              decoration: BoxDecoration(
+                color: AppColors.accentVivid.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.horizontal(
+                  right: Radius.circular(24.r),
                 ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.access_time_rounded,
-                  color: Colors.white,
-                  size: 18.sp,
+                border: Border(
+                  left: BorderSide(color: AppColors.glassBorderHighlight),
                 ),
-                SizedBox(height: 6.h),
-                Text(
-                  group.startTime?.split(' ')[0] ?? '--:--',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
-                    fontFamily: 'Cairo',
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.access_time_rounded,
+                    color: AppColors.accentVivid,
+                    size: 24.sp,
                   ),
-                ),
-                if (group.endTime != null) ...[
-                  SizedBox(height: 2.h),
+                  SizedBox(height: 8.h),
                   Text(
-                    group.endTime!.split(' ')[0],
+                    group.startTime?.split(' ')[0] ?? '--:--',
                     style: TextStyle(
-                      fontSize: 12.sp,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.primary.withOpacity(0.8),
-                      fontWeight: FontWeight.w600,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.accentVivid,
                     ),
                   ),
-                ],
-              ],
-            ),
-          ),
-          SizedBox(width: 16.w),
-
-          // Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  group.courseName ?? group.groupName,
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontFamily: 'Cairo',
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 8.h),
-                Row(
-                  children: [
-                    Flexible(
-                      child: _buildInfoChip(
-                        Icons.groups_rounded,
-                        group.groupName,
+                  if (group.endTime != null && group.endTime!.isNotEmpty) ...[
+                    SizedBox(height: 4.h),
+                    Text(
+                      group.endTime!.split(' ')[0],
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: AppColors.accentVivid.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(width: 12.w),
-                    _buildInfoChip(
-                      Icons.people_outline_rounded,
-                      '${group.currentStudents} طالب',
+                  ],
+                ],
+              ),
+            ),
+
+            // Details
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(16.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      group.courseName ?? group.groupName,
+                      style: TextStyle(
+                        fontSize: 17.sp,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textDisplay,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 12.h),
+                    Wrap(
+                      spacing: 8.w,
+                      runSpacing: 8.h,
+                      children: [
+                        _buildInfoChip(Icons.groups_rounded, group.groupName),
+                        _buildInfoChip(
+                          Icons.people_alt_rounded,
+                          '${group.currentStudents} طالب',
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      ).animate(delay: Duration(milliseconds: 100 * index)).fadeIn().slideX(),
     );
   }
 
   Widget _buildInfoChip(IconData icon, String text) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          size: 14.sp,
-          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-        ),
-        SizedBox(width: 4.w),
-        Flexible(
-          child: Text(
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: AppColors.forestPrimary,
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: AppColors.glassBorderHighlight),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14.sp, color: AppColors.textMuted),
+          SizedBox(width: 6.w),
+          Text(
             text,
             style: TextStyle(
               fontSize: 12.sp,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              color: AppColors.textDisplay,
+              fontWeight: FontWeight.w600,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -397,7 +404,19 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
           4,
           (i) => Padding(
             padding: EdgeInsets.only(bottom: 16.h),
-            child: ShimmerLoading(height: 100.h, borderRadius: 20.r),
+            child: Container(
+              height: 100.h,
+              decoration: BoxDecoration(
+                color: AppColors.darkSurface.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(24.r),
+                border: Border.all(color: AppColors.glassBorderHighlight),
+              ),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  backgroundColor: AppColors.accentVivid,
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -405,15 +424,54 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
   }
 
   Widget _buildEmptyState() {
-    return EmptyState(
-      icon: Icons.weekend_rounded,
-      title: 'لا توجد حصص في هذا اليوم',
-      subtitle: 'استمتع بوقتك! ☕',
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: EdgeInsets.all(24.w),
+            decoration: BoxDecoration(
+              color: AppColors.forestPrimary,
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.glassBorderHighlight),
+            ),
+            child: Icon(
+              Icons.weekend_rounded,
+              size: 64.sp,
+              color: AppColors.infoPurple,
+            ),
+          ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
+          SizedBox(height: 24.h),
+          Text(
+            'لا توجد حصص في هذا اليوم',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: AppColors.textDisplay,
+            ),
+          ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
+          SizedBox(height: 12.h),
+          Text(
+            'استمتع بوقتك! ☕',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+            textAlign: TextAlign.center,
+          ).animate().fadeIn(delay: 300.ms),
+        ],
+      ),
     );
   }
 
   bool _hasSessionsOnDay(int dayNum) {
-    return _allGroups.any((g) => g.dayOfWeek == dayNum);
+    // Determine if day has any schedules. Keep it simple and match original logic.
+    final dayName = DayOfWeek.fromInt(dayNum).englishName.toLowerCase();
+    for (var group in _allGroups) {
+      if (group.schedules.any((s) => s.dayOfWeek.toLowerCase() == dayName)) {
+        return true;
+      }
+      if (group.schedules.isEmpty && group.dayOfWeek == dayNum) return true;
+    }
+    return false;
   }
 }
 

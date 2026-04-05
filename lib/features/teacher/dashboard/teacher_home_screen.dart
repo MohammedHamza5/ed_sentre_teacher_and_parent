@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -10,15 +9,18 @@ import '../../../core/providers/center_provider.dart';
 import '../provider/teacher_provider.dart';
 import '../../ai/provider/ai_provider.dart';
 import '../../../shared/models/models.dart';
-import '../../../shared/widgets/premium_widgets.dart';
-import '../../../shared/widgets/premium_plus_widgets.dart';
+import '../../../core/config/app_colors.dart';
+import '../../../core/widgets/genius/glass_card.dart';
+import '../../../core/widgets/genius/shimmer_skeleton.dart';
+import '../../../core/widgets/genius/staggered_list_animator.dart';
 import '../../ai/widgets/weakness_card.dart';
 import '../../ai/services/ai_weakness_detector.dart';
 import '../../notifications/presentation/screens/teacher_notifications_screen.dart';
 import '../../../shared/widgets/app_drawer.dart';
+import '../../../shared/widgets/premium_widgets.dart'
+    show AvatarWithBorder, EmptyState;
 
-/// 🎨 Teacher Home Screen - Premium Dark Mode Design
-/// A modern dashboard for teachers with smooth animations and glass effects
+/// 🟢 Teacher Home Screen - Radical Glassmorphism 2.0 Overhaul
 class TeacherHomeScreen extends StatefulWidget {
   const TeacherHomeScreen({super.key});
 
@@ -34,13 +36,6 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Set status bar style for dark mode
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-      ),
-    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
@@ -51,24 +46,19 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
     final centerProvider = context.read<CenterProvider>();
     final teacherProvider = context.read<TeacherProvider>();
 
-    // Load centers for teacher (if not loaded)
     if (authProvider.teacherProfile != null &&
         centerProvider.availableCenters.isEmpty) {
       await centerProvider.loadTeacherCenters(authProvider.teacherProfile!.id);
     }
 
-    // Initialize TeacherProvider with user ID if not loaded
     if (authProvider.currentUser?.id != null &&
         teacherProvider.teacherProfile == null) {
       await teacherProvider.loadTeacherData(authProvider.currentUser!.id);
     }
 
-    // Select center in TeacherProvider
     if (centerProvider.currentCenterId != null) {
       await teacherProvider.selectCenter(centerProvider.currentCenterId!);
 
-      // Update today's groups from provider
-      // Update today's groups from provider based on SCHEDULES
       final todayDate = DateTime.now();
       final dayNames = [
         'Monday',
@@ -79,34 +69,16 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
         'Saturday',
         'Sunday',
       ];
-      // Note: DateTime.weekday is 1 (Mon) to 7 (Sun)
       final todayName = dayNames[todayDate.weekday - 1];
 
       _todayGroups = teacherProvider.groups.where((g) {
-        // Check if primary day matches (fallback)
         final todayValue = (todayDate.weekday + 1) % 7;
         if (g.dayOfWeek == todayValue) return true;
-
-        // Check schedules
         return g.schedules.any(
           (s) => s.dayOfWeek.toLowerCase() == todayName.toLowerCase(),
         );
       }).toList();
 
-      debugPrint('📅 [TeacherHome] Today\'s Date: $todayDate ($todayName)');
-      debugPrint(
-        '📅 [TeacherHome] Total Groups: ${teacherProvider.groups.length}',
-      );
-      debugPrint(
-        '📅 [TeacherHome] Today\'s Groups Filtered: ${_todayGroups.length}',
-      );
-      for (var g in _todayGroups) {
-        debugPrint(
-          '   - Group: ${g.groupName} (Schedules: ${g.schedules.length})',
-        );
-      }
-
-      // AI Logic (The Seer)
       if (_todayGroups.isNotEmpty) {
         final firstGroupId = _todayGroups.first.id;
         final groupStudents = teacherProvider.getStudentsForGroup(firstGroupId);
@@ -138,117 +110,131 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
     final user = authProvider.currentUser;
 
     return Scaffold(
-      // backgroundColor: Theme.of(context).scaffoldBackgroundColor, (removed to use Theme)
+      backgroundColor: AppColors.forestDeep, // Radical base color
       body: RefreshIndicator(
         onRefresh: _loadData,
-        color: Theme.of(context).colorScheme.primary,
-        backgroundColor:
-            Theme.of(context).cardTheme.color ??
-            Theme.of(context).colorScheme.surface,
+        backgroundColor: AppColors.accentVivid,
+        color: AppColors.darkSurface,
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
             // ═══════════════════════════════════════════════════════════
-            // APP BAR — Clean: max 2 icons
+            // APP BAR
             // ═══════════════════════════════════════════════════════════
             SliverAppBar(
               floating: true,
               snap: true,
               elevation: 0,
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              title: Text(
-                'لوحة التحكم',
-                style: TextStyle(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontFamily: 'Cairo',
-                ),
-              ),
-              actions: [
-                IconButton(
-                  icon: Icon(
-                    Icons.notifications_outlined,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const TeacherNotificationsScreen(),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(left: 8.w),
-                  child: DrawerMenuButton(
-                    isTeacher: true,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-
-            // ═══════════════════════════════════════════════════════════
-            // MAIN CONTENT
-            // ═══════════════════════════════════════════════════════════
-            SliverPadding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  SizedBox(height: 8.h),
-
-                  // Teacher Welcome Card
-                  _buildTeacherWelcomeCard(user, teacher, teacherProvider),
-
-                  SizedBox(height: 16.h),
-
-                  // Center Selector
-                  if (centerProvider.hasMultipleCenters)
-                    _buildCenterSelector(centerProvider)
-                  else if (centerProvider.currentCenter != null)
-                    _buildCurrentCenter(centerProvider),
-
-                  SizedBox(height: 24.h),
-
-                  // 1. Quick Stats
-                  _buildQuickStats(teacherProvider),
-
-                  SizedBox(height: 28.h),
-
-                  // 2. AI Insights (The Seer)
-                  if (_weaknessInsights.isNotEmpty) ...[
-                    _buildAISection(),
-                    SizedBox(height: 28.h),
-                  ],
-
-                  // 3. Today's Classes
-                  PremiumSectionHeader(
-                    title: 'حصص اليوم',
-                    icon: Icons.calendar_today_rounded,
-                    subtitle: 'جدول حصصك لهذا اليوم',
-                    actions: [
-                      HeaderAction(
-                        icon: Icons.calendar_month_rounded,
-                        onTap: () => context.go('/teacher/schedule'),
-                        tooltip: 'الجدول الكامل',
+              backgroundColor: Colors.transparent,
+              automaticallyImplyLeading: false,
+              titleSpacing: 20.w,
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // First element in RTL renders on the FULL RIGHT
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const DrawerMenuButton(
+                        isTeacher: true,
+                        color: AppColors.textDisplay,
+                      ),
+                      SizedBox(width: 8.w),
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: const Icon(
+                          Icons.notifications_outlined,
+                          color: AppColors.textDisplay,
+                        ),
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const TeacherNotificationsScreen(),
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 16.h),
-                  _buildTodayClasses(),
-
-                  SizedBox(height: 28.h),
-
-                  // 4. Quick Actions
-                  PremiumSectionHeader(
-                    title: 'الوصول السريع',
-                    icon: Icons.grid_view_rounded,
-                    subtitle: 'أدواتك المفضلة',
+                  // Second element in RTL renders on the FULL LEFT
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'EdSentre',
+                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textDisplay,
+                            ),
+                      ),
+                      SizedBox(width: 12.w),
+                      Image.asset(
+                        'assets/icons/app_icon.png',
+                        height: 32.h,
+                        fit: BoxFit.contain,
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 16.h),
-                  _buildQuickActions(),
+                ],
+              ),
+            ),
 
-                  SizedBox(height: 100.h), // Bottom padding
-                ]),
+            // ═══════════════════════════════════════════════════════════
+            // MAIN CONTENT (Staggered Animations)
+            // ═══════════════════════════════════════════════════════════
+            SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              sliver: SliverToBoxAdapter(
+                child: StaggeredListAnimator(
+                  isList:
+                      false, // Ensure we build a Column instead of another ListView
+                  children: [
+                    SizedBox(height: 8.h),
+
+                    // Welcome & Core Stats
+                    _buildHeroDashboard(
+                      user,
+                      teacher,
+                      teacherProvider,
+                      centerProvider,
+                    ),
+
+                    SizedBox(height: 28.h),
+
+                    // AI Seer Let
+                    if (_weaknessInsights.isNotEmpty) ...[
+                      _buildSectionLabel(
+                        'رؤى الذكاء الاصطناعي',
+                        Icons.psychology_rounded,
+                        AppColors.infoPurple,
+                      ),
+                      SizedBox(height: 12.h),
+                      _buildAISection(),
+                      SizedBox(height: 28.h),
+                    ],
+
+                    // Today's Routine
+                    _buildSectionLabel(
+                      'حصص اليوم',
+                      Icons.calendar_today_rounded,
+                      AppColors.accentVivid,
+                      onTapAction: () => context.go('/teacher/schedule'),
+                    ),
+                    SizedBox(height: 12.h),
+                    _buildTodayClasses(),
+
+                    SizedBox(height: 28.h),
+
+                    // Navigation Matrix
+                    _buildSectionLabel(
+                      'الوصول السريع',
+                      Icons.grid_view_rounded,
+                      AppColors.warmAmber,
+                    ),
+                    SizedBox(height: 12.h),
+                    _buildQuickActions(),
+
+                    SizedBox(height: 100.h),
+                  ],
+                ),
               ),
             ),
           ],
@@ -258,116 +244,99 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // Welcome Card (teacher info moved here from AppBar)
+  // HERO DASHBOARD (Welcome + Stats merged for glassmorphism layout)
   // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildTeacherWelcomeCard(
+  Widget _buildHeroDashboard(
     UserModel? user,
     TeacherModel? teacher,
     TeacherProvider teacherProvider,
+    CenterProvider centerProvider,
   ) {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(context).colorScheme.primary,
-            Theme.of(context).colorScheme.primary.withOpacity(0.8),
-          ],
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
+    return GlassCard(
+      padding: EdgeInsets.all(20.w),
+      color: AppColors.forestPrimary.withValues(alpha: 0.6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AvatarWithBorder(imageUrl: user?.avatarUrl, radius: 28),
-          SizedBox(width: 14.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _getGreeting(),
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: Colors.white70,
-                    fontFamily: 'Cairo',
-                  ),
-                ),
-                SizedBox(height: 2.h),
-                Text(
-                  teacher?.displayName ?? user?.fullName ?? 'معلم',
-                  style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontFamily: 'Cairo',
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (teacherProvider.groups.isNotEmpty)
-                  Padding(
-                    padding: EdgeInsets.only(top: 2.h),
-                    child: Text(
-                      '${teacherProvider.groups.length} مجموعة نشطة',
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        color: Colors.white60,
-                        fontFamily: 'Cairo',
+          Row(
+            children: [
+              AvatarWithBorder(imageUrl: user?.avatarUrl, radius: 28),
+              SizedBox(width: 14.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _getGreeting(),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textMuted,
                       ),
                     ),
-                  ),
-              ],
-            ),
+                    Text(
+                      teacher?.displayName ?? user?.fullName ?? 'معلم',
+                      style: Theme.of(context).textTheme.displaySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              if (centerProvider.hasMultipleCenters)
+                _buildCenterDropdown(centerProvider)
+              else if (centerProvider.currentCenter != null)
+                Icon(
+                  Icons.location_on_rounded,
+                  color: AppColors.accentVivid,
+                  size: 24.sp,
+                ),
+            ],
           ),
-          Container(
-            padding: EdgeInsets.all(10.w),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(Icons.school_rounded, color: Colors.white, size: 24.sp),
+          SizedBox(height: 24.h),
+          Row(
+            children: [
+              _buildMicroStat(
+                'حصص اليوم',
+                '${_todayGroups.length}',
+                Icons.groups_rounded,
+                AppColors.accentVivid,
+              ),
+              _buildMicroStat(
+                'الطلاب',
+                '${teacherProvider.statsTotalStudents}',
+                Icons.school_rounded,
+                AppColors.warmAmber,
+              ),
+              _buildMicroStat(
+                'الرسائل',
+                '${teacherProvider.dashboardStats['unread_messages_count'] ?? 0}',
+                Icons.chat_bubble_rounded,
+                AppColors.infoPurple,
+              ),
+            ],
           ),
         ],
       ),
-    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0);
+    );
   }
 
-  // (Header code removed to use SliverAppBar)
-
-  Widget _buildCenterSelector(CenterProvider centerProvider) {
+  Widget _buildCenterDropdown(CenterProvider centerProvider) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-        ),
+        color: AppColors.forestDeep.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.glassBorderHighlight),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: centerProvider.currentCenterId,
-          isExpanded: true,
-          dropdownColor: Theme.of(context).colorScheme.surface,
           icon: Icon(
             Icons.keyboard_arrow_down_rounded,
-            color: Theme.of(context).colorScheme.onSurface,
+            color: AppColors.textDisplay,
+            size: 16.sp,
           ),
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface,
-            fontSize: 15.sp,
-            fontWeight: FontWeight.w600,
-            fontFamily: 'Cairo',
-          ),
+          dropdownColor: AppColors.forestPrimary,
+          style: Theme.of(context).textTheme.labelLarge,
           items: centerProvider.availableCenters.map((center) {
             return DropdownMenuItem(value: center.id, child: Text(center.name));
           }).toList(),
@@ -379,28 +348,38 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
           },
         ),
       ),
-    ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1);
+    );
   }
 
-  Widget _buildCurrentCenter(CenterProvider centerProvider) {
-    return Row(
-      children: [
-        Icon(
-          Icons.location_on_rounded,
-          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-          size: 18.sp,
-        ),
-        SizedBox(width: 8.w),
-        Text(
-          centerProvider.currentCenter!.name,
-          style: TextStyle(
-            fontSize: 15.sp,
-            color: Theme.of(context).colorScheme.onSurface,
-            fontWeight: FontWeight.w600,
+  Widget _buildMicroStat(
+    String title,
+    String value,
+    IconData icon,
+    Color accentColor,
+  ) {
+    return Expanded(
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(10.w),
+            decoration: BoxDecoration(
+              color: accentColor.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: accentColor, size: 20.sp),
           ),
-        ),
-      ],
-    ).animate().fadeIn(delay: 100.ms);
+          SizedBox(height: 8.h),
+          Text(
+            value,
+            style: Theme.of(
+              context,
+            ).textTheme.headlineLarge?.copyWith(height: 1.0),
+          ),
+          SizedBox(height: 2.h),
+          Text(title, style: Theme.of(context).textTheme.bodySmall),
+        ],
+      ),
+    );
   }
 
   String _getGreeting() {
@@ -411,81 +390,66 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // QUICK STATS - Animated Stat Cards
+  // UI HELPERS
   // ═══════════════════════════════════════════════════════════════════════════
 
-  Widget _buildQuickStats(TeacherProvider teacherProvider) {
-    final stats = teacherProvider.dashboardStats;
-    final todayClassesCount = _todayGroups.length;
-    // Use the getter we fixed in TeacherProvider which maps to 'students_count'
-    final totalStudents = teacherProvider.statsTotalStudents;
-
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            child: PremiumStatCard(
-              title: 'حصص اليوم',
-              value: '$todayClassesCount',
-              icon: Icons.groups_rounded,
-              animationDelay: 0,
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: PremiumStatCard(
-              title: 'إجمالي الطلاب',
-              value: '$totalStudents',
-              icon: Icons.school_rounded,
-              animationDelay: 100,
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: PremiumStatCard(
-              title: 'الرسائل',
-              value: '${stats['unread_messages_count'] ?? 0}',
-              icon: Icons.mark_chat_unread_rounded,
-              animationDelay: 200,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // AI SECTION - The Seer
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  Widget _buildAISection() {
-    return Column(
+  Widget _buildSectionLabel(
+    String title,
+    IconData icon,
+    Color iconColor, {
+    VoidCallback? onTapAction,
+  }) {
+    return Row(
       children: [
-        PremiumSectionHeader(
-          title: 'رؤى الذكاء الاصطناعي',
-          icon: Icons.psychology_rounded,
-          subtitle: 'تحليلات ذكية لأداء طلابك',
+        Icon(icon, color: iconColor, size: 22.sp),
+        SizedBox(width: 8.w),
+        Expanded(
+          child: Text(title, style: Theme.of(context).textTheme.titleLarge),
         ),
-        SizedBox(height: 12.h),
-        SizedBox(
-          height: 160.h,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: _weaknessInsights.length,
-            separatorBuilder: (c, i) => SizedBox(width: 12.w),
-            itemBuilder: (context, index) {
-              return WeaknessCard(insight: _weaknessInsights[index]);
-            },
+        if (onTapAction != null)
+          GestureDetector(
+            onTap: onTapAction,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: AppColors.forestPrimary,
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Text(
+                'عرض الكل',
+                style: Theme.of(
+                  context,
+                ).textTheme.labelSmall?.copyWith(color: AppColors.accentMid),
+              ),
+            ),
           ),
-        ),
       ],
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TODAY'S CLASSES
-  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildAISection() {
+    return SizedBox(
+      height: 160.h,
+      child: ListView.separated(
+        physics: const BouncingScrollPhysics(),
+        scrollDirection: Axis.horizontal,
+        clipBehavior: Clip.none,
+        itemCount: _weaknessInsights.length,
+        separatorBuilder: (c, i) => SizedBox(width: 12.w),
+        itemBuilder: (context, index) {
+          return Hero(
+            tag: 'ai_insight_${_weaknessInsights[index].subjectName}_$index',
+            child: Material(
+              color: Colors.transparent,
+              child: WeaknessCard(
+                insight: _weaknessInsights[index],
+              ), // We'll update WeaknessCard next
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   Widget _buildTodayClasses() {
     if (_isLoading) {
@@ -494,175 +458,119 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
           2,
           (i) => Padding(
             padding: EdgeInsets.only(bottom: 12.h),
-            child: ShimmerLoading(height: 100.h, borderRadius: 20.r),
+            child: const ShimmerListItem(),
           ),
         ),
       );
     }
 
     if (_todayGroups.isEmpty) {
-      return EmptyState(
+      return const EmptyState(
         icon: Icons.weekend_rounded,
         title: 'لا توجد حصص اليوم!',
         subtitle: 'استمتع بيومك أو استعد للحصص القادمة',
       );
     }
 
-    return Column(
-      children: _todayGroups.asMap().entries.map((entry) {
-        final index = entry.key;
-        final group = entry.value;
-        return _buildClassCard(group, index);
+    return StaggeredListAnimator(
+      isList: false,
+      delayBase: 100.ms,
+      children: _todayGroups.map((group) {
+        return Padding(
+          padding: EdgeInsets.only(bottom: 12.h),
+          child: _buildClassCard(group),
+        );
       }).toList(),
     );
   }
 
-  Widget _buildClassCard(GroupModel group, int index) {
-    return Card(
-          margin: EdgeInsets.only(bottom: 14.h),
-          child: InkWell(
-            onTap: () => context.go('/teacher/groups/${group.id}'),
-            borderRadius: BorderRadius.circular(16.r),
-            child: Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Row(
-                children: [
-                  // Time Pillar
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 14.w,
-                      vertical: 10.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(14.r),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          _getTodayStartTime(group)?.split(' ')[0] ?? '--',
-                          style: TextStyle(
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
-                            fontFamily: 'Cairo',
-                          ),
-                        ),
-                        if ((_getTodayStartTime(group)?.split(' ').length ??
-                                0) >=
-                            2)
-                          Text(
-                            _getTodayStartTime(group)!.split(' ')[1],
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.primary.withOpacity(0.8),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                      ],
+  Widget _buildClassCard(GroupModel group) {
+    return GlassCard(
+      onTap: () => context.go('/teacher/groups/${group.id}'),
+      color: AppColors.forestPrimary.withValues(alpha: 0.4),
+      padding: EdgeInsets.all(16.w),
+      child: Row(
+        children: [
+          // Elegant Time Pillar
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            decoration: BoxDecoration(
+              color: AppColors.forestDeep,
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(color: AppColors.glassBorderHighlight),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  _getTodayStartTime(group)?.split(' ')[0] ?? '--',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: AppColors.accentVivid,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if ((_getTodayStartTime(group)?.split(' ').length ?? 0) >= 2)
+                  Text(
+                    _getTodayStartTime(group)!.split(' ')[1],
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: AppColors.textMuted,
                     ),
                   ),
-                  SizedBox(width: 16.w),
+              ],
+            ),
+          ),
+          SizedBox(width: 16.w),
 
-                  // Details
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          group.courseName ?? group.groupName,
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontFamily: 'Cairo',
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        SizedBox(height: 8.h),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildClassInfo(
-                                Icons.class_outlined,
-                                group.groupName,
-                                isFlexible: true,
-                              ),
-                            ),
-                            SizedBox(width: 8.w),
-                            _buildClassInfo(
-                              Icons.people_outline,
-                              '${group.currentStudents}',
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Arrow
-                  Container(
-                    padding: EdgeInsets.all(8.w),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceVariant,
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                    child: Icon(
-                      Icons.arrow_forward_ios_rounded,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  group.courseName ?? group.groupName,
+                  style: Theme.of(context).textTheme.titleMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 8.h),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.class_outlined,
                       size: 14.sp,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      color: AppColors.textMuted,
                     ),
-                  ),
-                ],
-              ),
+                    SizedBox(width: 4.w),
+                    Expanded(
+                      child: Text(
+                        group.groupName,
+                        style: Theme.of(context).textTheme.bodySmall,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Icon(
+                      Icons.groups_rounded,
+                      size: 14.sp,
+                      color: AppColors.textMuted,
+                    ),
+                    SizedBox(width: 4.w),
+                    Text(
+                      '${group.currentStudents}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-        )
-        .animate()
-        .fadeIn(delay: Duration(milliseconds: 100 * index))
-        .slideY(begin: 0.1);
-  }
 
-  Widget _buildClassInfo(
-    IconData icon,
-    String text, {
-    bool isFlexible = false,
-  }) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          size: 14.sp,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-        SizedBox(width: 4.w),
-        if (isFlexible)
-          Flexible(
-            child: Text(
-              text,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 13.sp,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          )
-        else
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+          Icon(
+            Icons.arrow_forward_ios_rounded,
+            size: 16.sp,
+            color: AppColors.textMuted,
           ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -716,79 +624,56 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final itemWidth = (constraints.maxWidth - (12.w * 2)) / 3;
-        final itemHeight = itemWidth / 0.85;
+        final itemWidth = (constraints.maxWidth - (12.w * 3)) / 4;
         return Wrap(
           spacing: 12.w,
           runSpacing: 12.h,
-          children: actions.asMap().entries.map((entry) {
-            return SizedBox(
-              width: itemWidth,
-              height: itemHeight,
-              child: _buildActionItem(entry.value, entry.key),
-            );
+          children: actions.map((action) {
+            return SizedBox(width: itemWidth, child: _buildActionItem(action));
           }).toList(),
         );
       },
     );
   }
 
-  Widget _buildActionItem(_QuickAction action, int index) {
-    return Card(
-          margin: EdgeInsets.zero,
-          child: InkWell(
-            onTap: () => context.go(action.route),
-            borderRadius: BorderRadius.circular(16.r),
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(12.w),
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.primary.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      action.icon,
-                      color: Theme.of(context).colorScheme.primary,
-                      size: 22.sp,
-                    ),
-                  ),
-                  SizedBox(height: 10.h),
-                  Text(
-                    action.label,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontFamily: 'Cairo',
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
+  Widget _buildActionItem(_QuickAction action) {
+    return GestureDetector(
+      onTap: () => context.go(action.route),
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: AppColors.forestPrimary,
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.glassBorderHighlight),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
+            child: Icon(action.icon, color: AppColors.accentVivid, size: 24.sp),
+          ).animate().scale(curve: Curves.easeOutBack, duration: 400.ms),
+          SizedBox(height: 8.h),
+          Text(
+            action.label,
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-        )
-        .animate()
-        .fadeIn(delay: Duration(milliseconds: 50 * index))
-        .scale(begin: const Offset(0.9, 0.9));
+        ],
+      ),
+    );
   }
 
   String? _getTodayStartTime(GroupModel group) {
-    if (group.schedules.isEmpty) {
-      debugPrint(
-        '⏰ [TeacherHome] Group ${group.groupName} has NO schedules. Using fallback: ${group.startTime}',
-      );
-      return group.startTime;
-    }
-
+    if (group.schedules.isEmpty) return group.startTime;
     final todayDate = DateTime.now();
     final dayNames = [
       'Monday',
@@ -800,36 +685,23 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
       'Sunday',
     ];
     final todayName = dayNames[todayDate.weekday - 1];
-
     try {
       final todaySchedule = group.schedules.firstWhere(
         (s) => s.dayOfWeek.toLowerCase() == todayName.toLowerCase(),
       );
-      final result = todaySchedule.startTime.isNotEmpty
+      return todaySchedule.startTime.isNotEmpty
           ? todaySchedule.startTime
           : group.startTime;
-      debugPrint(
-        '⏰ [TeacherHome] Found schedule for ${group.groupName} on $todayName: $result',
-      );
-      return result;
     } catch (_) {
-      debugPrint(
-        '⏰ [TeacherHome] No specific schedule for ${group.groupName} on $todayName. Using fallback.',
-      );
       return group.startTime;
     }
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// HELPER CLASS
-// ═══════════════════════════════════════════════════════════════════════════
-
 class _QuickAction {
   final IconData icon;
   final String label;
   final String route;
-
   const _QuickAction({
     required this.icon,
     required this.label,

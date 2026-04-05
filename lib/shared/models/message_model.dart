@@ -30,16 +30,23 @@ class MessageModel {
     this.isMine = false,
   });
 
-  factory MessageModel.fromJson(Map<String, dynamic> json, {String? currentUserId}) {
+  factory MessageModel.fromJson(
+    Map<String, dynamic> json, {
+    String? currentUserId,
+  }) {
     return MessageModel(
       id: json['id'] as String,
       conversationId: json['conversation_id'] as String,
       senderId: json['sender_id'] as String,
       content: json['content'] as String?,
-      messageType: MessageType.fromString(json['message_type'] as String? ?? 'text'),
+      messageType: MessageType.fromString(
+        json['message_type'] as String? ?? 'text',
+      ),
       fileUrl: json['file_url'] as String?,
       isRead: json['is_read'] as bool? ?? false,
-      createdAt: DateTime.parse(json['created_at'] as String? ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(
+        json['created_at'] as String? ?? DateTime.now().toIso8601String(),
+      ),
       senderName: json['sender_name'] as String?,
       senderAvatar: json['sender_avatar'] as String?,
       isMine: currentUserId != null && json['sender_id'] == currentUserId,

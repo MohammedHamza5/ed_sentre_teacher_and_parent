@@ -321,6 +321,39 @@ enum MessageType {
   }
 }
 
+/// Conversation type enum
+enum ConversationType {
+  studentTeacher,
+  parentTeacher;
+
+  static ConversationType fromString(String type) {
+    switch (type.toLowerCase()) {
+      case 'parent_teacher':
+        return ConversationType.parentTeacher;
+      default:
+        return ConversationType.studentTeacher;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case ConversationType.studentTeacher:
+        return 'student_teacher';
+      case ConversationType.parentTeacher:
+        return 'parent_teacher';
+    }
+  }
+
+  String get displayName {
+    switch (this) {
+      case ConversationType.studentTeacher:
+        return 'محادثة طالب';
+      case ConversationType.parentTeacher:
+        return 'محادثة ولي أمر';
+    }
+  }
+}
+
 /// Parent relationship type
 enum ParentRelationship {
   father,

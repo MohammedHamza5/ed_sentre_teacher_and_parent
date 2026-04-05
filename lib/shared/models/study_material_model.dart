@@ -52,8 +52,12 @@ class StudyMaterialModel {
       thumbnailUrl: json['thumbnail_url'] as String?,
       isPublished: json['is_published'] as bool? ?? true,
       downloadCount: json['download_count'] as int? ?? 0,
-      createdAt: DateTime.parse(json['created_at'] as String? ?? DateTime.now().toIso8601String()),
-      updatedAt: DateTime.parse(json['updated_at'] as String? ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(
+        json['created_at'] as String? ?? DateTime.now().toIso8601String(),
+      ),
+      updatedAt: DateTime.parse(
+        json['updated_at'] as String? ?? DateTime.now().toIso8601String(),
+      ),
       courseName: json['course_name'] as String?,
       teacherName: json['teacher_name'] as String?,
     );
@@ -81,7 +85,9 @@ class StudyMaterialModel {
   String get displayFileSize {
     if (fileSize == null) return '';
     if (fileSize! < 1024) return '$fileSize B';
-    if (fileSize! < 1024 * 1024) return '${(fileSize! / 1024).toStringAsFixed(1)} KB';
+    if (fileSize! < 1024 * 1024) {
+      return '${(fileSize! / 1024).toStringAsFixed(1)} KB';
+    }
     return '${(fileSize! / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 

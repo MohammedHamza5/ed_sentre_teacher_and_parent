@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -6,6 +5,7 @@ import '../../../core/config/app_colors.dart';
 import '../../../shared/data/supabase_repository.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/widgets/premium_widgets.dart';
+import 'exam_answer_review_screen.dart';
 import 'grading_review_screen.dart';
 
 /// Teacher Submissions / Grading Screen
@@ -29,6 +29,19 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
   double get _maxScore =>
       (widget.assignment['max_score'] as num?)?.toDouble() ?? 100;
 
+  bool get _isInteractive => _type == 'quiz' || _type == 'exam';
+
+  int get _totalCount => _submissions.length;
+  int get _gradedCount => _submissions.where((s) => s.isGraded).length;
+  int get _pendingCount => _totalCount - _gradedCount;
+
+  double get _avgScore {
+    final graded = _submissions.where((s) => s.isGraded).toList();
+    if (graded.isEmpty) return 0;
+    final total = graded.fold(0.0, (sum, s) => sum + (s.score ?? 0));
+    return total / graded.length;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -42,24 +55,14 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
     });
 
     try {
-      debugPrint(
-        '==== Loading submissions for assignment: $_assignmentId ====',
-      );
       final repository = context.read<SupabaseRepository>();
       final submissions = await repository.getAssignmentSubmissions(
         _assignmentId,
       );
-      debugPrint('==== Loaded ${submissions.length} raw submissions ====');
-
-      // Filter out 'in_progress' submissions (not yet submitted)
-      final actualSubmissions = submissions.where((s) {
-        // If submission has no submittedAt text or is in_progress status, skip
-        return s.submittedAt != DateTime.fromMillisecondsSinceEpoch(0);
-      }).toList();
 
       if (mounted) {
         setState(() {
-          _submissions = actualSubmissions;
+          _submissions = submissions;
           _isLoading = false;
         });
       }
@@ -76,10 +79,8 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isInteractive = _type == 'quiz' || _type == 'exam';
-
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: AppColors.forestDeep,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,12 +109,16 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? Center(
+              child: CircularProgressIndicator(
+                backgroundColor: AppColors.accentVivid,
+              ),
+            )
           : _error != null
           ? _buildError()
           : _submissions.isEmpty
           ? _buildEmpty()
-          : _buildSubmissionsList(isInteractive),
+          : _buildSubmissionsList(),
     );
   }
 
@@ -122,12 +127,15 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline, size: 48.sp, color: AppColors.error),
+          Icon(Icons.error_outline, size: 48.sp, color: AppColors.errorRed),
           SizedBox(height: 12.h),
-          Text(
-            _error ?? 'حدث خطأ',
-            style: TextStyle(color: AppColors.textOnDarkSecondary),
-            textAlign: TextAlign.center,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32.w),
+            child: Text(
+              _error ?? 'حدث خطأ',
+              style: TextStyle(color: AppColors.textMuted),
+              textAlign: TextAlign.center,
+            ),
           ),
           SizedBox(height: 12.h),
           GradientButton(
@@ -148,21 +156,21 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
           Container(
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
-              color: AppColors.darkCard,
+              color: AppColors.darkSurface,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.darkBorder),
+              border: Border.all(color: AppColors.glassBorderHighlight),
             ),
             child: Icon(
               Icons.inbox_outlined,
               size: 48.sp,
-              color: AppColors.textOnDarkHint,
+              color: AppColors.textMuted,
             ),
           ),
           SizedBox(height: 12.h),
           Text(
             'لا توجد تسليمات بعد',
             style: TextStyle(
-              color: AppColors.textOnDark,
+              color: AppColors.textDisplay,
               fontSize: 16.sp,
               fontWeight: FontWeight.bold,
             ),
@@ -170,17 +178,14 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
           SizedBox(height: 4.h),
           Text(
             'لم يقم أي طالب بتسليم هذا الواجب حتى الآن',
-            style: TextStyle(color: AppColors.textOnDarkHint, fontSize: 12.sp),
+            style: TextStyle(color: AppColors.textMuted, fontSize: 12.sp),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSubmissionsList(bool isInteractive) {
-    final graded = _submissions.where((s) => s.isGraded).length;
-    final pending = _submissions.length - graded;
-
+  Widget _buildSubmissionsList() {
     return Column(
       children: [
         // Stats Bar
@@ -188,17 +193,23 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
           padding: EdgeInsets.all(16.w),
           margin: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: AppColors.darkCard,
+            color: AppColors.darkSurface,
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: AppColors.darkBorder),
+            border: Border.all(color: AppColors.glassBorderHighlight),
           ),
           child: Row(
             children: [
-              _buildStat('${_submissions.length}', 'إجمالي', AppColors.primary),
+              _buildStat('$_totalCount', 'إجمالي', AppColors.accentVivid),
               _buildDivider(),
-              _buildStat('$graded', 'تم التصحيح', AppColors.success),
+              _buildStat('$_gradedCount', 'تم التصحيح', AppColors.emeraldGreen),
               _buildDivider(),
-              _buildStat('$pending', 'بانتظار', AppColors.warning),
+              _buildStat('$_pendingCount', 'بانتظار', AppColors.warmAmber),
+              _buildDivider(),
+              _buildStat(
+                '${_avgScore.toStringAsFixed(0)}%',
+                'المعدل',
+                AppColors.accentVivid,
+              ),
             ],
           ),
         ),
@@ -209,7 +220,7 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
             padding: EdgeInsets.symmetric(horizontal: 16.w),
             itemCount: _submissions.length,
             itemBuilder: (context, index) {
-              return _buildSubmissionCard(_submissions[index], isInteractive);
+              return _buildSubmissionCard(_submissions[index]);
             },
           ),
         ),
@@ -225,14 +236,15 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
             value,
             style: TextStyle(
               color: color,
-              fontSize: 20.sp,
+              fontSize: 18.sp,
               fontWeight: FontWeight.bold,
             ),
           ),
+          SizedBox(height: 2.h),
           Text(
             label,
             style: TextStyle(
-              color: AppColors.textOnDarkSecondary,
+              color: AppColors.textMuted,
               fontSize: 10.sp,
             ),
           ),
@@ -242,223 +254,157 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
   }
 
   Widget _buildDivider() {
-    return Container(width: 1, height: 30.h, color: AppColors.darkBorder);
+    return Container(width: 1, height: 30.h, color: AppColors.glassBorderHighlight);
   }
 
-  Widget _buildSubmissionCard(SubmissionModel submission, bool isInteractive) {
+  Widget _buildSubmissionCard(SubmissionModel submission) {
     final isGraded = submission.isGraded;
 
-    // Parse answers if interactive
-    Map<String, dynamic>? answers;
-    if (isInteractive && submission.submissionText != null) {
-      try {
-        answers = Map<String, dynamic>.from(
-          jsonDecode(submission.submissionText!) as Map,
-        );
-        answers.remove('_exam_started_at');
-      } catch (_) {}
-    }
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: AppColors.darkCard,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: isGraded
-              ? AppColors.success.withOpacity(0.3)
-              : AppColors.darkBorder,
+    return GestureDetector(
+      onTap: () => _onSubmissionTap(submission),
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: AppColors.darkSurface,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: isGraded
+                ? AppColors.emeraldGreen.withValues(alpha: 0.3)
+                : AppColors.glassBorderHighlight,
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Student info row
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 20.r,
-                backgroundColor: AppColors.primary.withOpacity(0.2),
-                backgroundImage: submission.studentAvatar != null
-                    ? NetworkImage(submission.studentAvatar!)
-                    : null,
-                child: submission.studentAvatar == null
-                    ? Icon(Icons.person, color: AppColors.primary, size: 20.sp)
-                    : null,
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      submission.studentName ?? 'طالب',
-                      style: TextStyle(
-                        color: AppColors.textOnDark,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      _formatDate(submission.submittedAt),
-                      style: TextStyle(
-                        color: AppColors.textOnDarkHint,
-                        fontSize: 11.sp,
-                      ),
-                    ),
-                  ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Student info row
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 20.r,
+                  backgroundColor: AppColors.accentVivid.withValues(alpha: 0.2),
+                  backgroundImage: submission.studentAvatar != null
+                      ? NetworkImage(submission.studentAvatar!)
+                      : null,
+                  child: submission.studentAvatar == null
+                      ? Icon(
+                          Icons.person,
+                          color: AppColors.accentVivid,
+                          size: 20.sp,
+                        )
+                      : null,
                 ),
-              ),
-              // Status badge
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: isGraded
-                      ? AppColors.success.withOpacity(0.15)
-                      : AppColors.warning.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Text(
-                  isGraded
-                      ? '${submission.score?.toStringAsFixed(0)} / ${_maxScore.toStringAsFixed(0)}'
-                      : 'بانتظار التصحيح',
-                  style: TextStyle(
-                    color: isGraded ? AppColors.success : AppColors.warning,
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.bold,
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        submission.studentName ?? 'طالب',
+                        style: TextStyle(
+                          color: AppColors.textDisplay,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        _formatDate(submission.submittedAt),
+                        style: TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 11.sp,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
-          ),
-
-          // Show answers if interactive
-          if (isInteractive && answers != null && answers.isNotEmpty) ...[
-            SizedBox(height: 12.h),
-            Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: AppColors.darkSurface,
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'الإجابات:',
+                // Status badge
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.w,
+                    vertical: 4.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isGraded
+                        ? AppColors.emeraldGreen.withValues(alpha: 0.15)
+                        : AppColors.warmAmber.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Text(
+                    isGraded
+                        ? '${submission.score?.toStringAsFixed(0)} / ${_maxScore.toStringAsFixed(0)}'
+                        : 'بانتظار التصحيح',
                     style: TextStyle(
-                      color: AppColors.textOnDarkSecondary,
+                      color: isGraded ? AppColors.emeraldGreen : AppColors.warmAmber,
                       fontSize: 11.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 6.h),
-                  ...answers.entries.take(5).map((entry) {
-                    final q = _findQuestion(entry.key);
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: 4.h),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${q?['label'] ?? entry.key}: ',
-                            style: TextStyle(
-                              color: AppColors.textOnDarkHint,
-                              fontSize: 10.sp,
-                            ),
-                          ),
-                          Expanded(
-                            child: Text(
-                              _formatAnswer(entry.value, q),
-                              style: TextStyle(
-                                color: AppColors.textOnDark,
-                                fontSize: 10.sp,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                  if (answers.length > 5)
-                    Text(
-                      '... و${answers.length - 5} إجابات أخرى',
-                      style: TextStyle(
-                        color: AppColors.textOnDarkHint,
-                        fontSize: 10.sp,
-                      ),
-                    ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
 
-          // Non-interactive: show submission text
-          if (!isInteractive && submission.submissionText != null) ...[
             SizedBox(height: 12.h),
-            Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: AppColors.darkSurface,
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Text(
-                submission.submissionText!,
-                style: TextStyle(color: AppColors.textOnDark, fontSize: 12.sp),
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
+
+            // Action row
+            _buildActionRow(submission),
           ],
-
-          SizedBox(height: 12.h),
-
-          // Grading section
-          _buildGradingSection(submission),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildGradingSection(SubmissionModel submission) {
+  Widget _buildActionRow(SubmissionModel submission) {
     if (submission.isGraded) {
-      // Already graded — show result
-      return Container(
-        padding: EdgeInsets.all(12.w),
-        decoration: BoxDecoration(
-          color: AppColors.success.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: AppColors.success.withOpacity(0.2)),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.check_circle, color: AppColors.success, size: 18.sp),
-            SizedBox(width: 8.w),
-            Text(
-              'الدرجة: ${submission.score?.toStringAsFixed(1)} / ${_maxScore.toStringAsFixed(0)}',
-              style: TextStyle(
-                color: AppColors.success,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.bold,
-              ),
+      // Graded — show score bar + view button
+      final pct = _maxScore > 0
+          ? ((submission.score ?? 0) / _maxScore).clamp(0.0, 1.0)
+          : 0.0;
+      final color = pct >= 0.8
+          ? AppColors.emeraldGreen
+          : pct >= 0.5
+          ? AppColors.warmAmber
+          : AppColors.errorRed;
+
+      return Column(
+        children: [
+          // Score progress
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4.r),
+            child: LinearProgressIndicator(
+              value: pct,
+              minHeight: 6.h,
+              backgroundColor: AppColors.darkSurface,
+              valueColor: AlwaysStoppedAnimation(color),
             ),
-            const Spacer(),
-            GestureDetector(
-              onTap: () => _showGradeDialog(submission),
-              child: Text(
-                'تعديل',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.bold,
+          ),
+          SizedBox(height: 8.h),
+          Row(
+            children: [
+              Icon(Icons.check_circle, color: AppColors.emeraldGreen, size: 16.sp),
+              SizedBox(width: 4.w),
+              Text(
+                'تم التصحيح',
+                style: TextStyle(color: AppColors.emeraldGreen, fontSize: 11.sp),
+              ),
+              const Spacer(),
+              if (_isInteractive) ...[
+                Icon(
+                  Icons.visibility_outlined,
+                  color: AppColors.textMuted,
+                  size: 16.sp,
                 ),
-              ),
-            ),
-          ],
-        ),
+                SizedBox(width: 4.w),
+                Text(
+                  'اضغط لمراجعة الإجابات',
+                  style: TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 10.sp,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
       );
     }
 
@@ -466,27 +412,14 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => GradingReviewScreen(
-                submission: submission,
-                maxScore: _maxScore,
-              ),
-            ),
-          );
-          if (result == true) {
-            _loadSubmissions();
-          }
-        },
+        onPressed: () => _onGradeTap(submission),
         icon: Icon(Icons.grading, size: 18.sp),
         label: Text(
           'تصحيح وإرسال النتيجة',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.accentVivid,
           foregroundColor: Colors.white,
           padding: EdgeInsets.symmetric(vertical: 10.h),
           shape: RoundedRectangleBorder(
@@ -497,7 +430,25 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
     );
   }
 
-  void _showGradeDialog(SubmissionModel submission) async {
+  void _onSubmissionTap(SubmissionModel submission) {
+    if (_isInteractive) {
+      // Navigate to read-only exam review
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ExamAnswerReviewScreen(
+            submission: submission,
+            maxScore: _maxScore,
+            assignmentTitle: _title,
+            assignment: widget.assignment, // Added this line
+          ),
+        ),
+      );
+    }
+    // NOTE: Non-interactive (file/text) submissions don't need a detail screen
+  }
+
+  void _onGradeTap(SubmissionModel submission) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -508,37 +459,6 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
     if (result == true) {
       _loadSubmissions();
     }
-  }
-
-  Map<String, dynamic>? _findQuestion(String questionId) {
-    dynamic questions = widget.assignment['questions'];
-    if (questions is String) {
-      try {
-        questions = jsonDecode(questions);
-      } catch (_) {}
-    }
-    if (questions is List) {
-      for (int i = 0; i < questions.length; i++) {
-        final q = questions[i] as Map<String, dynamic>?;
-        if (q != null && q['id']?.toString() == questionId) {
-          return {...q, 'label': 'س${i + 1}'};
-        }
-      }
-    }
-    return null;
-  }
-
-  String _formatAnswer(dynamic answer, Map<String, dynamic>? question) {
-    if (answer == -1 || answer == '-1') return 'لم يُجب';
-
-    if (answer is int && question != null) {
-      final options = question['options'];
-      if (options is List && answer >= 0 && answer < options.length) {
-        return options[answer].toString();
-      }
-      return 'الخيار ${answer + 1}';
-    }
-    return answer?.toString() ?? '-';
   }
 
   String _formatDate(DateTime date) {

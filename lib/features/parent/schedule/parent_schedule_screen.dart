@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../../../core/config/app_colors.dart';
 import '../provider/parent_provider.dart';
 
 class ParentScheduleScreen extends StatefulWidget {
@@ -19,9 +20,6 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
   late TabController _tabController;
 
   // Premium colors
-  static const _gradientStart = Color(0xFF007AFF);
-  static const _gradientEnd = Color(0xFF5AC8FA);
-
   final List<String> _dayNames = [
     'السبت',
     'الأحد',
@@ -32,13 +30,13 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
     'الجمعة',
   ];
   final List<Color> _dayColors = [
-    const Color(0xFF6366F1),
-    const Color(0xFFEC4899),
-    const Color(0xFF10B981),
-    const Color(0xFFF59E0B),
-    const Color(0xFFEF4444),
-    const Color(0xFF8B5CF6),
-    const Color(0xFF14B8A6),
+    AppColors.premiumEmerald.colors.first,
+    AppColors.premiumSunset.colors.first,
+    AppColors.premiumOcean.colors.first,
+    AppColors.premiumRoyal.colors.first,
+    AppColors.errorRed,
+    AppColors.infoPurple,
+    AppColors.warningAmber,
   ];
 
   @override
@@ -83,32 +81,20 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.forestDeep,
       body: _isLoading
-          ? Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [_gradientStart, _gradientEnd],
-                ),
-              ),
-              child: const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              ),
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.accentVivid),
             )
           : Column(
               children: [
                 // Premium Header
                 Container(
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [_gradientStart, _gradientEnd],
-                    ),
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(32),
-                      bottomRight: Radius.circular(32),
+                    gradient: AppColors.premiumOcean,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(32.r),
+                      bottomRight: Radius.circular(32.r),
                     ),
                   ),
                   child: SafeArea(
@@ -123,7 +109,7 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
                             style: TextStyle(
                               fontSize: 22.sp,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: AppColors.textDisplay,
                             ),
                           ),
                           SizedBox(height: 20.h),
@@ -152,14 +138,14 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
                                     ),
                                     decoration: BoxDecoration(
                                       color: isSelected
-                                          ? Colors.white
-                                          : Colors.white.withValues(
+                                          ? AppColors.textDisplay
+                                          : AppColors.textDisplay.withValues(
                                               alpha: 0.15,
                                             ),
                                       borderRadius: BorderRadius.circular(16.r),
                                       border: isToday && !isSelected
                                           ? Border.all(
-                                              color: Colors.white,
+                                              color: AppColors.accentVivid,
                                               width: 2,
                                             )
                                           : null,
@@ -187,8 +173,8 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
                                                 ? FontWeight.bold
                                                 : FontWeight.w500,
                                             color: isSelected
-                                                ? _gradientStart
-                                                : Colors.white,
+                                                ? AppColors.darkSurface
+                                                : AppColors.textDisplay,
                                           ),
                                         ),
                                       ],
@@ -231,9 +217,9 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
           margin: EdgeInsets.all(24.w),
           padding: EdgeInsets.all(32.w),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.darkSurface,
             borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(color: const Color(0xFFE5E7EB)),
+            border: Border.all(color: AppColors.darkBorder),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -256,7 +242,7 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xFF6B7280),
+                  color: AppColors.textMuted,
                 ),
               ),
               SizedBox(height: 8.h),
@@ -264,7 +250,7 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
                 'يوم إجازة \u{1F389}',
                 style: TextStyle(
                   fontSize: 14.sp,
-                  color: const Color(0xFF9CA3AF),
+                  color: AppColors.textMuted.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -297,9 +283,9 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.darkSurface,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: AppColors.darkBorder),
         boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: 0.1),
@@ -359,7 +345,7 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF1F2937),
+                      color: AppColors.textDisplay,
                     ),
                   ),
                   if (groupName.isNotEmpty) ...[
@@ -369,14 +355,14 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
                         Icon(
                           Icons.group_outlined,
                           size: 14.sp,
-                          color: const Color(0xFF6B7280),
+                          color: AppColors.textMuted,
                         ),
                         SizedBox(width: 4.w),
                         Text(
                           groupName,
                           style: TextStyle(
                             fontSize: 13.sp,
-                            color: const Color(0xFF6B7280),
+                            color: AppColors.textMuted,
                           ),
                         ),
                       ],
@@ -392,7 +378,7 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
             padding: EdgeInsets.only(left: 16.w),
             child: Icon(
               Icons.chevron_left,
-              color: const Color(0xFFD1D5DB),
+              color: AppColors.textMuted.withValues(alpha: 0.5),
               size: 24.sp,
             ),
           ),

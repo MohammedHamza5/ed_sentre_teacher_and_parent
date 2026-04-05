@@ -38,10 +38,10 @@ class ScheduleTimelineTile extends StatelessWidget {
                           color: isPast
                               ? Theme.of(
                                   context,
-                                ).colorScheme.outline.withOpacity(0.3)
+                                ).colorScheme.outline.withValues(alpha: 0.3)
                               : Theme.of(
                                   context,
-                                ).colorScheme.primary.withOpacity(0.3),
+                                ).colorScheme.primary.withValues(alpha: 0.3),
                         ),
                 ),
                 // Dot
@@ -64,7 +64,7 @@ class ScheduleTimelineTile extends StatelessWidget {
                         BoxShadow(
                           color: Theme.of(
                             context,
-                          ).colorScheme.primary.withOpacity(0.4),
+                          ).colorScheme.primary.withValues(alpha: 0.4),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -80,10 +80,10 @@ class ScheduleTimelineTile extends StatelessWidget {
                           color: isPast
                               ? Theme.of(
                                   context,
-                                ).colorScheme.outline.withOpacity(0.3)
+                                ).colorScheme.outline.withValues(alpha: 0.3)
                               : Theme.of(
                                   context,
-                                ).colorScheme.primary.withOpacity(0.3),
+                                ).colorScheme.primary.withValues(alpha: 0.3),
                         ),
                 ),
               ],
@@ -103,11 +103,13 @@ class ScheduleTimelineTile extends StatelessWidget {
                   border: Border.all(
                     color: Theme.of(
                       context,
-                    ).colorScheme.primary.withOpacity(0.1),
+                    ).colorScheme.primary.withValues(alpha: 0.1),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Theme.of(context).shadowColor.withOpacity(0.05),
+                      color: Theme.of(
+                        context,
+                      ).shadowColor.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -130,7 +132,7 @@ class ScheduleTimelineTile extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: Theme.of(
                                 context,
-                              ).colorScheme.primary.withOpacity(0.1),
+                              ).colorScheme.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8.r),
                             ),
                             child: Row(
@@ -182,7 +184,7 @@ class ScheduleTimelineTile extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.secondary.withOpacity(0.1),
+                                ).colorScheme.secondary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8.r),
                               ),
                               child: Text(
@@ -227,7 +229,7 @@ class ScheduleTimelineTile extends StatelessWidget {
                               fontSize: 13.sp,
                               color: Theme.of(
                                 context,
-                              ).colorScheme.onSurface.withOpacity(0.7),
+                              ).colorScheme.onSurface.withValues(alpha: 0.7),
                             ),
                           ),
                           SizedBox(width: 16.w),
@@ -244,7 +246,7 @@ class ScheduleTimelineTile extends StatelessWidget {
                               fontSize: 13.sp,
                               color: Theme.of(
                                 context,
-                              ).colorScheme.onSurface.withOpacity(0.7),
+                              ).colorScheme.onSurface.withValues(alpha: 0.7),
                             ),
                           ),
                         ],

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../../../core/config/app_colors.dart';
 import '../provider/parent_provider.dart';
 import '../../../shared/models/models.dart';
 
@@ -19,11 +20,9 @@ class _ParentAttendanceScreenState extends State<ParentAttendanceScreen> {
   List<AttendanceModel> _attendanceRecords = [];
 
   // Premium colors
-  static const _gradientStart = Color(0xFF34C759);
-  static const _gradientEnd = Color(0xFF30D158);
-  static const _presentColor = Color(0xFF34C759);
-  static const _absentColor = Color(0xFFFF3B30);
-  static const _lateColor = Color(0xFFFF9500);
+  static const _presentColor = AppColors.emeraldGreen;
+  static const _absentColor = AppColors.errorRed;
+  static const _lateColor = AppColors.warningAmber;
 
   @override
   void initState() {
@@ -64,18 +63,10 @@ class _ParentAttendanceScreenState extends State<ParentAttendanceScreen> {
         : '0';
 
     return Scaffold(
+      backgroundColor: AppColors.forestDeep,
       body: _isLoading
-          ? Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [_gradientStart, _gradientEnd],
-                ),
-              ),
-              child: const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              ),
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.accentVivid),
             )
           : CustomScrollView(
               slivers: [
@@ -83,14 +74,10 @@ class _ParentAttendanceScreenState extends State<ParentAttendanceScreen> {
                 SliverToBoxAdapter(
                   child: Container(
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [_gradientStart, _gradientEnd],
-                      ),
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(32),
-                        bottomRight: Radius.circular(32),
+                      gradient: AppColors.premiumEmerald,
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(32.r),
+                        bottomRight: Radius.circular(32.r),
                       ),
                     ),
                     child: SafeArea(
@@ -105,7 +92,7 @@ class _ParentAttendanceScreenState extends State<ParentAttendanceScreen> {
                               style: TextStyle(
                                 fontSize: 22.sp,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: AppColors.textDisplay,
                               ),
                             ),
                             SizedBox(height: 24.h),
@@ -128,14 +115,14 @@ class _ParentAttendanceScreenState extends State<ParentAttendanceScreen> {
                                         style: TextStyle(
                                           fontSize: 48.sp,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                          color: AppColors.textDisplay,
                                         ),
                                       ),
                                       Text(
                                         'نسبة الحضور',
                                         style: TextStyle(
                                           fontSize: 14.sp,
-                                          color: Colors.white.withValues(
+                                          color: AppColors.textDisplay.withValues(
                                             alpha: 0.9,
                                           ),
                                         ),
@@ -145,26 +132,26 @@ class _ParentAttendanceScreenState extends State<ParentAttendanceScreen> {
                                   Container(
                                     width: 1,
                                     height: 80.h,
-                                    color: Colors.white.withValues(alpha: 0.3),
+                                    color: AppColors.textDisplay.withValues(alpha: 0.3),
                                   ),
                                   Column(
                                     children: [
                                       _buildMiniStat(
                                         'حاضر',
                                         presentCount,
-                                        Colors.white,
+                                        AppColors.textDisplay,
                                       ),
                                       SizedBox(height: 8.h),
                                       _buildMiniStat(
                                         'غائب',
                                         absentCount,
-                                        const Color(0xFFFFD60A),
+                                        AppColors.errorRed,
                                       ),
                                       SizedBox(height: 8.h),
                                       _buildMiniStat(
                                         'متأخر',
                                         lateCount,
-                                        const Color(0xFFFF9F0A),
+                                        AppColors.warningAmber,
                                       ),
                                     ],
                                   ),
@@ -187,7 +174,7 @@ class _ParentAttendanceScreenState extends State<ParentAttendanceScreen> {
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1F2937),
+                        color: AppColors.textDisplay,
                       ),
                     ),
                   ),
@@ -200,23 +187,23 @@ class _ParentAttendanceScreenState extends State<ParentAttendanceScreen> {
                       child: Container(
                         padding: EdgeInsets.all(32.w),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: AppColors.darkSurface,
                           borderRadius: BorderRadius.circular(20.r),
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(color: AppColors.darkBorder),
                         ),
                         child: Column(
                           children: [
                             Icon(
                               Icons.event_busy,
                               size: 48.sp,
-                              color: const Color(0xFF9CA3AF),
+                              color: AppColors.textMuted,
                             ),
                             SizedBox(height: 12.h),
                             Text(
                               'لا توجد سجلات حضور لابنك',
                               style: TextStyle(
                                 fontSize: 16.sp,
-                                color: const Color(0xFF6B7280),
+                                color: AppColors.textMuted,
                               ),
                             ),
                           ],
@@ -290,9 +277,9 @@ class _ParentAttendanceScreenState extends State<ParentAttendanceScreen> {
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.darkSurface,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: AppColors.darkBorder),
         boxShadow: [
           BoxShadow(
             color: statusColor.withValues(alpha: 0.1),
@@ -339,7 +326,7 @@ class _ParentAttendanceScreenState extends State<ParentAttendanceScreen> {
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1F2937),
+                    color: AppColors.textDisplay,
                   ),
                 ),
                 SizedBox(height: 4.h),
@@ -347,7 +334,7 @@ class _ParentAttendanceScreenState extends State<ParentAttendanceScreen> {
                   record.groupName ?? '',
                   style: TextStyle(
                     fontSize: 13.sp,
-                    color: const Color(0xFF6B7280),
+                    color: AppColors.textMuted,
                   ),
                 ),
               ],

@@ -4,12 +4,16 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-// Removed AppColors import
+import '../../../core/config/app_colors.dart';
 import '../../../core/providers/center_provider.dart';
 import '../../auth/provider/auth_provider.dart';
 import '../../../shared/data/supabase_repository.dart';
 import '../../../core/constants/educational_consts.dart';
+import '../../../core/widgets/genius/glass_card.dart';
+import '../../../core/widgets/genius/genius_text_field.dart';
+import '../../../core/widgets/genius/genius_button.dart';
 
+/// 🎨 Add Student Screen - Forest Dark Edition
 class AddStudentScreen extends StatefulWidget {
   const AddStudentScreen({super.key});
 
@@ -39,346 +43,307 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     final centerProvider = context.watch<CenterProvider>();
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'إضافة طالب جديد',
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-        ),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.w),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Basic Info Card
-              _buildSectionCard(
-                title: 'بيانات الطالب',
-                icon: Icons.person_add,
-                children: [
-                  _buildDarkTextField(
-                    controller: _nameController,
-                    label: 'اسم الطالب',
-                    icon: Icons.person,
-                    validator: (v) => v?.isEmpty == true ? 'مطلوب' : null,
-                  ),
-                  SizedBox(height: 16.h),
-                  _buildDarkTextField(
-                    controller: _phoneController,
-                    label: 'رقم الهاتف',
-                    icon: Icons.phone,
-                    keyboardType: TextInputType.phone,
-                  ),
-                ],
-              ),
-              SizedBox(height: 24.h),
-
-              // Enrollment Logic
-              _buildSectionCard(
-                title: 'التسجيل الذكي (Smart Enrollment)',
-                icon: Icons.auto_awesome,
-                children: [
-                  // Grade Level Dropdown
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.outline.withOpacity(0.1),
-                      ),
+      backgroundColor: AppColors.forestDeep,
+      body: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: 20.w,
+                vertical: 16.h,
+              ).copyWith(bottom: 100.h),
+              physics: const BouncingScrollPhysics(),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Basic Info Card
+                    _buildSectionHeader(
+                      title: 'بيانات الطالب',
+                      icon: Icons.person_add_rounded,
                     ),
-                    child: DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'السنة الدراسية',
-                        labelStyle: TextStyle(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withOpacity(0.7),
-                        ),
-                        prefixIcon: Icon(
-                          Icons.school,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
+                    GlassCard(
+                      color: AppColors.darkSurface.withValues(alpha: 0.7),
+                      padding: EdgeInsets.all(16.w),
+                      child: Column(
+                        children: [
+                          GeniusTextField(
+                            controller: _nameController,
+                            label: 'اسم الطالب',
+                            prefixIcon: Icons.person_rounded,
+                            validator: (v) =>
+                                v?.isEmpty == true ? 'مطلوب' : null,
+                          ),
+                          SizedBox(height: 16.h),
+                          GeniusTextField(
+                            controller: _phoneController,
+                            label: 'رقم الهاتف',
+                            prefixIcon: Icons.phone_rounded,
+                            keyboardType: TextInputType.phone,
+                          ),
+                        ],
                       ),
-                      dropdownColor: Theme.of(context).canvasColor,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        fontSize: 14.sp,
-                      ),
-                      items: _gradeLevels
-                          .map(
-                            (g) => DropdownMenuItem(value: g, child: Text(g)),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedGradeLevel = value;
-                          _suggestedGroups.clear();
-                          _selectedGroup = null;
-                        });
-                        _analyzeBestGroups();
-                      },
-                    ),
-                  ),
-                  SizedBox(height: 16.h),
+                    ).animate().fadeIn().slideY(begin: 0.1),
+                    SizedBox(height: 24.h),
 
-                  // Course Dropdown
-                  FutureBuilder<List<Map<String, dynamic>>>(
-                    future: context
-                        .read<SupabaseRepository>()
-                        .getTeacherGroups(
-                          context.read<AuthProvider>().teacherProfile!.id,
-                          centerProvider.currentCenterId!,
-                        )
-                        .then((groups) {
-                          final seen = <String>{};
-                          final courses = <Map<String, dynamic>>[];
-                          for (var g in groups) {
-                            final cName = g.courseName ?? 'Unknown';
-                            final cId = g.courseId;
-                            if (!seen.contains(cName)) {
-                              seen.add(cName);
-                              courses.add({'id': cId, 'name': cName});
-                            }
-                          }
-                          return courses;
-                        }),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return LinearProgressIndicator(
-                          color: Theme.of(context).colorScheme.primary,
-                          backgroundColor: Theme.of(
-                            context,
-                          ).colorScheme.surface,
-                        );
-                      }
-                      final courses = snapshot.data!;
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                          borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.outline.withOpacity(0.1),
+                    // Enrollment Logic
+                    _buildSectionHeader(
+                      title: 'التسجيل الذكي (Smart Enrollment)',
+                      icon: Icons.auto_awesome_rounded,
+                    ),
+                    GlassCard(
+                      color: AppColors.darkSurface.withValues(alpha: 0.7),
+                      padding: EdgeInsets.all(16.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Grade Level Dropdown
+                          _buildDropdownField<String>(
+                            hint: 'السنة الدراسية',
+                            icon: Icons.school_rounded,
+                            value: _selectedGradeLevel,
+                            items: _gradeLevels
+                                .map(
+                                  (g) => DropdownMenuItem(
+                                    value: g,
+                                    child: Text(g),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedGradeLevel = value;
+                                _suggestedGroups.clear();
+                                _selectedGroup = null;
+                              });
+                              _analyzeBestGroups();
+                            },
                           ),
-                        ),
-                        child: DropdownButtonFormField<String>(
-                          decoration: InputDecoration(
-                            labelText: 'المادة الدراسية',
-                            labelStyle: TextStyle(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withOpacity(0.7),
-                            ),
-                            prefixIcon: Icon(
-                              Icons.book,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 16.w,
-                            ),
+                          SizedBox(height: 16.h),
+
+                          // Course Dropdown
+                          FutureBuilder<List<Map<String, dynamic>>>(
+                            future: context
+                                .read<SupabaseRepository>()
+                                .getTeacherGroups(
+                                  context
+                                      .read<AuthProvider>()
+                                      .teacherProfile!
+                                      .id,
+                                  centerProvider.currentCenterId!,
+                                )
+                                .then((groups) {
+                                  final seen = <String>{};
+                                  final courses = <Map<String, dynamic>>[];
+                                  for (var g in groups) {
+                                    final cName = g.courseName ?? 'Unknown';
+                                    final cId = g.courseId;
+                                    if (!seen.contains(cName)) {
+                                      seen.add(cName);
+                                      courses.add({'id': cId, 'name': cName});
+                                    }
+                                  }
+                                  return courses;
+                                }),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return const Center(
+                                  child: CircularProgressIndicator(
+                                    backgroundColor: AppColors.accentVivid,
+                                  ),
+                                );
+                              }
+                              final courses = snapshot.data!;
+                              return _buildDropdownField<String>(
+                                hint: 'المادة الدراسية',
+                                icon: Icons.book_rounded,
+                                value: _selectedCourseId,
+                                items: courses
+                                    .map(
+                                      (c) => DropdownMenuItem(
+                                        value: c['id'] as String,
+                                        child: Text(c['name'] as String),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedCourseId = value;
+                                    _suggestedGroups.clear();
+                                    _selectedGroup = null;
+                                  });
+                                  _analyzeBestGroups();
+                                },
+                              );
+                            },
                           ),
-                          dropdownColor: Theme.of(context).canvasColor,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontSize: 14.sp,
-                          ),
-                          items: courses
-                              .map(
-                                (c) => DropdownMenuItem(
-                                  value: c['id'] as String,
-                                  child: Text(c['name'] as String),
+
+                          if (_isAnalyzing)
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 24.h),
+                              child: Center(
+                                child: Column(
+                                  children: [
+                                    const CircularProgressIndicator(
+                                      backgroundColor: AppColors.infoPurple,
+                                    ),
+                                    SizedBox(height: 12.h),
+                                    Text(
+                                      'جاري تحليل الجداول والحمل...',
+                                      style: TextStyle(
+                                        color: AppColors.textMuted,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              )
-                              .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedCourseId = value;
-                              _suggestedGroups.clear();
-                              _selectedGroup = null;
-                            });
-                            _analyzeBestGroups();
-                          },
-                        ),
-                      );
-                    },
-                  ),
-
-                  if (_isAnalyzing)
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20.h),
-                      child: Center(
-                        child: Column(
-                          children: [
-                            CircularProgressIndicator(
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            SizedBox(height: 8.h),
-                            Text(
-                              'جاري تحليل الجداول والحمل...',
-                              style: TextStyle(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withOpacity(0.7),
                               ),
                             ),
+
+                          if (_suggestedGroups.isNotEmpty) ...[
+                            SizedBox(height: 24.h),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.stars_rounded,
+                                  color: AppColors.accentVivid,
+                                  size: 20.sp,
+                                ),
+                                SizedBox(width: 8.w),
+                                Text(
+                                  'المجموعات المقترحة (الأفضل للطالب):',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.accentVivid,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 12.h),
+                            ..._suggestedGroups.map(
+                              (group) => _buildGroupSuggestionCard(group),
+                            ),
                           ],
-                        ),
+                        ],
                       ),
-                    ),
+                    ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1),
 
-                  if (_suggestedGroups.isNotEmpty) ...[
-                    SizedBox(height: 16.h),
-                    Text(
-                      'المجموعات المقترحة (الأفضل للطالب):',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    ..._suggestedGroups.map(
-                      (group) => _buildGroupSuggestionCard(group),
-                    ),
-                  ],
-                ],
-              ),
+                    SizedBox(height: 32.h),
 
-              SizedBox(height: 32.h),
-              Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  borderRadius: BorderRadius.circular(12.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.primary.withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
+                    GeniusButton(
+                      label: 'حفظ وتسجيل',
+                      onPressed: _submit,
+                      variant: GeniusButtonVariant.glass,
+                    ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
                   ],
                 ),
-                child: ElevatedButton(
-                  onPressed: _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                  child: Text(
-                    'حفظ وتسجيل',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionCard({
-    required String title,
-    required IconData icon,
-    required List<Widget> children,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color:
-            Theme.of(context).cardTheme.color ??
-            Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                icon,
-                color: Theme.of(context).colorScheme.primary,
-                size: 20.sp,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-            ],
-          ),
-          Divider(
-            height: 24.h,
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
-          ),
-          ...children,
         ],
       ),
     );
   }
 
-  Widget _buildDarkTextField({
-    required TextEditingController controller,
-    required String label,
+  // ═══════════════════════════════════════════════════════════════════════════
+  // HEADER
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildHeader() {
+    return Container(
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 16.h,
+        left: 20.w,
+        right: 20.w,
+        bottom: 24.h,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.forestPrimary,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(32.r)),
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => context.pop(),
+            child: Container(
+              padding: EdgeInsets.all(10.w),
+              decoration: BoxDecoration(
+                color: AppColors.darkSurface,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: AppColors.glassBorderHighlight),
+              ),
+              child: Icon(
+                Icons.arrow_back_ios_rounded,
+                size: 18.sp,
+                color: AppColors.textDisplay,
+              ),
+            ),
+          ),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Text(
+              'طالب جديد',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppColors.textDisplay,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn().slideY(begin: -0.1);
+  }
+
+  Widget _buildSectionHeader({required String title, required IconData icon}) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h, right: 4.w),
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.textMuted, size: 20.sp),
+          SizedBox(width: 8.w),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: AppColors.textMuted,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdownField<T>({
+    required String hint,
     required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-    String? Function(String?)? validator,
+    T? value,
+    required List<DropdownMenuItem<T>> items,
+    required void Function(T?) onChanged,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
-        ),
+        color: AppColors.forestPrimary,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: AppColors.glassBorderHighlight),
       ),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.onSurface,
-          fontSize: 14.sp,
-        ),
+      child: DropdownButtonFormField<T>(
+        value: value,
         decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-          ),
-          prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.primary),
+          labelText: hint,
+          labelStyle: TextStyle(color: AppColors.textMuted),
+          prefixIcon: Icon(icon, color: AppColors.accentVivid),
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
             horizontal: 16.w,
-            vertical: 14.h,
+            vertical: 12.h,
           ),
         ),
-        validator: validator,
+        dropdownColor: AppColors.darkElevated,
+        style: TextStyle(color: AppColors.textDisplay, fontSize: 14.sp),
+        icon: Icon(Icons.arrow_drop_down_rounded, color: AppColors.textMuted),
+        items: items,
+        onChanged: onChanged,
       ),
     );
   }
@@ -388,39 +353,39 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     return GestureDetector(
       onTap: () => setState(() => _selectedGroup = group),
       child: Container(
-        margin: EdgeInsets.only(bottom: 8.h),
-        padding: EdgeInsets.all(12.w),
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: isSelected
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
-              : Theme.of(context).scaffoldBackgroundColor,
+              ? AppColors.accentVivid.withValues(alpha: 0.15)
+              : AppColors.forestPrimary,
           border: Border.all(
             color: isSelected
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                ? AppColors.accentVivid
+                : AppColors.glassBorderHighlight,
             width: isSelected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(16.r),
         ),
         child: Row(
           children: [
             if (group['score'] != null)
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.15),
+                  color: AppColors.emeraldGreen.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
                   '${group['score']}% Match',
                   style: TextStyle(
-                    color: Colors.green,
-                    fontSize: 10.sp,
+                    color: AppColors.emeraldGreen,
+                    fontSize: 11.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-            SizedBox(width: 8.w),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -429,26 +394,25 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                     group['group_name'] ?? 'Group',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
+                      color: AppColors.textDisplay,
+                      fontSize: 15.sp,
                     ),
                   ),
+                  SizedBox(height: 4.h),
                   Text(
-                    group['reason'] ?? 'Recommended based on schedule',
+                    group['reason'] ?? 'مقترح بناء على الجدول',
                     style: TextStyle(
-                      fontSize: 11.sp,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withOpacity(0.7),
+                      fontSize: 12.sp,
+                      color: AppColors.textMuted,
                     ),
                   ),
                 ],
               ),
             ),
             Icon(
-              isSelected ? Icons.check_circle : Icons.circle_outlined,
-              color: isSelected
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              isSelected ? Icons.check_circle_rounded : Icons.circle_outlined,
+              color: isSelected ? AppColors.accentVivid : AppColors.textMuted,
+              size: 28.sp,
             ),
           ],
         ),
@@ -485,9 +449,12 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedGroup == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('يرجى اختيار مجموعة للطالب'),
-          backgroundColor: Theme.of(context).colorScheme.error,
+        const SnackBar(
+          content: Text(
+            'يرجى اختيار مجموعة للطالب',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: AppColors.errorRed,
         ),
       );
       return;
@@ -508,9 +475,15 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('تم تسجيل الطالب بنجاح ✅'),
-            backgroundColor: Colors.green,
+          const SnackBar(
+            content: Text(
+              'تم تسجيل الطالب بنجاح ✅',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: AppColors.forestDeep,
+              ),
+            ),
+            backgroundColor: AppColors.emeraldGreen,
           ),
         );
         context.pop();
@@ -519,8 +492,11 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('حدث خطأ: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
+            content: Text(
+              'حدث خطأ: $e',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            backgroundColor: AppColors.errorRed,
           ),
         );
       }

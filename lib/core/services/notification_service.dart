@@ -49,8 +49,9 @@ class NotificationService {
 
   /// إعداد Local Notifications
   Future<void> _initLocalNotifications() async {
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
 
     const darwinSettings = DarwinInitializationSettings(
       requestSoundPermission: true,
@@ -83,15 +84,17 @@ class NotificationService {
     try {
       // NOTE: بدون FCM نستخدم user_id + platform كمعرف
       // عندما نضيف FCM لاحقاً سنستبدل هذا بـ FCM Token
-      final deviceToken =
-          '${user.id}_mobile_${Platform.operatingSystem}';
+      final deviceToken = '${user.id}_mobile_${Platform.operatingSystem}';
 
-      await Supabase.instance.client.rpc('upsert_device_token', params: {
-        'p_token': deviceToken,
-        'p_platform': Platform.operatingSystem,
-        'p_device_type': 'mobile',
-        'p_app_type': 'teacher',
-      });
+      await Supabase.instance.client.rpc(
+        'upsert_device_token',
+        params: {
+          'p_token': deviceToken,
+          'p_platform': Platform.operatingSystem,
+          'p_device_type': 'mobile',
+          'p_app_type': 'teacher',
+        },
+      );
       debugPrint('✅ [NotificationService] Device token registered');
     } catch (e) {
       debugPrint('⚠️ [NotificationService] Failed to register token: $e');
@@ -104,10 +107,11 @@ class NotificationService {
     if (user == null) return;
 
     try {
-      final deviceToken =
-          '${user.id}_mobile_${Platform.operatingSystem}';
-      await Supabase.instance.client
-          .rpc('deactivate_device_token', params: {'p_token': deviceToken});
+      final deviceToken = '${user.id}_mobile_${Platform.operatingSystem}';
+      await Supabase.instance.client.rpc(
+        'deactivate_device_token',
+        params: {'p_token': deviceToken},
+      );
     } catch (e) {
       debugPrint('⚠️ [NotificationService] Failed to deactivate token: $e');
     }

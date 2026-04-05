@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import '../../../core/config/app_colors.dart';
 import '../../../shared/data/supabase_repository.dart';
 import '../../../shared/models/notification_model.dart';
 
@@ -17,9 +18,6 @@ class ParentNotificationsScreen extends StatefulWidget {
 }
 
 class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
-  // Premium colors
-  static const _gradientStart = Color(0xFFFF6B6B);
-  static const _gradientEnd = Color(0xFFFFA07A);
 
   bool _isLoading = true;
   List<NotificationModel> _notifications = [];
@@ -110,20 +108,16 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
     final unreadCount = _notifications.where((n) => !n.isRead).length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.forestDeep,
       body: Column(
         children: [
           // Premium Header
           Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [_gradientStart, _gradientEnd],
-              ),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
+              gradient: AppColors.premiumOcean,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(32.r),
+                bottomRight: Radius.circular(32.r),
               ),
             ),
             child: SafeArea(
@@ -141,7 +135,7 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
                           style: TextStyle(
                             fontSize: 24.sp,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.textDisplay,
                           ),
                         ),
                         if (unreadCount > 0)
@@ -198,7 +192,8 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
                             controller: _scrollController,
                             padding: EdgeInsets.all(16.w),
                             itemCount:
-                                _notifications.length + (_isLoadingMore ? 1 : 0),
+                                _notifications.length +
+                                (_isLoadingMore ? 1 : 0),
                             itemBuilder: (context, index) {
                               if (_isLoadingMore &&
                                   index == _notifications.length) {
@@ -226,20 +221,20 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: AppColors.textDisplay.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: 18.sp),
+          Icon(icon, color: AppColors.textDisplay, size: 18.sp),
           SizedBox(width: 8.w),
           Text(
             count,
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textDisplay,
             ),
           ),
           SizedBox(width: 4.w),
@@ -262,11 +257,11 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.darkSurface,
         borderRadius: BorderRadius.circular(16.r),
         border: !notification.isRead
-            ? Border.all(color: color.withValues(alpha: 0.3), width: 2)
-            : null,
+            ? Border.all(color: color.withValues(alpha: 0.5), width: 2)
+            : Border.all(color: AppColors.darkBorder),
         boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: notification.isRead ? 0.05 : 0.1),
@@ -314,7 +309,7 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
                                 fontWeight: notification.isRead
                                     ? FontWeight.w500
                                     : FontWeight.bold,
-                                color: const Color(0xFF1F2937),
+                                color: AppColors.textDisplay,
                               ),
                             ),
                           ),
@@ -334,7 +329,7 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
                         notification.body,
                         style: TextStyle(
                           fontSize: 13.sp,
-                          color: const Color(0xFF6B7280),
+                          color: AppColors.textMuted,
                           height: 1.4,
                         ),
                         maxLines: 2,
@@ -345,7 +340,7 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
                         timeago.format(notification.createdAt, locale: 'ar'),
                         style: TextStyle(
                           fontSize: 11.sp,
-                          color: const Color(0xFF9CA3AF),
+                          color: AppColors.textMuted.withValues(alpha: 0.7),
                         ),
                       ),
                     ],
@@ -362,19 +357,19 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
   Color _getTypeColor(String type) {
     switch (type) {
       case 'attendance':
-        return const Color(0xFF10B981);
+        return AppColors.emeraldGreen;
       case 'grade':
-        return const Color(0xFFF59E0B);
+        return AppColors.warningAmber;
       case 'payment':
-        return const Color(0xFFEF4444);
+        return AppColors.errorRed;
       case 'assignment':
-        return const Color(0xFF8B5CF6);
+        return AppColors.infoPurple;
       case 'message':
-        return const Color(0xFF3B82F6);
+        return AppColors.premiumOcean.colors.first;
       case 'announcement':
-        return const Color(0xFF6366F1);
+        return AppColors.premiumSunset.colors.first;
       default:
-        return const Color(0xFF6B7280);
+        return AppColors.textMuted;
     }
   }
 
@@ -405,13 +400,13 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
           Container(
             padding: EdgeInsets.all(32.w),
             decoration: BoxDecoration(
-              color: _gradientStart.withValues(alpha: 0.1),
+              color: AppColors.premiumOcean.colors.first.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.notifications_off_rounded,
               size: 64.sp,
-              color: _gradientStart,
+              color: AppColors.premiumOcean.colors.first,
             ),
           ).animate().scale(duration: 500.ms, curve: Curves.elasticOut),
           SizedBox(height: 24.h),
@@ -420,13 +415,13 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
             style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF1F2937),
+              color: AppColors.textDisplay,
             ),
           ).animate().fadeIn(delay: 200.ms),
           SizedBox(height: 8.h),
           Text(
             'سنخبرك فور حدوث أي نشاط جديد لابنك',
-            style: TextStyle(fontSize: 14.sp, color: const Color(0xFF6B7280)),
+            style: TextStyle(fontSize: 14.sp, color: AppColors.textMuted),
           ).animate().fadeIn(delay: 400.ms),
         ],
       ),

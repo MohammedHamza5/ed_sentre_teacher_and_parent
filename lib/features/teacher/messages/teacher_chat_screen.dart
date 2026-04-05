@@ -3,9 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-// Removed AppColors import
 import '../../../shared/data/supabase_repository.dart';
 import '../../../shared/models/models.dart';
+import '../../../core/config/app_colors.dart';
 
 class TeacherChatScreen extends StatefulWidget {
   final ConversationModel conversation;
@@ -39,7 +39,9 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
 
   Future<void> _markAsRead() async {
     try {
-      await context.read<SupabaseRepository>().markMessagesAsRead(widget.conversation.id);
+      await context.read<SupabaseRepository>().markMessagesAsRead(
+        widget.conversation.id,
+      );
     } catch (e) {
       debugPrint('Error marking messages as read: $e');
     }
@@ -184,7 +186,9 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: (Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface),
+        backgroundColor:
+            (Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface),
         foregroundColor: Theme.of(context).colorScheme.onSurface,
         elevation: 0,
         title: Row(
@@ -192,7 +196,14 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
             Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.primary.withOpacity(0.8)]),
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.8),
+                  ],
+                ),
               ),
               child: CircleAvatar(
                 radius: 18.r,
@@ -210,7 +221,10 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.conversation.studentName ?? 'طالب',
+                  widget.conversation.conversationType ==
+                          ConversationType.parentTeacher
+                      ? widget.conversation.parentName ?? 'ولي أمر'
+                      : widget.conversation.studentName ?? 'طالب',
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
@@ -219,6 +233,28 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
                 ),
                 Row(
                   children: [
+                    if (widget.conversation.conversationType ==
+                        ConversationType.parentTeacher)
+                      Container(
+                        margin: EdgeInsets.only(left: 4.w),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 4.w,
+                          vertical: 1.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.infoPurple
+                              .withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
+                        child: Text(
+                          'سري',
+                          style: TextStyle(
+                            fontSize: 9.sp,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.infoPurple,
+                          ),
+                        ),
+                      ),
                     Container(
                       width: 6.w,
                       height: 6.w,
@@ -229,11 +265,16 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
                     ),
                     SizedBox(width: 4.w),
                     Text(
-                      'متصل الآن',
+                      widget.conversation.conversationType ==
+                              ConversationType.parentTeacher
+                          ? 'بخصوص: ${widget.conversation.studentName ?? 'طالب'}'
+                          : 'متصل الآن',
                       style: TextStyle(
                         fontSize: 10.sp,
                         fontWeight: FontWeight.w400,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -248,7 +289,9 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
           Expanded(
             child: _isLoading
                 ? Center(
-                    child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+                    child: CircularProgressIndicator(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                    ),
                   )
                 : ListView.builder(
                     controller: _scrollController,
@@ -260,7 +303,9 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
                           padding: EdgeInsets.only(bottom: 12.h),
                           child: Center(
                             child: CircularProgressIndicator(
-                              color: Theme.of(context).colorScheme.primary,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.primary,
                             ),
                           ),
                         );
@@ -271,7 +316,9 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
                     },
                   ),
           ),
-          _buildInputArea(),
+          widget.conversation.isReadOnly
+              ? _buildReadOnlyBanner()
+              : _buildInputArea(),
         ],
       ),
     );
@@ -285,8 +332,20 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
         margin: EdgeInsets.only(bottom: 8.h),
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
         decoration: BoxDecoration(
-          gradient: isMe ? LinearGradient(colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.primary.withOpacity(0.8)]) : null,
-          color: isMe ? null : (Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface),
+          gradient: isMe
+              ? LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.8),
+                  ],
+                )
+              : null,
+          color: isMe
+              ? null
+              : (Theme.of(context).cardTheme.color ??
+                    Theme.of(context).colorScheme.surface),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(16.r),
             topRight: Radius.circular(16.r),
@@ -308,7 +367,9 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
             Text(
               msg.content ?? '',
               style: TextStyle(
-                color: isMe ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                color: isMe
+                    ? Colors.white
+                    : Theme.of(context).colorScheme.onSurface,
                 fontSize: 14.sp,
               ),
             ),
@@ -318,7 +379,9 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
               style: TextStyle(
                 color: isMe
                     ? Colors.white.withValues(alpha: 0.7)
-                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    : Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.7),
                 fontSize: 10.sp,
               ),
             ),
@@ -332,8 +395,15 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: (Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface),
-        border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5), width: 1)),
+        color:
+            (Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface),
+        border: Border(
+          top: BorderSide(
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
+            width: 1,
+          ),
+        ),
       ),
       child: SafeArea(
         child: Row(
@@ -341,15 +411,23 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
             IconButton(
               onPressed: () {},
               icon: const Icon(Icons.attach_file),
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
             Expanded(
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 decoration: BoxDecoration(
-                  color: (Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface),
+                  color:
+                      (Theme.of(context).cardTheme.color ??
+                      Theme.of(context).colorScheme.surface),
                   borderRadius: BorderRadius.circular(24.r),
-                  border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outline.withValues(alpha: 0.5),
+                  ),
                 ),
                 child: TextField(
                   controller: _messageController,
@@ -359,7 +437,11 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
                   ),
                   decoration: InputDecoration(
                     hintText: 'اكتب رسالتك...',
-                    hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+                    hintStyle: TextStyle(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.7),
+                    ),
                     border: InputBorder.none,
                   ),
                   onSubmitted: (_) => _sendMessage(),
@@ -369,12 +451,55 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
             SizedBox(width: 8.w),
             Container(
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.primary.withOpacity(0.8)]),
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.8),
+                  ],
+                ),
                 shape: BoxShape.circle,
               ),
               child: IconButton(
                 onPressed: _sendMessage,
                 icon: const Icon(Icons.send, color: Colors.white, size: 20),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReadOnlyBanner() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+      decoration: BoxDecoration(
+        color: AppColors.infoPurple.withValues(alpha: 0.1),
+        border: Border(
+          top: BorderSide(
+            color: AppColors.infoPurple.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+      ),
+      child: SafeArea(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.visibility_rounded,
+              color: AppColors.infoPurple,
+              size: 18.sp,
+            ),
+            SizedBox(width: 8.w),
+            Text(
+              'وضع المشاهدة فقط — لا يمكنك الإرسال هنا',
+              style: TextStyle(
+                color: AppColors.infoPurple,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],

@@ -4,13 +4,17 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
-import '../../../shared/widgets/app_drawer.dart';
+import '../../../core/config/app_colors.dart';
 import '../provider/teacher_provider.dart';
 import '../../../shared/data/supabase_repository.dart';
-import '../../../shared/widgets/premium_widgets.dart';
+import '../../../core/widgets/genius/glass_card.dart';
+import '../../../core/widgets/genius/genius_text_field.dart';
+import '../../../core/widgets/genius/shimmer_skeleton.dart';
+import '../../../core/widgets/genius/staggered_list_animator.dart';
 
-/// 🎨 Teacher Students Screen - Premium Dark Mode Design
+/// 🎨 Teacher Students Screen - Forest Dark Edition
 class TeacherStudentsScreen extends StatefulWidget {
   const TeacherStudentsScreen({super.key});
 
@@ -28,7 +32,6 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
   int _currentPage = 0;
   bool _hasMore = true;
   bool _isLoadingMore = false;
-  // Track the last loaded center to avoid redundant reloads
   String? _lastLoadedCenterId;
   String? _errorMessage;
 
@@ -36,7 +39,6 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    // Initial load attempt - may be skipped if provider is still loading
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _loadStudents(reset: true),
     );
@@ -69,7 +71,6 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
     final teacherId = teacherProvider.teacherId;
     final centerId = teacherProvider.selectedCenterId;
 
-    // If provider is still loading, don't proceed - the build() watcher will trigger a retry
     if (teacherProvider.isLoading) return;
     if (teacherId == null || centerId == null) {
       if (mounted) {
@@ -154,12 +155,9 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch TeacherProvider so we rebuild when it finishes loading.
-    // This fixes the race condition where initState fires before the provider is ready.
     final teacherProvider = context.watch<TeacherProvider>();
     final currentCenterId = teacherProvider.selectedCenterId;
 
-    // Auto-trigger load when: provider finished loading AND center changed (or first load)
     if (!teacherProvider.isLoading &&
         currentCenterId != null &&
         currentCenterId != _lastLoadedCenterId &&
@@ -171,7 +169,7 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.forestDeep,
       body: Column(
         children: [
           _buildHeader(),
@@ -182,33 +180,31 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
                 ? _buildEmptyState()
                 : RefreshIndicator(
                     onRefresh: () => _loadStudents(reset: true),
-                    color: Theme.of(context).colorScheme.primary,
-                    backgroundColor: Theme.of(context).cardTheme.color,
-                    child: ListView.builder(
+                    backgroundColor: AppColors.accentVivid,
+                    color: AppColors.darkSurface,
+                    child: StaggeredListAnimator(
                       controller: _scrollController,
                       padding: EdgeInsets.symmetric(
                         horizontal: 20.w,
                         vertical: 12.h,
                       ).copyWith(bottom: 100.h),
-                      itemCount:
-                          _filteredStudents.length + (_isLoadingMore ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (_isLoadingMore &&
-                            index == _filteredStudents.length) {
-                          return Padding(
-                            padding: EdgeInsets.symmetric(vertical: 12.h),
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                color: Theme.of(context).colorScheme.primary,
+                      children: List.generate(
+                        _filteredStudents.length + (_isLoadingMore ? 1 : 0),
+                        (index) {
+                          if (_isLoadingMore &&
+                              index == _filteredStudents.length) {
+                            return Padding(
+                              padding: EdgeInsets.symmetric(vertical: 24.h),
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  backgroundColor: AppColors.accentVivid,
+                                ),
                               ),
-                            ),
-                          );
-                        }
-                        return _buildStudentCard(
-                          _filteredStudents[index],
-                          index,
-                        );
-                      },
+                            );
+                          }
+                          return _buildStudentCard(_filteredStudents[index]);
+                        },
+                      ),
                     ),
                   ),
           ),
@@ -227,147 +223,76 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
         top: MediaQuery.of(context).padding.top + 16.h,
         left: 20.w,
         right: 20.w,
-        bottom: 20.h,
+        bottom: 24.h,
       ),
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28.r)),
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
-          ),
-        ),
+        color: AppColors.forestPrimary,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(32.r)),
       ),
       child: Column(
         children: [
-          // Title Row
           Row(
             children: [
-              // Back button
               GestureDetector(
                 onTap: () => context.go('/teacher'),
                 child: Container(
                   padding: EdgeInsets.all(10.w),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).cardTheme.color,
+                    color: AppColors.darkSurface,
                     borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.outline.withOpacity(0.1),
-                    ),
+                    border: Border.all(color: AppColors.glassBorderHighlight),
                   ),
                   child: Icon(
                     Icons.arrow_back_ios_rounded,
                     size: 18.sp,
-                    color: Theme.of(context).colorScheme.onSurface,
+                    color: AppColors.textDisplay,
                   ),
                 ),
               ),
               SizedBox(width: 14.w),
 
-              // Title
               Expanded(
                 child: Text(
                   'طلابي',
-                  style: TextStyle(
-                    fontSize: 26.sp,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontFamily: 'Cairo',
+                    color: AppColors.textDisplay,
                   ),
                 ),
               ),
 
-              // Count Badge
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: AppColors.accentVivid.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.primary.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  border: Border.all(
+                    color: AppColors.accentVivid.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Text(
                   '${_filteredStudents.length}',
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onPrimary,
+                    color: AppColors.accentVivid,
                   ),
                 ),
               ),
 
-              SizedBox(width: 8.w),
+              SizedBox(width: 12.w),
 
-              // Drawer
-              DrawerMenuButton(
-                isTeacher: true,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+              const SizedBox.shrink(),
             ],
           ),
-          SizedBox(height: 18.h),
+          SizedBox(height: 24.h),
 
-          // Search Field
-          Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardTheme.color,
-              borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
-              ),
-            ),
-            child: TextField(
-              controller: _searchController,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface,
-                fontSize: 15.sp,
-              ),
-              decoration: InputDecoration(
-                hintText: 'ابحث عن طالب...',
-                hintStyle: TextStyle(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withOpacity(0.4),
-                  fontSize: 14.sp,
-                ),
-                prefixIcon: Icon(
-                  Icons.search_rounded,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withOpacity(0.6),
-                  size: 22.sp,
-                ),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        onPressed: () {
-                          _searchController.clear();
-                          _filterStudents();
-                        },
-                        icon: Icon(
-                          Icons.close_rounded,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withOpacity(0.4),
-                          size: 20.sp,
-                        ),
-                      )
-                    : null,
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 16.w,
-                  vertical: 16.h,
-                ),
-              ),
-            ),
+          // Search Field utilizing Glass Theme
+          GeniusTextField(
+            label: 'بحث',
+            controller: _searchController,
+            hint: 'ابحث عن طالب، كود، أو مجموعة...',
+            prefixIcon: Icons.search_rounded,
           ),
         ],
       ),
@@ -378,99 +303,113 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
   // STUDENT CARD
   // ═══════════════════════════════════════════════════════════════════════════
 
-  Widget _buildStudentCard(Map<String, dynamic> student, int index) {
-    return PremiumCard(
-          onTap: () {
-            // Navigate to student details
-          },
-          margin: EdgeInsets.only(bottom: 14.h),
-          child: Row(
-            children: [
-              // Avatar
-              AvatarWithBorder(
-                imageUrl: student['student_avatar'],
-                radius: 28,
-                borderGradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).colorScheme.primary,
-                    Theme.of(context).colorScheme.primary,
-                  ],
-                ),
-                placeholderIcon: Icons.person_rounded,
+  Widget _buildStudentCard(Map<String, dynamic> student) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 14.h),
+      child: GlassCard(
+        color: AppColors.darkSurface.withValues(alpha: 0.7),
+        padding: EdgeInsets.all(16.w),
+        child: Row(
+          children: [
+            // Avatar
+            Container(
+              padding: EdgeInsets.all(2.w),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.glassBorderHighlight),
               ),
-              SizedBox(width: 16.w),
-
-              // Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      student['student_name'] ?? 'Unknown',
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 8.h),
-                    Wrap(
-                      spacing: 8.w,
-                      runSpacing: 6.h,
-                      children: [
-                        _buildTag(
-                          icon: Icons.class_outlined,
-                          text: student['group_name'] ?? 'No Group',
-                          color: Colors.orange, // Warning color equivalent
-                        ),
-                        if (student['course_name'] != null)
-                          _buildTag(
-                            icon: Icons.book_outlined,
-                            text: student['course_name'],
-                            color: Colors.blueAccent, // Info color equivalent
+              child: CircleAvatar(
+                radius: 26.r,
+                backgroundColor: AppColors.forestPrimary,
+                child: student['student_avatar'] != null
+                    ? ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl: student['student_avatar'],
+                          width: 52.r,
+                          height: 52.r,
+                          fit: BoxFit.cover,
+                          errorWidget: (_, __, ___) => Icon(
+                            Icons.person_rounded,
+                            color: AppColors.textMuted,
                           ),
-                      ],
-                    ),
-                  ],
-                ),
+                        ),
+                      )
+                    : Text(
+                        (student['student_name'] ?? 'م')[0],
+                        style: TextStyle(
+                          color: AppColors.textDisplay,
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
+            ),
+            SizedBox(width: 16.w),
 
-              // Actions
-              Row(
+            // Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (student['student_phone'] != null)
-                    _buildActionButton(
-                      icon: Icons.phone_rounded,
-                      color: Colors.green,
-                      onTap: () => _makePhoneCall(student['student_phone']),
+                  Text(
+                    student['student_name'] ?? 'طالب',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textDisplay,
                     ),
-                  SizedBox(width: 8.w),
-                  Container(
-                    padding: EdgeInsets.all(10.w),
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 16.sp,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withOpacity(0.4),
-                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 8.h),
+                  Wrap(
+                    spacing: 8.w,
+                    runSpacing: 6.h,
+                    children: [
+                      _buildTag(
+                        icon: Icons.class_outlined,
+                        text: student['group_name'] ?? 'لا توجد مجموعة',
+                        color: AppColors.warmAmber,
+                      ),
+                      if (student['course_name'] != null)
+                        _buildTag(
+                          icon: Icons.book_outlined,
+                          text: student['course_name'],
+                          color: AppColors.infoPurple,
+                        ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
-        )
-        .animate(delay: Duration(milliseconds: 50 * index))
-        .fadeIn()
-        .slideX(begin: 0.1);
+            ),
+
+            // Actions
+            Row(
+              children: [
+                if (student['student_phone'] != null)
+                  _buildActionButton(
+                    icon: Icons.phone_rounded,
+                    color: AppColors.emeraldGreen,
+                    onTap: () => _makePhoneCall(student['student_phone']),
+                  ),
+                SizedBox(width: 8.w),
+                Container(
+                  padding: EdgeInsets.all(8.w),
+                  decoration: BoxDecoration(
+                    color: AppColors.textDisplay.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14.sp,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildActionButton({
@@ -484,9 +423,9 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
       child: Container(
         padding: EdgeInsets.all(10.w),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
+          color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Icon(icon, color: color, size: size.sp),
       ),
@@ -501,9 +440,9 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: color.withOpacity(0.25)),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -533,13 +472,17 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
 
   Widget _buildLoadingState() {
     return Padding(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
       child: Column(
         children: List.generate(
           5,
           (i) => Padding(
             padding: EdgeInsets.only(bottom: 14.h),
-            child: ShimmerLoading(height: 90.h, borderRadius: 20.r),
+            child: ShimmerSkeleton(
+              height: 90.h,
+              width: double.infinity,
+              borderRadius: 20.r,
+            ),
           ),
         ),
       ),
@@ -547,21 +490,61 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
   }
 
   Widget _buildEmptyState() {
-    // Show error details if there's a known error to help with debugging
     final subtitle = _errorMessage != null
         ? _errorMessage!
         : _searchController.text.isNotEmpty
         ? 'لم يتم العثور على نتائج للبحث'
         : 'سيظهر طلابك هنا عند تسجيلهم في مجموعاتك';
 
-    return EmptyState(
-      icon: _errorMessage != null
-          ? Icons.error_outline_rounded
-          : Icons.people_outline_rounded,
-      title: _errorMessage != null
-          ? 'تعذّر تحميل الطلاب'
-          : 'لا يوجد طلاب حتى الآن',
-      subtitle: subtitle,
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: EdgeInsets.all(24.w),
+              decoration: BoxDecoration(
+                color: AppColors.forestPrimary,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.glassBorderHighlight),
+              ),
+              child: Icon(
+                _errorMessage != null
+                    ? Icons.error_outline_rounded
+                    : Icons.people_outline_rounded,
+                size: 64.sp,
+                color: _errorMessage != null
+                    ? AppColors.errorRed
+                    : AppColors.accentVivid,
+              ),
+            ).animate().scale(
+              delay: 200.ms,
+              duration: 400.ms,
+              curve: Curves.easeOutBack,
+            ),
+            SizedBox(height: 24.h),
+            Text(
+              _errorMessage != null
+                  ? 'تعذّر تحميل الطلاب'
+                  : 'لا يوجد طلاب حتى الآن',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppColors.textDisplay,
+              ),
+              textAlign: TextAlign.center,
+            ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.2),
+            SizedBox(height: 12.h),
+            Text(
+              subtitle,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+              textAlign: TextAlign.center,
+            ).animate().fadeIn(delay: 500.ms),
+          ],
+        ),
+      ),
     );
   }
 }

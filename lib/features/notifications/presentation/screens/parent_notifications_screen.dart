@@ -13,7 +13,8 @@ class ParentNotificationsScreen extends StatefulWidget {
   const ParentNotificationsScreen({super.key});
 
   @override
-  State<ParentNotificationsScreen> createState() => _ParentNotificationsScreenState();
+  State<ParentNotificationsScreen> createState() =>
+      _ParentNotificationsScreenState();
 }
 
 class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
@@ -97,7 +98,7 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
     try {
       final repo = context.read<SupabaseRepository>();
       await repo.markNotificationRead(notification.id);
-      
+
       setState(() {
         final index = _notifications.indexWhere((n) => n.id == notification.id);
         if (index != -1) {
@@ -114,12 +115,14 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
       final repo = context.read<SupabaseRepository>();
       await repo.markAllNotificationsRead();
       setState(() {
-        _notifications = _notifications.map((n) => n.copyWith(isRead: true)).toList();
+        _notifications = _notifications
+            .map((n) => n.copyWith(isRead: true))
+            .toList();
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('فشل تحديد الكل كمقروء')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('فشل تحديد الكل كمقروء')));
     }
   }
 
@@ -128,7 +131,10 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('الإشعارات', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'الإشعارات',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: AppColors.textPrimary,
@@ -145,34 +151,33 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _notifications.isEmpty
-              ? _buildEmptyState()
-              : RefreshIndicator(
-                  onRefresh: () => _loadNotifications(reset: true),
-                  child: ListView.separated(
-                    controller: _scrollController,
-                    padding: EdgeInsets.all(16.w),
-                    itemCount:
-                        _notifications.length + (_isLoadingMore ? 1 : 0),
-                    separatorBuilder: (c, i) => SizedBox(height: 12.h),
-                    itemBuilder: (context, index) {
-                      if (_isLoadingMore && index == _notifications.length) {
-                        return Padding(
-                          padding: EdgeInsets.symmetric(vertical: 12.h),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        );
-                      }
-                      final notification = _notifications[index];
-                      return _buildNotificationCard(notification)
-                          .animate()
-                          .fadeIn(delay: 50.ms * index)
-                          .slideX(begin: 0.2, curve: Curves.easeOut);
-                    },
-                  ),
-                ),
+          ? _buildEmptyState()
+          : RefreshIndicator(
+              onRefresh: () => _loadNotifications(reset: true),
+              child: ListView.separated(
+                controller: _scrollController,
+                padding: EdgeInsets.all(16.w),
+                itemCount: _notifications.length + (_isLoadingMore ? 1 : 0),
+                separatorBuilder: (c, i) => SizedBox(height: 12.h),
+                itemBuilder: (context, index) {
+                  if (_isLoadingMore && index == _notifications.length) {
+                    return Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          backgroundColor: AppColors.primary,
+                        ),
+                      ),
+                    );
+                  }
+                  final notification = _notifications[index];
+                  return _buildNotificationCard(notification)
+                      .animate()
+                      .fadeIn(delay: 50.ms * index)
+                      .slideX(begin: 0.2, curve: Curves.easeOut);
+                },
+              ),
+            ),
     );
   }
 
@@ -187,12 +192,20 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
               color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.notifications_off_outlined, size: 48.sp, color: AppColors.primary),
+            child: Icon(
+              Icons.notifications_off_outlined,
+              size: 48.sp,
+              color: AppColors.primary,
+            ),
           ),
           SizedBox(height: 16.h),
           Text(
             'لا توجد إشعارات حالياً',
-            style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
           ),
           SizedBox(height: 8.h),
           Text(
@@ -227,14 +240,16 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
 
     return GestureDetector(
       onTap: () async {
-         await _markAsRead(notification);
+        await _markAsRead(notification);
       },
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: notification.isRead ? Colors.white : AppColors.primary.withValues(alpha: 0.05),
+          color: notification.isRead
+              ? Colors.white
+              : AppColors.primary.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
-          border: notification.isRead 
+          border: notification.isRead
               ? Border.all(color: AppColors.gray200)
               : Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
         ),
@@ -249,12 +264,14 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
               ),
               child: Icon(
                 iconData,
-                color: notification.isRead ? AppColors.textSecondary : iconColor,
+                color: notification.isRead
+                    ? AppColors.textSecondary
+                    : iconColor,
                 size: 24.sp,
               ),
             ),
             SizedBox(width: 16.w),
-            
+
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -267,7 +284,9 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
                           notification.title,
                           style: TextStyle(
                             fontSize: 16.sp,
-                            fontWeight: notification.isRead ? FontWeight.w600 : FontWeight.bold,
+                            fontWeight: notification.isRead
+                                ? FontWeight.w600
+                                : FontWeight.bold,
                             color: AppColors.textPrimary,
                           ),
                         ),

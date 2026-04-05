@@ -86,7 +86,9 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
           if (_isLoading)
             Expanded(
               child: Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
+                child: CircularProgressIndicator(
+                  backgroundColor: AppColors.primary,
+                ),
               ),
             ),
 
@@ -304,7 +306,7 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
                       width: 20.w,
                       height: 20.w,
                       child: const CircularProgressIndicator(
-                        color: Colors.white,
+                        backgroundColor: Colors.white,
                         strokeWidth: 2,
                       ),
                     )

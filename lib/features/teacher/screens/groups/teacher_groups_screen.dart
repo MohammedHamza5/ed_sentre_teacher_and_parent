@@ -5,11 +5,13 @@ import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart' as intl;
 
-// Removed AppColors import
-import '../../../../shared/widgets/premium_widgets.dart';
+import '../../../../core/config/app_colors.dart';
+import '../../../../core/widgets/genius/glass_card.dart';
+import '../../../../core/widgets/genius/genius_button.dart';
 import '../../../../shared/models/models.dart';
 import '../../provider/teacher_provider.dart';
 
+/// 🎨 Teacher Groups Screen - Forest Dark Edition
 class TeacherGroupsScreen extends StatefulWidget {
   const TeacherGroupsScreen({super.key});
 
@@ -81,11 +83,11 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
   void _showMonitorWindowHint() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
+        content: const Text(
           'المراقبة متاحة قبل الحصة بـ 30 دقيقة وحتى بعدها بـ 30 دقيقة فقط',
-          style: TextStyle(color: Theme.of(context).colorScheme.onError),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Theme.of(context).colorScheme.error,
+        backgroundColor: AppColors.errorRed,
       ),
     );
   }
@@ -96,36 +98,36 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
     final groups = provider.groups;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.forestDeep,
       appBar: AppBar(
         title: Text(
           'المجموعات الذكية',
           style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface,
+            color: AppColors.textDisplay,
             fontSize: 20.sp,
-            fontFamily: 'Cairo',
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.forestDeep,
         elevation: 0,
         centerTitle: true,
-        leading: BackButton(color: Theme.of(context).colorScheme.onSurface),
+        iconTheme: const IconThemeData(color: AppColors.textDisplay),
       ),
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: Padding(
-          padding: EdgeInsets.all(16.w),
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
           child: Column(
             children: [
               _buildSmartSummaryCard(provider),
-              SizedBox(height: 20.h),
+              SizedBox(height: 24.h),
               if (groups.isEmpty)
                 _buildEmptyState()
               else
                 ...groups.asMap().entries.map(
                   (e) => _buildSmartGroupCard(e.value, provider, e.key),
                 ),
-              SizedBox(height: 80.h), // Bottom padding
+              SizedBox(height: 80.h),
             ],
           ),
         ),
@@ -135,10 +137,40 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
 
   Widget _buildEmptyState() {
     return Center(
-      child: EmptyState(
-        icon: Icons.groups_rounded,
-        title: 'لا توجد مجموعات',
-        subtitle: 'سيظهر هنا تحليل ذكي لمجموعاتك فور إضافتها.',
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(height: 48.h),
+          Container(
+            padding: EdgeInsets.all(24.w),
+            decoration: BoxDecoration(
+              color: AppColors.forestPrimary,
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.glassBorderHighlight),
+            ),
+            child: Icon(
+              Icons.groups_rounded,
+              size: 64.sp,
+              color: AppColors.accentVivid,
+            ),
+          ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
+          SizedBox(height: 24.h),
+          Text(
+            'لا توجد مجموعات',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: AppColors.textDisplay,
+            ),
+          ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
+          SizedBox(height: 12.h),
+          Text(
+            'سيظهر هنا تحليل ذكي لمجموعاتك فور إضافتها.',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+            textAlign: TextAlign.center,
+          ).animate().fadeIn(delay: 300.ms),
+        ],
       ),
     );
   }
@@ -151,20 +183,9 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
     );
     final totalGroups = provider.groups.length;
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(24.r),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
+    return GlassCard(
+      color: AppColors.forestPrimary,
+      padding: EdgeInsets.all(24.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -177,11 +198,8 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                   Text(
                     'نظرة عامة (شهرية)',
                     style: TextStyle(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onPrimaryContainer.withOpacity(0.7),
+                      color: AppColors.textMuted,
                       fontSize: 14.sp,
-                      fontFamily: 'Cairo',
                     ),
                   ),
                   SizedBox(height: 8.h),
@@ -191,10 +209,9 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                       decimalDigits: 0,
                     ).format(totalIncome),
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      color: AppColors.emeraldGreen,
                       fontSize: 28.sp,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'Cairo',
                     ),
                   ).animate().scale(duration: 500.ms),
                 ],
@@ -202,25 +219,38 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onPrimaryContainer.withOpacity(0.1),
+                  color: AppColors.accentVivid.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.accentVivid.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Icon(
                   Icons.analytics_rounded,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  color: AppColors.accentVivid,
                   size: 30.sp,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 20.h),
+          SizedBox(height: 24.h),
           Row(
             children: [
-              _buildSummaryStat(Icons.people_rounded, '$totalStudents طالب'),
-              SizedBox(width: 16.w),
-              _buildSummaryStat(Icons.class_rounded, '$totalGroups مجموعات'),
+              Expanded(
+                child: _buildSummaryStat(
+                  Icons.people_rounded,
+                  '$totalStudents طالب',
+                  AppColors.infoPurple,
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _buildSummaryStat(
+                  Icons.class_rounded,
+                  '$totalGroups مجموعات',
+                  AppColors.warmAmber,
+                ),
+              ),
             ],
           ),
         ],
@@ -228,30 +258,25 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
     ).animate().fadeIn().slideY(begin: -0.2);
   }
 
-  Widget _buildSummaryStat(IconData icon, String label) {
+  Widget _buildSummaryStat(IconData icon, String label, Color accentColor) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.onPrimaryContainer.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(20.r),
+        color: AppColors.darkSurface.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: AppColors.glassBorderHighlight),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            icon,
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
-            size: 16.sp,
-          ),
-          SizedBox(width: 6.w),
+          Icon(icon, color: accentColor, size: 18.sp),
+          SizedBox(width: 8.w),
           Text(
             label,
             style: TextStyle(
-              color: Theme.of(context).colorScheme.onPrimaryContainer,
-              fontWeight: FontWeight.w600,
+              color: AppColors.textDisplay,
+              fontWeight: FontWeight.bold,
               fontSize: 13.sp,
-              fontFamily: 'Cairo',
             ),
           ),
         ],
@@ -268,323 +293,278 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
     final schedules = group.schedules;
     final canMonitor = _isMonitorWindowActive(group);
 
-    return GestureDetector(
-      onTap: () => context.push('/teacher/groups/${group.id}'),
-      child: Container(
-        margin: EdgeInsets.only(bottom: 20.h),
-        decoration: BoxDecoration(
-          color:
-              Theme.of(context).cardTheme.color ??
-              Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            // 1. Header Area
-            Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Row(
-                children: [
-                  Container(
-                    height: 48.w,
-                    width: 48.w,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
-                    child: Center(
-                      child: Text(
-                        group.groupName.isNotEmpty ? group.groupName[0] : 'G',
-                        style: TextStyle(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onPrimaryContainer,
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 14.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          group.groupName,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Cairo',
-                          ),
-                        ),
-                        Text(
-                          '${group.courseName ?? 'مادة'} • ${group.currentStudents} طالب',
-                          style: TextStyle(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withOpacity(0.7),
-                            fontSize: 12.sp,
-                            fontFamily: 'Cairo',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _buildStatusBadge(group),
-                ],
-              ),
-            ),
-
-            Divider(
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
-              height: 1,
-            ),
-
-            // 2. Schedule Section - "The Smart & Genius Part"
-            if (schedules.isNotEmpty)
+    return Padding(
+      padding: EdgeInsets.only(bottom: 20.h),
+      child: GestureDetector(
+        onTap: () => context.push('/teacher/groups/${group.id}'),
+        child: GlassCard(
+          color: AppColors.darkSurface.withValues(alpha: 0.7),
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              // 1. Header Area
               Padding(
-                padding: EdgeInsets.all(16.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                padding: EdgeInsets.all(20.w),
+                child: Row(
                   children: [
-                    Text(
-                      'مواعيد الحصص',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Cairo',
+                    Container(
+                      height: 52.w,
+                      width: 52.w,
+                      decoration: BoxDecoration(
+                        color: AppColors.forestPrimary,
+                        borderRadius: BorderRadius.circular(16.r),
+                        border: Border.all(
+                          color: AppColors.glassBorderHighlight,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          group.groupName.isNotEmpty ? group.groupName[0] : 'م',
+                          style: TextStyle(
+                            color: AppColors.accentVivid,
+                            fontSize: 22.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
-                    SizedBox(height: 10.h),
-                    Wrap(
-                      spacing: 8.w,
-                      runSpacing: 8.h,
-                      children: schedules.map((schedule) {
-                        return Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 8.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.primary.withOpacity(0.3),
+                    SizedBox(width: 16.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            group.groupName,
+                            style: TextStyle(
+                              color: AppColors.textDisplay,
+                              fontSize: 17.sp,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.access_time_rounded,
-                                color: Theme.of(context).colorScheme.primary,
-                                size: 14.sp,
-                              ),
-                              SizedBox(width: 6.w),
-                              Text(
-                                '${schedule.dayOfWeek} ${schedule.startTime}',
-                                style: TextStyle(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurface,
-                                  fontSize: 12.sp,
-                                  fontFamily: 'Cairo',
-                                ),
-                              ),
-                            ],
+                          SizedBox(height: 4.h),
+                          Text(
+                            '${group.courseName ?? 'مادة'} • ${group.currentStudents} طالب',
+                            style: TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 13.sp,
+                            ),
                           ),
-                        );
-                      }).toList(),
+                        ],
+                      ),
                     ),
+                    _buildStatusBadge(group),
                   ],
-                ),
-              )
-            else
-              Padding(
-                padding: EdgeInsets.all(16.w),
-                child: Text(
-                  'لم يتم تحديد مواعيد بعد',
-                  style: TextStyle(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withOpacity(0.5),
-                    fontSize: 12.sp,
-                    fontStyle: FontStyle.italic,
-                    fontFamily: 'Cairo',
-                  ),
                 ),
               ),
 
-            // 3. Financial Progress Bar
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Divider(color: AppColors.glassBorderHighlight, height: 1),
+
+              // 2. Schedule Section
+              if (schedules.isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.all(20.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'الأداء المالي',
-                        style: TextStyle(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withOpacity(0.6),
-                          fontSize: 12.sp,
-                          fontFamily: 'Cairo',
-                        ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.schedule_rounded,
+                            color: AppColors.accentVivid,
+                            size: 16.sp,
+                          ),
+                          SizedBox(width: 6.w),
+                          Text(
+                            'مواعيد الحصص',
+                            style: TextStyle(
+                              color: AppColors.textDisplay,
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
+                      SizedBox(height: 12.h),
+                      Wrap(
+                        spacing: 8.w,
+                        runSpacing: 8.h,
+                        children: schedules.map((schedule) {
+                          return Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 12.w,
+                              vertical: 8.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.forestPrimary,
+                              borderRadius: BorderRadius.circular(12.r),
+                              border: Border.all(
+                                color: AppColors.glassBorderHighlight,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.access_time_rounded,
+                                  color: AppColors.infoPurple,
+                                  size: 14.sp,
+                                ),
+                                SizedBox(width: 6.w),
+                                Text(
+                                  '${schedule.dayOfWeek} ${schedule.startTime}',
+                                  style: TextStyle(
+                                    color: AppColors.textDisplay,
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Padding(
+                  padding: EdgeInsets.all(20.w),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today_rounded,
+                        color: AppColors.textMuted,
+                        size: 16.sp,
+                      ),
+                      SizedBox(width: 8.w),
                       Text(
-                        intl.NumberFormat.currency(
-                          symbol: 'ج.م',
-                          decimalDigits: 0,
-                        ).format(financials['teacher_share']),
+                        'لم يتم تحديد مواعيد بعد',
                         style: TextStyle(
-                          color: Colors
-                              .greenAccent, // Kept for financial positive vibe
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.bold,
+                          color: AppColors.textMuted,
+                          fontSize: 13.sp,
+                          fontStyle: FontStyle.italic,
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 8.h),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4.h),
-                    child: LinearProgressIndicator(
-                      value:
-                          financials['teacher_share']! /
-                          (financials['total_income'] == 0
-                              ? 1
-                              : financials['total_income']!),
-                      backgroundColor: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withOpacity(0.1),
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        Colors.greenAccent,
-                      ),
-                      minHeight: 6.h,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    'نسبتك من اجمالي الدخل (${intl.NumberFormat.currency(symbol: 'ج.م', decimalDigits: 0).format(financials['total_income'])})',
-                    style: TextStyle(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withOpacity(0.5),
-                      fontSize: 10.sp,
-                      fontFamily: 'Cairo',
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                ),
 
-            SizedBox(height: 16.h),
-
-            // 4. Quick Actions
-            Padding(
-              padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.w),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: GradientButton(
-                      text: 'مراقبة',
-                      icon: Icons.broadcast_on_personal_rounded,
-                      onPressed: () {
-                        if (canMonitor) {
-                          context.push('/teacher/attendance/${group.id}');
-                          return;
-                        }
-                        _showMonitorWindowHint();
-                      },
-                      height: 38.h,
-                      fontSize: 13.sp,
-                      hasGlow: canMonitor,
-                      gradient: canMonitor
-                          ? LinearGradient(
-                              colors: [
-                                Theme.of(context).colorScheme.primary,
-                                Theme.of(context).colorScheme.secondary,
-                              ],
-                            )
-                          : LinearGradient(
-                              colors: [
-                                Theme.of(
-                                  context,
-                                ).colorScheme.outline.withOpacity(0.1),
-                                Theme.of(
-                                  context,
-                                ).colorScheme.outline.withOpacity(0.1),
-                              ],
-                            ),
+              // 3. Financial Progress Bar
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'الأداء المالي',
+                          style: TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          intl.NumberFormat.currency(
+                            symbol: 'ج.م',
+                            decimalDigits: 0,
+                          ).format(financials['teacher_share']),
+                          style: TextStyle(
+                            color: AppColors.emeraldGreen,
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: GradientButton(
-                      text: 'مراسلة',
-                      icon: Icons.chat_bubble_outline_rounded,
-                      onPressed: () => context.push('/teacher/messages'),
-                      height: 38.h,
-                      fontSize: 13.sp,
-                      gradient: LinearGradient(
-                        colors: [
-                          Theme.of(context).colorScheme.secondary,
-                          Theme.of(context).colorScheme.primary,
-                        ],
+                    SizedBox(height: 10.h),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8.r),
+                      child: LinearProgressIndicator(
+                        value:
+                            financials['teacher_share']! /
+                            (financials['total_income'] == 0
+                                ? 1
+                                : financials['total_income']!),
+                        backgroundColor: AppColors.forestPrimary,
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppColors.emeraldGreen,
+                        ),
+                        minHeight: 6.h,
                       ),
                     ),
-                  ),
-                ],
+                    SizedBox(height: 6.h),
+                    Text(
+                      'نسبتك من اجمالي الدخل (${intl.NumberFormat.currency(symbol: 'ج.م', decimalDigits: 0).format(financials['total_income'])})',
+                      style: TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 11.sp,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+
+              SizedBox(height: 24.h),
+
+              // 4. Quick Actions
+              Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.w),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GeniusButton(
+                        label: 'مراقبة',
+                        onPressed: () {
+                          if (canMonitor) {
+                            context.push('/teacher/attendance/${group.id}');
+                            return;
+                          }
+                          _showMonitorWindowHint();
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: GeniusButton(
+                        label: 'مراسلة',
+                        onPressed: () => context.push('/teacher/messages'),
+                        variant: GeniusButtonVariant.glass,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-    ).animate(delay: Duration(milliseconds: 100 + (index * 50))).fadeIn().slideX();
+      ).animate(delay: Duration(milliseconds: 100 + (index * 50))).fadeIn().slideX(),
+    );
   }
 
   Widget _buildStatusBadge(GroupModel group) {
     bool isFull = group.currentStudents >= group.maxStudents;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: isFull
-            ? Theme.of(context).colorScheme.error.withOpacity(0.1)
-            : Colors.green.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8.r),
+            ? AppColors.errorRed.withValues(alpha: 0.15)
+            : AppColors.emeraldGreen.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(10.r),
         border: Border.all(
           color: isFull
-              ? Theme.of(context).colorScheme.error.withOpacity(0.5)
-              : Colors.green.withOpacity(0.5),
+              ? AppColors.errorRed.withValues(alpha: 0.4)
+              : AppColors.emeraldGreen.withValues(alpha: 0.4),
         ),
       ),
       child: Text(
         isFull ? 'مكتمل' : 'نشط',
         style: TextStyle(
-          color: isFull ? Theme.of(context).colorScheme.error : Colors.green,
-          fontSize: 10.sp,
+          color: isFull ? AppColors.errorRed : AppColors.emeraldGreen,
+          fontSize: 11.sp,
           fontWeight: FontWeight.bold,
-          fontFamily: 'Cairo',
         ),
       ),
     );
