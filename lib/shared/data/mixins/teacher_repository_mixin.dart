@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/notification_helper.dart';
 import '../../../shared/models/models.dart';
 import '../base_repository.dart';
 
@@ -431,6 +432,56 @@ mixin TeacherRepositoryMixin on BaseRepository {
         'attendance_date': DateTime.now().toIso8601String().split('T')[0],
         'notes': item['notes'],
       });
+    }
+
+    // NOTE: Notifications are fire-and-forget — failures don't block the save.
+    try {
+      // Get group info for notification content
+      final groupRes = await client
+          .from('groups')
+          .select('group_name, courses(name)')
+          .eq('id', groupId)
+          .single();
+
+      final groupName = groupRes['group_name'] as String? ?? 'مجموعة';
+      final courseName =
+          (groupRes['courses'] as Map<String, dynamic>?)?['name'] as String? ??
+          'مادة';
+      final today = DateTime.now().toIso8601String().split('T')[0];
+
+      // 1. Notify the group: attendance was recorded
+      await NotificationHelper.notifyAttendanceRecorded(
+        groupId: groupId,
+        groupName: groupName,
+        courseName: courseName,
+        date: today,
+      );
+
+      // 2. Notify parents of absent students individually
+      final absentStudents = attendanceList
+          .where((a) => a['status'] == 'absent')
+          .toList();
+
+      for (final absent in absentStudents) {
+        final studentId = absent['student_id'] as String;
+        // Get student name for the notification
+        final studentRes = await client
+            .from('students')
+            .select('full_name')
+            .eq('id', studentId)
+            .maybeSingle();
+        final studentName = studentRes?['full_name'] as String? ?? 'طالب';
+
+        await NotificationHelper.notifyStudentAbsent(
+          studentId: studentId,
+          studentName: studentName,
+          courseName: courseName,
+          centerId: centerId,
+          date: today,
+        );
+      }
+    } catch (e) {
+      debugPrint('Error sending attendance notifications: $e');
     }
   }
 

@@ -66,6 +66,8 @@ dependencies:
   freezed_annotation: ^3.1.0
   json_annotation: ^4.9.0
   google_fonts: ^6.3.2
+  firebase_core: 2.24.2
+  firebase_messaging: 14.7.9
 
 dependency_overrides:
   vector_math: ^2.2.0

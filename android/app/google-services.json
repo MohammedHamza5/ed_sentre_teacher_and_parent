@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "941281553238",
+    "project_id": "ed-sentre",
+    "storage_bucket": "ed-sentre.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:941281553238:android:943077ad885d21cd2284f7",
+        "android_client_info": {
+          "package_name": "com.tech.ed_sentre"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeieJgC9ieJtEeobM2CaihrxdrcX593qc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:941281553238:android:0f8667db8a0b34872284f7",
+        "android_client_info": {
+          "package_name": "com.tech.ed_sentre_student"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeieJgC9ieJtEeobM2CaihrxdrcX593qc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:941281553238:android:679777b9eb994ec12284f7",
+        "android_client_info": {
+          "package_name": "com.tech.ed_sentre_techer_and_parent"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeieJgC9ieJtEeobM2CaihrxdrcX593qc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -30,6 +30,7 @@ import 'features/teacher/groups/teacher_group_details_screen.dart';
 import 'features/teacher/messages/teacher_messages_screen.dart';
 import 'features/teacher/profile/teacher_profile_screen.dart';
 import 'features/teacher/reports/teacher_reports_screen.dart';
+import 'features/notifications/presentation/screens/teacher_notifications_screen.dart';
 import 'features/teacher/payments/teacher_payments_screen.dart';
 import 'features/ai/screens/ai_assistant_screen.dart';
 
@@ -227,6 +228,11 @@ class AppRouter {
                 path: 'messages',
                 name: 'teacher-messages',
                 builder: (context, state) => const TeacherMessagesScreen(),
+              ),
+              GoRoute(
+                path: 'notifications',
+                name: 'teacher-notifications',
+                builder: (context, state) => const TeacherNotificationsScreen(),
               ),
               GoRoute(
                 path: 'profile',

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../shared/models/models.dart';
 import '../base_repository.dart';
+import '../../../core/services/notification_helper.dart';
 
 /// Assignment Repository Mixin
 /// Handles assignments and submissions CRUD operations
@@ -64,8 +65,42 @@ mixin AssignmentRepositoryMixin on BaseRepository {
     final response = await client
         .from('assignments')
         .insert(data)
-        .select('id')
+        .select()
         .single();
+    
+    // Notification logic
+    try {
+      final courseId = data['course_id'] as String?;
+      final type = data['type'] as String? ?? 'homework';
+      final title = data['title'] as String? ?? 'مهمة جديدة';
+      
+      // If assignment has a scheduled publish_at in the future, we probably shouldn't notify now.
+      // But for simplicity, we notify now or check if it's published.
+      // The user wants "كل حركة في النظام بالكامل لها اشعار", so we'll notify.
+      if (courseId != null) {
+        final courseRes = await client
+            .from('courses')
+            .select('name, groups(id)')
+            .eq('id', courseId)
+            .single();
+
+        final courseName = courseRes['name'] as String? ?? 'مادة';
+        final groups = courseRes['groups'] as List<dynamic>? ?? [];
+
+        for (var g in groups) {
+          final groupId = g['id'] as String;
+          await NotificationHelper.notifyAssignmentCreated(
+            groupId: groupId,
+            courseName: courseName,
+            assignmentTitle: title,
+            assignmentType: type,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error sending assignment creation notification: $e');
+    }
+
     return response['id'] as String;
   }
 
@@ -103,6 +138,28 @@ mixin AssignmentRepositoryMixin on BaseRepository {
           'graded_at': DateTime.now().toIso8601String(),
         })
         .eq('id', submissionId);
+
+    try {
+      final submission = await client
+          .from('assignment_submissions')
+          .select('student_user_id, assignments(title, center_id)')
+          .eq('id', submissionId)
+          .single();
+
+      final studentUserId = submission['student_user_id'] as String;
+      final assignmentMap = submission['assignments'] as Map<String, dynamic>;
+      final title = assignmentMap['title'] ?? 'واجب';
+      final centerId = assignmentMap['center_id'] as String;
+
+      await NotificationHelper.notifyAssignmentGraded(
+        studentUserId: studentUserId,
+        assignmentTitle: title,
+        grade: score,
+        centerId: centerId,
+      );
+    } catch (e) {
+      debugPrint('Error sending grade notification: $e');
+    }
   }
 
   /// Get submissions for an assignment (teacher)

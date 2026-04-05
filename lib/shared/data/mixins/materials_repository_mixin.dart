@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/notification_helper.dart';
 import '../../../shared/models/models.dart';
 import '../base_repository.dart';
 
@@ -131,10 +132,37 @@ mixin MaterialsRepositoryMixin on BaseRepository {
         ...data,
         'teacher_id': resolvedTeacherId,
       });
-      return;
+    } else {
+      await client.from('study_materials').insert(data);
     }
 
-    await client.from('study_materials').insert(data);
+    // Send notifications to all groups taking this course
+    try {
+      final courseId = data['course_id'] as String?;
+      final title = data['title'] as String? ?? 'محتوى جديد';
+      if (courseId != null) {
+        // Get Course Name and Groups
+        final courseRes = await client
+            .from('courses')
+            .select('name, groups(id)')
+            .eq('id', courseId)
+            .single();
+
+        final courseName = courseRes['name'] as String? ?? 'مادة';
+        final groups = courseRes['groups'] as List<dynamic>? ?? [];
+
+        for (var g in groups) {
+          final groupId = g['id'] as String;
+          await NotificationHelper.notifyMaterialUploaded(
+            groupId: groupId,
+            courseName: courseName,
+            materialTitle: title,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error sending material notification: $e');
+    }
   }
 
   /// Update existing study material

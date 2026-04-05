@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../shared/data/supabase_repository.dart';
 import '../../../shared/models/models.dart';
 import '../../../core/config/app_colors.dart';
+import '../../../core/services/notification_helper.dart';
 
 class TeacherChatScreen extends StatefulWidget {
   final ConversationModel conversation;
@@ -168,6 +169,26 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
         conversationId: widget.conversation.id,
         content: content,
       );
+
+      final teacherName = Supabase.instance.client.auth.currentUser?.userMetadata?['full_name'] ?? 'معلم';
+
+      if (widget.conversation.conversationType == ConversationType.studentTeacher) {
+        await NotificationHelper.notifyStudentMessage(
+          studentUserId: widget.conversation.studentId,
+          teacherName: teacherName,
+          message: content,
+          centerId: widget.conversation.centerId,
+        );
+      } else if (widget.conversation.conversationType == ConversationType.parentTeacher) {
+        if (widget.conversation.parentId != null) {
+          await NotificationHelper.notifyParentMessage(
+            parentUserId: widget.conversation.parentId!,
+            teacherName: teacherName,
+            message: content,
+            centerId: widget.conversation.centerId,
+          );
+        }
+      }
     } catch (e) {
       debugPrint('Error sending message: $e');
       if (mounted) {

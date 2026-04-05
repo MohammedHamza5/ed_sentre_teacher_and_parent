@@ -65,7 +65,7 @@ class NotificationModel {
       body: json['body'] as String? ?? '',
       type: json['type'] as String? ?? 'general',
       isRead: json['is_read'] as bool? ?? false,
-      data: json['data'] as Map<String, dynamic>?,
+      data: json['data_payload'] as Map<String, dynamic>?,
       priority: json['priority'] as String? ?? 'normal',
       createdAt: DateTime.parse(
         json['created_at'] as String? ?? DateTime.now().toIso8601String(),

@@ -21,8 +21,20 @@ import 'shared/data/supabase_repository.dart';
 import 'shared/widgets/error_widgets.dart';
 import 'app_router.dart';
 import 'core/di/setup_di.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'firebase_options.dart';
 
 // https://supabase.com/dashboard/project/mbmqrmgdgygznbqvvfqi // MCP Supabase
+
+// NOTE: يجب أن تكون top-level function وليست method داخل class
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  debugPrint('🔔 [FCM Background] ${message.notification?.title}');
+}
 
 void main() async {
   // التقاط الأخطاء في Zone آمن
@@ -52,6 +64,13 @@ void main() async {
       // Initialize Hive for local storage
       await Hive.initFlutter();
       await Hive.openBox('app_cache');
+
+      // Initialize Firebase
+      log.info('Initializing Firebase...', tag: 'Main');
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
       // Initialize Supabase
       log.info('Initializing Supabase...', tag: 'Main');

@@ -4,13 +4,16 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import '../../app_router.dart';
 
 /// NotificationService — Teacher & Parent App
 ///
 /// استراتيجية:
-/// 1. Supabase Realtime: يستمع لإشعارات جديدة عبر Postgres Changes
-/// 2. Local Notifications: يعرض إشعار محلي عندما يكون التطبيق مفتوحاً
-/// 3. Device Token: يسجل التوكن لربط الجهاز بالمستخدم
+/// 1. FCM Push: يستلم إشعارات حقيقية حتى لو التطبيق مغلق
+/// 2. Supabase Realtime: يحدّث عداد الإشعارات غير المقروءة فوراً
+/// 3. Local Notifications: يعرض إشعار محلي عند استلام FCM في الـ Foreground
+/// 4. Device Token: يسجل الـ FCM Token في قاعدة البيانات
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
@@ -27,6 +30,10 @@ class NotificationService {
 
   bool _initialized = false;
 
+  // NOTE: تخزين الـ subscriptions لمنع تسريب الذاكرة
+  StreamSubscription<String>? _tokenRefreshSubscription;
+  StreamSubscription<RemoteMessage>? _foregroundMessageSubscription;
+
   /// تهيئة النظام
   Future<void> initialize() async {
     if (_initialized) return;
@@ -34,10 +41,10 @@ class NotificationService {
     // 1. إعداد Local Notifications
     await _initLocalNotifications();
 
-    // 2. تسجيل device token
+    // 2. تسجيل FCM token
     await _registerDeviceToken();
 
-    // 3. بدء الاستماع لـ Realtime
+    // 3. بدء الاستماع لـ Realtime (لتحديث العداد فقط)
     _startRealtimeListener();
 
     // 4. جلب عدد الإشعارات غير المقروءة
@@ -72,52 +79,126 @@ class NotificationService {
 
   /// معالجة النقر على الإشعار
   void _onNotificationTapped(NotificationResponse details) {
-    // NOTE: سيتم ربط هذا بالـ GoRouter لاحقاً
     debugPrint('🔔 Notification tapped: ${details.payload}');
+    _navigateToNotifications();
   }
 
-  /// تسجيل توكن الجهاز في Supabase
+  Future<void> _navigateToNotifications() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return;
+      
+      final data = await Supabase.instance.client
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+          
+      final role = data['role'] as String?;
+      // Small delay to ensure router is ready
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (role == 'teacher') {
+        AppRouter.router.push('/teacher/notifications');
+      } else if (role == 'parent') {
+        AppRouter.router.push('/parent/notifications');
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error navigating to notifications: $e');
+    }
+  }
+
+  /// تسجيل توكن الجهاز في Supabase عبر FCM
   Future<void> _registerDeviceToken() async {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) return;
 
     try {
-      // NOTE: بدون FCM نستخدم user_id + platform كمعرف
-      // عندما نضيف FCM لاحقاً سنستبدل هذا بـ FCM Token
-      final deviceToken = '${user.id}_mobile_${Platform.operatingSystem}';
+      // طلب الإذن (مهم جداً للـ iOS و Android 13+)
+      final settings = await FirebaseMessaging.instance.requestPermission();
+      if (settings.authorizationStatus != AuthorizationStatus.authorized) {
+        debugPrint('⚠️ [NotificationService] User declined notifications permission.');
+        return;
+      }
 
-      await Supabase.instance.client.rpc(
-        'upsert_device_token',
-        params: {
-          'p_token': deviceToken,
-          'p_platform': Platform.operatingSystem,
-          'p_device_type': 'mobile',
-          'p_app_type': 'teacher',
-        },
-      );
-      debugPrint('✅ [NotificationService] Device token registered');
+      // جلب توكن الفايربيز الفعلي
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+
+      if (fcmToken != null) {
+        await _saveTokenToSupabase(fcmToken, user.id);
+      }
+
+      // NOTE: إلغاء الاشتراك القديم أولاً لمنع التكرار
+      _tokenRefreshSubscription?.cancel();
+      _tokenRefreshSubscription =
+          FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+        _saveTokenToSupabase(newToken, user.id);
+      });
+
+      // NOTE: إلغاء Foreground listener القديم أولاً لمنع إشعارات مكررة
+      _foregroundMessageSubscription?.cancel();
+      _foregroundMessageSubscription =
+          FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        debugPrint('🔔 [FCM] Foreground message received');
+        if (message.notification != null) {
+          _showLocalNotification(
+            title: message.notification!.title ?? 'إشعار جديد',
+            body: message.notification!.body ?? '',
+            id: message.hashCode,
+          );
+          _updateUnreadCount();
+        }
+      });
+
+      // Handle notification tapped from background state
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        debugPrint('🔔 [FCM] Notification Tapped from Background');
+        _navigateToNotifications();
+      });
+
+      // Handle notification tapped from terminated state
+      final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+      if (initialMessage != null) {
+        debugPrint('🔔 [FCM] Notification Tapped from Terminated State');
+        _navigateToNotifications();
+      }
     } catch (e) {
-      debugPrint('⚠️ [NotificationService] Failed to register token: $e');
+      debugPrint('⚠️ [NotificationService] Failed to register FCM token: $e');
+    }
+  }
+
+  Future<void> _saveTokenToSupabase(String token, String userId) async {
+    try {
+      await Supabase.instance.client.from('device_tokens').upsert({
+        'user_id': userId,
+        'fcm_token': token,
+        'platform': Platform.operatingSystem,
+        'app_type': 'teacher_parent',
+        'last_active': DateTime.now().toIso8601String(),
+      }, onConflict: 'fcm_token');
+
+      debugPrint('✅ [NotificationService] FCM Token saved to Supabase');
+    } catch (e) {
+      debugPrint('⚠️ [NotificationService] Supabase token save error: $e');
     }
   }
 
   /// إلغاء توكن الجهاز عند تسجيل الخروج
   Future<void> deactivateToken() async {
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) return;
-
     try {
-      final deviceToken = '${user.id}_mobile_${Platform.operatingSystem}';
-      await Supabase.instance.client.rpc(
-        'deactivate_device_token',
-        params: {'p_token': deviceToken},
-      );
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken != null) {
+        await Supabase.instance.client
+            .from('device_tokens')
+            .delete()
+            .eq('fcm_token', fcmToken);
+      }
     } catch (e) {
       debugPrint('⚠️ [NotificationService] Failed to deactivate token: $e');
     }
   }
 
   /// بدء الاستماع لإشعارات جديدة عبر Realtime Postgres Changes
+  /// NOTE: يُستخدم فقط لتحديث عداد غير المقروءة — FCM يتكفل بعرض الإشعار
   void _startRealtimeListener() {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) return;
@@ -136,18 +217,19 @@ class NotificationService {
             value: user.id,
           ),
           callback: (payload) {
-            final newRecord = payload.newRecord;
-            if (newRecord.isNotEmpty) {
-              _showLocalNotification(newRecord);
-              _updateUnreadCount();
-            }
+            // NOTE: تحديث العداد فقط — بدون إشعار محلي لتجنب التكرار مع FCM
+            _updateUnreadCount();
           },
         )
         .subscribe();
   }
 
   /// عرض إشعار محلي
-  Future<void> _showLocalNotification(Map<String, dynamic> notification) async {
+  Future<void> _showLocalNotification({
+    required String title,
+    required String body,
+    int id = 0,
+  }) async {
     const androidDetails = AndroidNotificationDetails(
       'edsentre_teacher_channel',
       'EdSentre Teacher',
@@ -168,22 +250,22 @@ class NotificationService {
       iOS: iosDetails,
     );
 
-    await _localNotifications.show(
-      notification['id'].toString().hashCode,
-      notification['title'] ?? 'إشعار جديد',
-      notification['body'] ?? '',
-      details,
-      payload: notification['data']?.toString(),
-    );
+    await _localNotifications.show(id, title, body, details);
   }
 
   /// تحديث عدد الإشعارات غير المقروءة
   Future<void> _updateUnreadCount() async {
     try {
-      final count = await Supabase.instance.client.rpc(
-        'get_unread_notifications_count',
-      );
-      _unreadCountController.add(count as int);
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return;
+
+      final data = await Supabase.instance.client
+          .from('notifications')
+          .select()
+          .eq('user_id', user.id)
+          .eq('is_read', false);
+
+      _unreadCountController.add((data as List).length);
     } catch (e) {
       debugPrint('⚠️ [NotificationService] Failed to update count: $e');
     }
@@ -198,6 +280,8 @@ class NotificationService {
 
   /// تنظيف الموارد
   void dispose() {
+    _tokenRefreshSubscription?.cancel();
+    _foregroundMessageSubscription?.cancel();
     _channel?.unsubscribe();
     _unreadCountController.close();
   }

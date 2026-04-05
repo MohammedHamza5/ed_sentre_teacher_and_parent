@@ -34,10 +34,14 @@ mixin NotificationRepositoryMixin on BaseRepository {
 
   /// Mark notification as read
   Future<void> markNotificationRead(String notificationId) async {
-    await client
-        .from('notifications')
-        .update({'is_read': true})
-        .eq('id', notificationId);
+      final userId = currentUserId;
+      if (userId == null) return;
+      
+      await client
+          .from('notifications')
+          .update({'is_read': true})
+          .eq('id', notificationId)
+          .eq('user_id', userId);
   }
 
   /// Mark all notifications as read

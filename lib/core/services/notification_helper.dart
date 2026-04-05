@@ -152,11 +152,100 @@ class NotificationHelper {
     await _createNotification(
       userId: parentUserId,
       centerId: centerId,
-      title: '💬 رسالة من الأستاذ $teacherName',
+      title: '💬 رسالة من مستر $teacherName',
       body: message.length > 100 ? '${message.substring(0, 100)}...' : message,
       type: 'message',
       targetApp: 'parent',
       data: {'route': '/messages'},
+    );
+  }
+
+  /// إشعار: رسالة جديدة لطالب
+  static Future<void> notifyStudentMessage({
+    required String studentUserId,
+    required String teacherName,
+    required String message,
+    required String centerId,
+  }) async {
+    await _createNotification(
+      userId: studentUserId,
+      centerId: centerId,
+      title: '💬 رسالة من مستر $teacherName',
+      body: message.length > 100 ? '${message.substring(0, 100)}...' : message,
+      type: 'message',
+      targetApp: 'student',
+      data: {'route': '/chat_list'},
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // إشعارات المحتوى العلمي والملازم
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /// إشعار: ملزمة جديدة لمجموعة
+  static Future<void> notifyMaterialUploaded({
+    required String groupId,
+    required String courseName,
+    required String materialTitle,
+  }) async {
+    try {
+      await _client.rpc(
+        'create_notification_for_group',
+        params: {
+          'p_group_id': groupId,
+          'p_title': '📚 ملزمة جديدة: $courseName',
+          'p_body': 'تم رفع: $materialTitle',
+          'p_type': 'materials',
+          'p_target_app': 'student',
+          'p_data': {'route': '/curriculum'},
+        },
+      );
+    } catch (e) {
+      debugPrint('⚠️ [NotificationHelper] Material notification failed: $e');
+    }
+  }
+
+  /// إشعار: واجب / اختبار جديد لمجموعة
+  static Future<void> notifyAssignmentCreated({
+    required String groupId,
+    required String courseName,
+    required String assignmentTitle,
+    required String assignmentType, // 'homework' or 'exam'
+  }) async {
+    try {
+      final titlePrefix = assignmentType == 'exam' ? '📝 اختبار جديد' : '✍️ واجب جديد';
+      final route = assignmentType == 'exam' ? '/exam' : '/homework';
+      await _client.rpc(
+        'create_notification_for_group',
+        params: {
+          'p_group_id': groupId,
+          'p_title': '$titlePrefix: $courseName',
+          'p_body': 'تم إضافة: $assignmentTitle',
+          'p_type': 'assignment',
+          'p_target_app': 'student',
+          'p_data': {'route': route},
+        },
+      );
+    } catch (e) {
+      debugPrint('⚠️ [NotificationHelper] Assignment creation notification failed: $e');
+    }
+  }
+
+  /// إشعار: تقييم واجب لطالب
+  static Future<void> notifyAssignmentGraded({
+    required String studentUserId,
+    required String assignmentTitle,
+    required double grade,
+    required String centerId,
+  }) async {
+    await _createNotification(
+      userId: studentUserId,
+      centerId: centerId,
+      title: '✅ تم تقييم واجبك',
+      body: 'حصلت على $grade في واجب $assignmentTitle',
+      type: 'grade',
+      targetApp: 'student',
+      data: {'route': '/homework'},
     );
   }
 
@@ -184,7 +273,7 @@ class NotificationHelper {
         'type': type,
         'priority': priority,
         'target_app': targetApp,
-        'data': data ?? {},
+        'data_payload': data ?? {},
         'is_read': false,
       });
     } catch (e) {
