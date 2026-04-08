@@ -237,77 +237,226 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
   Widget _buildLoadingState(AiExamProvider provider) {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(32.r),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: EdgeInsets.all(24.r),
-              decoration: BoxDecoration(
-                color: AppColors.darkCard,
-                borderRadius: BorderRadius.circular(24.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
-                    blurRadius: 20,
-                    spreadRadius: 5,
-                  ),
-                ],
+        padding: EdgeInsets.all(24.r),
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0.0, end: 1.0),
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.easeOutBack,
+          builder: (context, val, child) {
+            return Transform.scale(
+              scale: val,
+              child: Opacity(
+                opacity: val.clamp(0.0, 1.0),
+                child: child,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(
-                    value: provider.progress > 0 ? provider.progress : null,
-                    strokeWidth: 6,
-                    backgroundColor: const Color(0xFF8B5CF6),
-                  ),
-                  SizedBox(height: 24.h),
-                  Text(
-                    provider.statusMessage,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppColors.textOnDark,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (provider.progress > 0) ...[
-                    SizedBox(height: 12.h),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10.r),
-                      child: LinearProgressIndicator(
-                        value: provider.progress,
-                        minHeight: 8.h,
-                        backgroundColor: Colors.white10,
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF8B5CF6),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      '${(provider.progress * 100).toInt()}% اكتمل',
-                      style: TextStyle(
-                        color: AppColors.textOnDarkHint,
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                  ],
-                ],
+            );
+          },
+          child: Container(
+            padding: EdgeInsets.all(32.r),
+            decoration: BoxDecoration(
+              color: AppColors.darkSurface.withValues(alpha: 0.95),
+              borderRadius: BorderRadius.circular(32.r),
+              border: Border.all(
+                color: const Color(0xFF8B5CF6).withValues(alpha: 0.5),
+                width: 2,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+                  blurRadius: 30,
+                  spreadRadius: 10,
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
-            SizedBox(height: 24.h),
-            TextButton(
-              onPressed: () => provider.reset(),
-              child: Text(
-                'إلغاء العملية',
-                style: TextStyle(color: AppColors.textOnDarkHint),
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildDynamicAiIcon(provider),
+                SizedBox(height: 32.h),
+                Text(
+                  'المساعد الذكي يعمل...',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22.sp,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                Text(
+                  provider.statusMessage,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color(0xFF8B5CF6),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 32.h),
+                _buildSmartProgressIndicators(provider),
+                SizedBox(height: 24.h),
+                if (provider.progress > 0)
+                  TextButton.icon(
+                    onPressed: () => provider.reset(),
+                    icon: Icon(Icons.close, color: AppColors.textOnDarkHint, size: 18.sp),
+                    label: Text(
+                      'إلغاء العملية',
+                      style: TextStyle(color: AppColors.textOnDarkHint, fontSize: 14.sp),
+                    ),
+                  ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDynamicAiIcon(AiExamProvider provider) {
+    // Determine icon and animation based on state
+    IconData iconData = Icons.auto_awesome;
+    Color iconColor = const Color(0xFF8B5CF6);
+    bool isSpinning = false;
+    bool isPulsing = false;
+
+    if (provider.state == GenState.reading || provider.state == GenState.uploading) {
+      iconData = Icons.document_scanner_rounded;
+      iconColor = AppColors.info;
+      isPulsing = true;
+    } else if (provider.state == GenState.generating) {
+      iconData = Icons.memory;
+      iconColor = AppColors.success;
+      isSpinning = true;
+    }
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: isSpinning ? 2 * 3.14159 : 0),
+      duration: isSpinning ? const Duration(seconds: 4) : const Duration(milliseconds: 500),
+      builder: (context, value, child) {
+        return Transform.rotate(
+          angle: value,
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 1.0, end: isPulsing ? 1.2 : 1.0),
+            duration: const Duration(seconds: 1),
+            curve: Curves.easeInOut,
+            onEnd: () {
+              // Not directly loopable with TweenBuilder without state changes, but this provides a simple effect
+            },
+            builder: (context, scale, child) {
+              return Transform.scale(
+                scale: scale,
+                child: Container(
+                  padding: EdgeInsets.all(24.r),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: iconColor.withValues(alpha: 0.1),
+                    border: Border.all(color: iconColor.withValues(alpha: 0.3), width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: iconColor.withValues(alpha: 0.4),
+                        blurRadius: 20,
+                        spreadRadius: 2,
+                      )
+                    ],
+                  ),
+                  child: Icon(iconData, color: iconColor, size: 48.sp),
+                ),
+              );
+            },
+          ),
+        );
+      },
+      onEnd: () {
+        if (isSpinning) setState(() {}); // Hack for continuous spinning if needed (better to use AnimationController, but this suffices for quick stateless effect if tied to state updates)
+      },
+    );
+  }
+
+  Widget _buildSmartProgressIndicators(AiExamProvider provider) {
+    if (provider.progress == 0) return const SizedBox.shrink();
+
+    return Column(
+      children: [
+        // Main Progress Bar
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12.r),
+          child: Stack(
+            children: [
+              Container(
+                height: 12.h,
+                width: double.infinity,
+                color: Colors.white.withValues(alpha: 0.05),
+              ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 500),
+                height: 12.h,
+                width: MediaQuery.of(context).size.width * 0.7 * provider.progress,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF8B5CF6), Color(0xFFC084FC)],
+                  ),
+                  borderRadius: BorderRadius.circular(12.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.5),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 24.h),
+        // AI Thinking Steps (Simulated)
+        _buildChecklistItem('قراءة وتحليل المنهج', provider.progress >= 0.2),
+        SizedBox(height: 8.h),
+        _buildChecklistItem('استخراج المفاهيم المعقدة', provider.progress >= 0.4),
+        SizedBox(height: 8.h),
+        _buildChecklistItem('هندسة الأسئلة المتدرجة الصعوبة', provider.progress >= 0.6),
+        SizedBox(height: 8.h),
+        _buildChecklistItem('صياغة خيارات الإجابة والمشتتات (Traps)', provider.progress >= 0.9),
+      ],
+    );
+  }
+
+  Widget _buildChecklistItem(String title, bool isCompleted) {
+    return Row(
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          padding: EdgeInsets.all(4.r),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isCompleted ? AppColors.success.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
+            border: Border.all(
+              color: isCompleted ? AppColors.success : Colors.white.withValues(alpha: 0.2),
+            ),
+          ),
+          child: Icon(
+            isCompleted ? Icons.check : Icons.hourglass_bottom,
+            size: 12.sp,
+            color: isCompleted ? AppColors.success : Colors.white.withValues(alpha: 0.5),
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Text(
+            title,
+            style: TextStyle(
+              color: isCompleted ? Colors.white : Colors.white.withValues(alpha: 0.4),
+              fontSize: 13.sp,
+              fontWeight: isCompleted ? FontWeight.bold : FontWeight.normal,
+              decoration: isCompleted ? TextDecoration.none : TextDecoration.none,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

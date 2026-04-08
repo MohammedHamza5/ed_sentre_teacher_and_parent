@@ -326,19 +326,12 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
             ),
           ),
           SizedBox(height: 12.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.stars, size: 16.sp, color: Colors.amber),
-              SizedBox(width: 4.w),
-              Text(
-                '10 رصيد',
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  color: AppColors.textOnDarkSecondary,
-                ),
-              ),
-            ],
+          Text(
+            'تحليل مجاني بالذكاء الاصطناعي',
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: AppColors.textOnDarkSecondary,
+            ),
           ),
         ],
       ),
@@ -576,15 +569,7 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
     final aiProvider = context.read<AIProvider>();
     final centerProvider = context.read<CenterProvider>();
 
-    if (aiProvider.totalCredits < 10) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('لا يوجد رصيد كافي (10 مطلوب)'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
+    // NOTE: Analysis is always available — no daily limit or credit check
 
     setState(() => _isAnalyzing = true);
 
@@ -593,8 +578,6 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
         studentId: _selectedStudentId!,
         centerId: centerProvider.currentCenterId!,
       );
-
-      await aiProvider.useCredits(10);
 
       final weaknesses = <String>[];
       final suggestions = <String>[];

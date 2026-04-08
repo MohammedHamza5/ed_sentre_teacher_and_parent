@@ -43,6 +43,9 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
   List<GroupModel> _groups = [];
   bool _isLoadingGroups = true;
 
+  String _sortOrder = 'newest';
+  String _selectedGroupId = 'all';
+
   @override
   void initState() {
     super.initState();
@@ -504,21 +507,14 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
       return a['type'] == typeFilter;
     }).toList();
 
+    // NOTE: Search filter only — sorting is handled in filteredFinal below
     final filteredWithSearch =
         filtered.where((a) {
           if (_searchQuery.isEmpty) return true;
           final title = (a['title'] ?? '').toString().toLowerCase();
           final course = (a['course_name'] ?? '').toString().toLowerCase();
           return title.contains(_searchQuery) || course.contains(_searchQuery);
-        }).toList()..sort((a, b) {
-          final aDue = DateTime.tryParse(a['due_date'] ?? '');
-          final bDue = DateTime.tryParse(b['due_date'] ?? '');
-          final aEnded = aDue != null && DateTime.now().isAfter(aDue);
-          final bEnded = bDue != null && DateTime.now().isAfter(bDue);
-          if (aEnded != bEnded) return aEnded ? 1 : -1;
-          if (aDue != null && bDue != null) return aDue.compareTo(bDue);
-          return 0;
-        });
+        }).toList();
 
     final filteredFinal = filteredWithSearch.where((a) {
       if (_statusFilter == 'all') return true;
@@ -527,7 +523,17 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
       if (_statusFilter == 'active') return !ended;
       if (_statusFilter == 'ended') return ended;
       return true;
-    }).toList();
+    }).where((a) {
+      if (_selectedGroupId == 'all') return true;
+      return a['course_id'] == _selectedGroupId || a['group_id'] == _selectedGroupId;
+    }).toList()..sort((a, b) {
+      final aDue = DateTime.tryParse(a['due_date'] ?? '');
+      final bDue = DateTime.tryParse(b['due_date'] ?? '');
+      if (aDue != null && bDue != null) {
+        return _sortOrder == 'newest' ? bDue.compareTo(aDue) : aDue.compareTo(bDue);
+      }
+      return 0; // fallback if no dates
+    });
 
     if (filteredFinal.isEmpty) return _buildEmptyState();
 
@@ -575,77 +581,200 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
   }
 
   Widget _buildSearchAndFilters() {
-    return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(12.w),
-      decoration: BoxDecoration(
-        color: AppColors.darkSurface,
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: AppColors.glassBorderHighlight),
-      ),
-      child: Column(
-        children: [
-          TextField(
-            controller: _searchController,
-            onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
-            style: TextStyle(color: AppColors.textDisplay, fontSize: 14.sp),
-            decoration: InputDecoration(
-              hintText: 'ابحث عن واجب أو مادة...',
-              hintStyle: TextStyle(
-                color: AppColors.textDisplay.withValues(alpha: 0.3),
-              ),
-              prefixIcon: Icon(
-                Icons.search_rounded,
-                color: AppColors.textDisplay.withValues(alpha: 0.7),
-                size: 20.sp,
-              ),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() => _searchQuery = '');
-                      },
-                      icon: Icon(
-                        Icons.close_rounded,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.3),
-                        size: 18.sp,
-                      ),
-                    )
-                  : null,
-              filled: true,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: AppColors.glassBorderHighlight),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: AppColors.glassBorderHighlight),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: AppColors.accentVivid),
-              ),
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildUrgentTasksPanel(),
+        Container(
+          margin: EdgeInsets.only(bottom: 12.h),
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: AppColors.darkSurface,
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(color: AppColors.glassBorderHighlight),
           ),
-          SizedBox(height: 10.h),
-          SizedBox(
-            height: 36.h,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                _buildStatusChip('all', 'الكل'),
-                SizedBox(width: 8.w),
-                _buildStatusChip('active', 'نشطة'),
-                SizedBox(width: 8.w),
-                _buildStatusChip('ended', 'منتهية'),
-              ],
-            ),
+          child: Column(
+            children: [
+              TextField(
+                controller: _searchController,
+                onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
+                style: TextStyle(color: AppColors.textDisplay, fontSize: 14.sp),
+                decoration: InputDecoration(
+                  hintText: 'ابحث عن واجب أو مادة...',
+                  hintStyle: TextStyle(
+                    color: AppColors.textDisplay.withValues(alpha: 0.3),
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    color: AppColors.textDisplay.withValues(alpha: 0.7),
+                    size: 20.sp,
+                  ),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                          icon: Icon(
+                            Icons.close_rounded,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.3),
+                            size: 18.sp,
+                          ),
+                        )
+                      : null,
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide(color: AppColors.glassBorderHighlight),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide(color: AppColors.glassBorderHighlight),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide(color: AppColors.accentVivid),
+                  ),
+                ),
+              ),
+              SizedBox(height: 10.h),
+              SizedBox(
+                height: 36.h,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    _buildStatusChip('all', 'الكل'),
+                    SizedBox(width: 8.w),
+                    _buildStatusChip('active', 'نشطة'),
+                    SizedBox(width: 8.w),
+                    _buildStatusChip('ended', 'منتهية'),
+                  ],
+                ),
+              ),
+              SizedBox(height: 12.h),
+              Divider(color: AppColors.glassBorderHighlight),
+              SizedBox(height: 12.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildGroupDropdown(),
+                  ),
+                  SizedBox(width: 12.w),
+                  _buildSortToggle(),
+                ],
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
+  }
+
+  Widget _buildGroupDropdown() {
+     return Container(
+       height: 48.h,
+       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 0.h),
+       decoration: BoxDecoration(
+         color: AppColors.darkSurface,
+         borderRadius: BorderRadius.circular(12.r),
+         border: Border.all(color: AppColors.glassBorderHighlight),
+       ),
+       child: DropdownButtonHideUnderline(
+         child: DropdownButton<String>(
+           value: _selectedGroupId,
+           isExpanded: true,
+           dropdownColor: AppColors.darkSurface,
+           style: TextStyle(color: Colors.white, fontSize: 13.sp),
+           icon: Icon(Icons.arrow_drop_down_rounded, color: Colors.white54),
+           items: [
+             const DropdownMenuItem(value: 'all', child: Text('كافة المجاميع والمراحل')),
+             ..._groups.map((g) => DropdownMenuItem(value: g.id, child: Text(g.groupName))),
+           ],
+           onChanged: (v) {
+             if (v != null) setState(() => _selectedGroupId = v);
+           },
+         ),
+       ),
+     );
+  }
+
+  Widget _buildSortToggle() {
+    bool isNewest = _sortOrder == 'newest';
+    return InkWell(
+       onTap: () {
+         setState(() => _sortOrder = isNewest ? 'oldest' : 'newest');
+       },
+       borderRadius: BorderRadius.circular(12.r),
+       child: Container(
+         height: 48.h,
+         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+         decoration: BoxDecoration(
+           color: AppColors.darkSurface,
+           borderRadius: BorderRadius.circular(12.r),
+           border: Border.all(color: AppColors.glassBorderHighlight),
+         ),
+         child: Row(
+           mainAxisAlignment: MainAxisAlignment.center,
+           children: [
+             Icon(
+               isNewest ? Icons.sort_rounded : Icons.sort_by_alpha_rounded,
+               color: AppColors.accentVivid,
+               size: 20.sp,
+             ),
+             SizedBox(width: 6.w),
+             Text(
+               isNewest ? 'الأحدث' : 'الأقدم',
+               style: TextStyle(color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.bold),
+             ),
+           ],
+         ),
+       ),
+    );
+  }
+
+  Widget _buildUrgentTasksPanel() {
+    final pendingVal = _stats['pending_grading'] ?? 0;
+    if (pendingVal == 0) return const SizedBox.shrink();
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 16.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: AppColors.errorRed.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: AppColors.errorRed.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+         children: [
+           Container(
+             padding: EdgeInsets.all(8.w),
+             decoration: BoxDecoration(
+               color: AppColors.errorRed.withValues(alpha: 0.2),
+               shape: BoxShape.circle,
+             ),
+             child: Icon(Icons.warning_amber_rounded, color: AppColors.errorRed, size: 24.sp),
+           ),
+           SizedBox(width: 16.w),
+           Expanded(
+             child: Column(
+               crossAxisAlignment: CrossAxisAlignment.start,
+               children: [
+                 Text(
+                   'المهام العاجلة: يحتاج للتصحيح!',
+                   style: TextStyle(color: AppColors.errorRed, fontWeight: FontWeight.bold, fontSize: 14.sp),
+                 ),
+                 Text(
+                   'يوجد $pendingVal امتحانات/واجبات تحتاج لتقييمك الآن.',
+                   style: TextStyle(color: Colors.white, fontSize: 12.sp),
+                 ),
+               ],
+             )
+           ),
+         ],
+       ),
+    ).animate().slide(begin: const Offset(0, -0.2)).fadeIn();
   }
 
   Widget _buildStatusChip(String value, String label) {
@@ -861,7 +990,31 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                   ),
                 ),
               if (isScheduled) SizedBox(width: 6.w),
-              if (isEnded)
+              if (isEnded && !isArchived && subCount > 0)
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: AppColors.errorRed.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(color: AppColors.errorRed.withValues(alpha: 0.5)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.assignment_late_rounded, color: AppColors.errorRed, size: 10.sp),
+                      SizedBox(width: 4.w),
+                      Text(
+                        'للمراجعة',
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          color: AppColors.errorRed,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Cairo',
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else if (isEnded)
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
@@ -871,7 +1024,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                     borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Text(
-                    'منتهي',
+                    'مغلق',
                     style: TextStyle(
                       fontSize: 10.sp,
                       color: Theme.of(

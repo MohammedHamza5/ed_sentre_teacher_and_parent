@@ -206,7 +206,8 @@ class AppRouter {
               GoRoute(
                 path: 'materials',
                 name: 'teacher-materials',
-                parentNavigatorKey: _rootNavigatorKey,
+                // NOTE: Removed parentNavigatorKey to keep materials inside the shell
+                // so the bottom nav bar stays visible.
                 builder: (context, state) => const TeacherMaterialsScreen(),
               ),
               GoRoute(
@@ -335,12 +336,7 @@ class TeacherShellScreen extends StatefulWidget {
   State<TeacherShellScreen> createState() => _TeacherShellScreenState();
 }
 
-class _TeacherShellScreenState extends State<TeacherShellScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-
-
-
+class _TeacherShellScreenState extends State<TeacherShellScreen> {
   // Navigation items
   static const List<_TeacherNavItem> _navItems = [
     _TeacherNavItem(
@@ -375,66 +371,37 @@ class _TeacherShellScreenState extends State<TeacherShellScreen>
     ),
   ];
 
-  // Routes where bottom nav bar should be visible
-  static const _mainRoutes = [
-    '/teacher',
-    '/teacher/groups',
-    '/teacher/schedule',
-    '/teacher/attendance',
-    '/teacher/messages',
-    '/teacher/profile',
-  ];
-
-  bool _shouldShowBottomNav(String location) {
-    return _mainRoutes.contains(location) ||
-        location.startsWith('/teacher/attendance/');
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
+  // NOTE: Bottom nav is shown on ALL teacher shell routes.
+  // Only sub-detail pages (like group details with deep paths) 
+  // where it would be distracting should be excluded.
+  // By keeping it always visible, we prevent the "disappearing nav" bug.
 
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
-    final showDrawer = location == '/teacher';
-    final showBottomNav = _shouldShowBottomNav(location);
 
     return Scaffold(
       key: teacherScaffoldKey,
-      drawer: showDrawer ? const TeacherAppDrawer() : null,
+      // NOTE: Drawer available from ALL teacher routes, not just home.
+      drawer: const TeacherAppDrawer(),
       extendBody: true,
       body: widget.child,
-      bottomNavigationBar: showBottomNav
-          ? GeniusBottomNav(
-              items: _navItems
-                  .map((item) => NavItem(icon: item.icon, label: item.label))
-                  .toList(),
-              currentIndex: _calculateSelectedIndex(context),
-              onItemSelected: (index) => _onItemTapped(index, context),
-            )
-          : null,
+      bottomNavigationBar: GeniusBottomNav(
+        items: _navItems
+            .map((item) => NavItem(icon: item.icon, label: item.label))
+            .toList(),
+        currentIndex: _calculateSelectedIndex(location),
+        onItemSelected: (index) => _onItemTapped(index, context),
+      ),
     );
   }
 
-  int _calculateSelectedIndex(BuildContext context) {
-    final location = GoRouterState.of(context).matchedLocation;
+  int _calculateSelectedIndex(String location) {
     if (location.startsWith('/teacher/schedule')) return 1;
     if (location.startsWith('/teacher/attendance')) return 2;
     if (location.startsWith('/teacher/messages')) return 3;
     if (location.startsWith('/teacher/profile')) return 4;
-    return 0;
+    return 0; // Home and all other pages default to home
   }
 
   void _onItemTapped(int index, BuildContext context) {
@@ -468,13 +435,7 @@ class ParentShellScreen extends StatefulWidget {
   State<ParentShellScreen> createState() => _ParentShellScreenState();
 }
 
-class _ParentShellScreenState extends State<ParentShellScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-
-
-
-
+class _ParentShellScreenState extends State<ParentShellScreen> {
   // Smart navigation items - الشاشات الأهم لولي الأمر
   static const List<_NavItem> _navItems = [
     _NavItem(
@@ -510,28 +471,11 @@ class _ParentShellScreenState extends State<ParentShellScreen>
   ];
 
   @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final location = GoRouterState.of(context).matchedLocation;
-    final showDrawer = location == '/parent';
-
     return Scaffold(
       key: parentScaffoldKey,
-      drawer: showDrawer ? const ParentAppDrawer() : null,
+      // NOTE: Drawer available from ALL parent routes.
+      drawer: const ParentAppDrawer(),
       extendBody: true,
       body: widget.child,
       bottomNavigationBar: GeniusBottomNav(

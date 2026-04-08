@@ -110,17 +110,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
     final aiProvider = context.read<AIProvider>();
 
-    if (aiProvider.totalCredits < 2) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('لا يوجد رصيد كافٍ (مطلوب 2 رصيد)'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-      return;
-    }
+    // NOTE: Chat has no daily limit — always available
 
     // إضافة رسالة المستخدم فوراً
     setState(() {
@@ -263,34 +253,6 @@ class _AIChatScreenState extends State<AIChatScreen> {
             onPressed: _createNewConversation,
             icon: const Icon(Icons.add_comment_rounded),
             tooltip: 'محادثة جديدة',
-          ),
-          // عداد الرصيد
-          Container(
-            margin: EdgeInsets.only(left: 12.w),
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
-              ),
-              borderRadius: BorderRadius.circular(16.r),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.stars, size: 16.sp, color: Colors.amber),
-                SizedBox(width: 4.w),
-                Consumer<AIProvider>(
-                  builder: (_, ai, __) => Text(
-                    '${ai.totalCredits}',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),

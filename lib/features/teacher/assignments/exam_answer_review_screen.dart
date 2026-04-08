@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../core/config/app_colors.dart';
+import '../../../shared/data/supabase_repository.dart';
 import '../../../shared/models/exam_models.dart';
 import '../../../shared/models/models.dart';
+import 'package:provider/provider.dart';
 
 /// Premium read-only exam answer review screen for teachers.
 class ExamAnswerReviewScreen extends StatefulWidget {
@@ -31,6 +33,7 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
   bool _isLoading = true;
   String? _error;
   List<StudentAnswer> _answers = [];
+  String _activeFilter = 'all'; // 'all', 'correct', 'wrong', 'unanswered'
 
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
@@ -48,6 +51,26 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
   double get _totalScore => _answers.fold(0.0, (sum, a) => sum + a.finalScore);
   double get _percentage =>
       widget.maxScore > 0 ? (_totalScore / widget.maxScore * 100) : 0.0;
+
+  List<StudentAnswer> get _filteredAnswers {
+    switch (_activeFilter) {
+      case 'correct':
+        return _answers.where((a) => a.isCorrect == true).toList();
+      case 'wrong':
+        return _answers.where((a) => a.isCorrect == false).toList();
+      case 'unanswered':
+        return _answers
+            .where(
+              (a) =>
+                  a.studentAnswer == null ||
+                  a.studentAnswer!.isEmpty ||
+                  a.studentAnswer == '-1',
+            )
+            .toList();
+      default:
+        return _answers;
+    }
+  }
 
   @override
   void initState() {
@@ -67,6 +90,10 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
   }
 
   Future<void> _loadAnswers() async {
+    debugPrint('\n======================================================');
+    debugPrint('🚀 [ExamReview] Loading answers for Submission ID: ${widget.submission.id}');
+    debugPrint('======================================================');
+    
     setState(() {
       _isLoading = true;
       _error = null;
@@ -76,16 +103,25 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
       // Parse Questions
       List<ExamQuestion> questions = [];
       final dynamic rawQuestions = widget.assignment['questions'];
+      debugPrint('🔍 [ExamReview] Checking assignment questions field...');
+      debugPrint('   -> Is Null? ${rawQuestions == null}');
+      debugPrint('   -> Type: ${rawQuestions.runtimeType}');
+
       if (rawQuestions != null) {
         List<dynamic> qList = [];
         if (rawQuestions is String) {
           try {
+            debugPrint('   -> Parsing String JSON to List...');
             qList = jsonDecode(rawQuestions) as List<dynamic>;
-          } catch (_) {}
+          } catch (e) {
+            debugPrint('❌ [ExamReview] Error parsing String to JSON: $e');
+          }
         } else if (rawQuestions is List) {
+           debugPrint('   -> Assignment Questions is already a List.');
           qList = rawQuestions;
         }
 
+        debugPrint('🔍 [ExamReview] Number of questions found in assignment JSON: ${qList.length}');
         for (int i = 0; i < qList.length; i++) {
           final qData = qList[i] as Map<String, dynamic>;
           final String qType = qData['type']?.toString() ?? 'mcq';
@@ -108,14 +144,26 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
           String? correctAnswer;
           if (questionType == QuestionType.mcq ||
               questionType == QuestionType.trueFalse) {
-            final int correctIdx =
-                (qData['correct_option_index'] as num?)?.toInt() ??
-                (qData['correct'] as num?)?.toInt() ??
-                0;
-            if (options != null &&
-                options.length > correctIdx &&
-                correctIdx >= 0) {
+            
+            final dynamic rawCorrect = qData['correct_answer'] ?? 
+                                       qData['correct_option_index'] ?? 
+                                       qData['correct'];
+                                       
+            final int? correctIdx = int.tryParse(rawCorrect?.toString() ?? '');
+
+            if (correctIdx != null && options != null && options.length > correctIdx && correctIdx >= 0) {
               correctAnswer = correctIdx.toString(); // Map option index
+            } else if (rawCorrect != null && options != null) {
+              // Find index by matching text
+              final int foundIdx = options.indexWhere((opt) => 
+                  opt.toString().trim().toLowerCase() == rawCorrect.toString().trim().toLowerCase());
+              if (foundIdx != -1) {
+                correctAnswer = foundIdx.toString();
+              } else {
+                correctAnswer = "0"; // final fallback
+              }
+            } else {
+              correctAnswer = "0"; // final fallback
             }
           } else {
             correctAnswer = qData['correct_answer']?.toString();
@@ -140,21 +188,79 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
           );
         }
       }
+      debugPrint('✅ [ExamReview] Successfully parsed ${questions.length} questions into models.');
+
+      // Fetch new student_answers format from database
+      debugPrint('📥 [ExamReview] Querying "student_answers" table from Supabase for submission_id: ${widget.submission.id}...');
+      List<dynamic> dbResponse = [];
+      if (mounted) {
+        final repository = context.read<SupabaseRepository>();
+        try {
+          dbResponse = await repository.client
+              .from('student_answers')
+              .select('*')
+              .eq('submission_id', widget.submission.id);
+          debugPrint('✅ [ExamReview] Received ${dbResponse.length} rows from student_answers table.');
+        } catch (e) {
+          debugPrint('❌ [ExamReview] Failed to fetch real student_answers: $e');
+        }
+      }
+
+      final Map<String, Map<String, dynamic>> dbAnswersMap = {};
+      for (var row in dbResponse) {
+        final map = row as Map<String, dynamic>;
+        dbAnswersMap[map['question_id'].toString()] = map;
+      }
+      debugPrint('🔍 [ExamReview] Mapped DB answers. Keys found: ${dbAnswersMap.keys.toList()}');
 
       // Parse Submissions
+      debugPrint('🔄 [ExamReview] Analysing legacy submission_text JSON...');
       Map<String, dynamic> studentAnswersJson = {};
       final String? subText = widget.submission.submissionText;
       if (subText != null && subText.isNotEmpty) {
         try {
           studentAnswersJson = jsonDecode(subText) as Map<String, dynamic>;
-        } catch (_) {}
+          debugPrint('✅ [ExamReview] Parsed legacy submission JSON. Keys found: ${studentAnswersJson.keys.toList()}');
+        } catch (e) {
+             debugPrint('❌ [ExamReview] Error parsing legacy JSON: $e');
+        }
+      } else {
+        debugPrint('⚠️ [ExamReview] submissionText is null or empty.');
       }
 
-      _answers = questions.map((q) {
-        final dynamic rawAnswer =
+      // Fallback logic for existing submissions where the student app used dynamic timestamps
+      final legacyKeys = studentAnswersJson.keys
+          .where((k) => int.tryParse(k) != null && k.length >= 13)
+          .toList()
+        ..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
+        
+      debugPrint('🔎 [ExamReview] Mapping student answers to questions...');
+
+      _answers = questions.asMap().entries.map((entry) {
+        final i = entry.key;
+        final q = entry.value;
+
+        debugPrint('\n--- Processing Question ${i + 1} | ID: ${q.id} | Type: ${q.type.name}');
+
+        // First check if it exists in the real DB (student_answers)
+        if (dbAnswersMap.containsKey(q.id)) {
+          debugPrint('   🟢 Found answer in Supabase DB! Data: ${dbAnswersMap[q.id]}');
+          final dbA = dbAnswersMap[q.id]!;
+          return StudentAnswer.fromJson({...dbA, 'exam_questions': q.toJson()});
+        }
+        
+        debugPrint('   🟡 NOT found in Supabase DB by q.id. Falling back to submissionText JSON...');
+        dynamic rawAnswer =
             studentAnswersJson[q.id] ??
             studentAnswersJson[q.orderIndex.toString()];
+
+        if (rawAnswer == null && i < legacyKeys.length) {
+            debugPrint('   🟡 Trying legacy timestamp key: ${legacyKeys[i]}');
+          rawAnswer = studentAnswersJson[legacyKeys[i]];
+        }
+            
         final String? answerStr = rawAnswer?.toString();
+        debugPrint('   -> Extracted Raw Answer: $answerStr');
 
         bool? isCorrect;
         double? autoScore;
@@ -177,6 +283,8 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
           autoScore = isCorrect == true ? q.marks : 0.0;
         }
 
+        debugPrint('   -> Evaluated - isCorrect: $isCorrect, Score: $autoScore');
+
         return StudentAnswer(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           submissionId: widget.submission.id,
@@ -190,11 +298,15 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
         );
       }).toList();
 
+      debugPrint('\n✅ [ExamReview] Finished processing all ${_answers.length} answers.');
+
       if (mounted) {
         setState(() => _isLoading = false);
         _animController.forward();
       }
-    } catch (e) {
+    } catch (e, stacktrace) {
+      debugPrint('\n❌❌❌ [ExamReview] CRITICAL ERROR IN _loadAnswers: $e');
+      debugPrint('Stacktrace: $stacktrace');
       if (mounted) {
         setState(() {
           _error = 'خطأ في جلب البيانات: $e';
@@ -271,12 +383,16 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
                         padding: EdgeInsets.symmetric(horizontal: 20.w),
                         sliver: SliverList(
                           delegate: SliverChildBuilderDelegate(
-                            (context, index) => _buildAnimatedQuestionCard(
-                              _answers[index],
-                              index + 1,
-                              index,
-                            ),
-                            childCount: _answers.length,
+                            (context, index) {
+                              final answer = _filteredAnswers[index];
+                              final originalIndex = answer.question?.orderIndex ?? index;
+                              return _buildAnimatedQuestionCard(
+                                answer,
+                                originalIndex + 1,
+                                index, // delayIndex based on current visible list
+                              );
+                            },
+                            childCount: _filteredAnswers.length,
                           ),
                         ),
                       ),
@@ -480,21 +596,31 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
         child: Row(
           children: [
             _buildPremiumChip(
+              icon: Icons.list_alt_rounded,
+              label: 'الكل (${_answers.length})',
+              color: AppColors.accentVivid,
+              filterType: 'all',
+            ),
+            SizedBox(width: 8.w),
+            _buildPremiumChip(
               icon: Icons.check_circle,
               label: '$_correctCount صحيح',
               color: const Color(0xFF10B981),
+              filterType: 'correct',
             ),
             SizedBox(width: 8.w),
             _buildPremiumChip(
               icon: Icons.cancel,
               label: '$_wrongCount خطأ',
               color: const Color(0xFFEF4444),
+              filterType: 'wrong',
             ),
             SizedBox(width: 8.w),
             _buildPremiumChip(
-              icon: Icons.help,
+              icon: Icons.help_outline,
               label: '$_unansweredCount مفقود',
               color: const Color(0xFF94A3B8),
+              filterType: 'unanswered',
             ),
           ],
         ),
@@ -506,28 +632,55 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
     required IconData icon,
     required String label,
     required Color color,
+    required String filterType,
   }) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-      decoration: BoxDecoration(
-        color: AppColors.darkSurface.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16.sp, color: color),
-          SizedBox(width: 8.w),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w600,
-            ),
+    final bool isActive = _activeFilter == filterType;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _activeFilter = filterType;
+        });
+        _animController.reset();
+        _animController.forward();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: isActive 
+              ? color.withValues(alpha: 0.15) 
+              : AppColors.darkSurface.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: isActive ? color : color.withValues(alpha: 0.2),
+            width: isActive ? 1.5 : 1,
           ),
-        ],
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.2),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : [],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16.sp, color: isActive ? color : color.withValues(alpha: 0.7)),
+            SizedBox(width: 8.w),
+            Text(
+              label,
+              style: TextStyle(
+                color: isActive ? Colors.white : Colors.white70,
+                fontSize: 13.sp,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
+                fontFamily: 'Cairo', // matching font
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

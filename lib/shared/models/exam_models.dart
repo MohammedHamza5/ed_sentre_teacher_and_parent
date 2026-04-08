@@ -83,7 +83,7 @@ class ExamQuestion {
       options: (json['options'] as List<dynamic>?)
           ?.map((e) => e.toString())
           .toList(),
-      correctAnswer: json['correct_answer'] as String?,
+      correctAnswer: json['correct_answer']?.toString() ?? json['correct_option_index']?.toString() ?? json['correct']?.toString(),
       orderIndex: json['order_index'] as int? ?? 0,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),

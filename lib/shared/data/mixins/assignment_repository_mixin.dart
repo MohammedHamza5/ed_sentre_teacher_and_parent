@@ -344,4 +344,79 @@ mixin AssignmentRepositoryMixin on BaseRepository {
       'pending_grading': pendingGrading,
     };
   }
+
+  /// Get all enrolled students for an assignment
+  Future<List<Map<String, dynamic>>> getAssignmentStudents(
+    Map<String, dynamic> assignment,
+  ) async {
+    final groupId = assignment['group_id'] as String?;
+    final courseId = assignment['course_id'] as String?;
+    final centerId = assignment['center_id'] as String?;
+
+    if (centerId == null || (groupId == null && courseId == null)) return [];
+
+    List<String> targetGroupIds = [];
+
+    if (groupId != null) {
+      targetGroupIds.add(groupId);
+    } else if (courseId != null) {
+      // Find all groups for this course in the center
+      // Since assignments might be shared across teachers depending on center setup,
+      // we can optionally filter by teacher if it's strictly attached to one.
+      // But typically, a course assignment targets groups under the course.
+      final groupsResponse = await client
+          .from('groups')
+          .select('id')
+          .eq('center_id', centerId)
+          .eq('course_id', courseId)
+          .eq('is_active', true);
+
+      targetGroupIds =
+          (groupsResponse as List).map((g) => g['id'] as String).toList();
+    }
+
+    if (targetGroupIds.isEmpty) return [];
+
+    // Check if additional groups are specified in settings
+    final settings = assignment['settings'];
+    if (settings != null && settings is Map && settings['groups'] != null) {
+      final additionalGroups = (settings['groups'] as List)
+          .map((g) => g.toString())
+          .toList();
+      targetGroupIds.addAll(additionalGroups);
+    }
+
+    final uniqueGroupIds = targetGroupIds.toSet().toList();
+
+    // Get all students enrolled in these groups
+    final enrollmentsResponse = await client
+        .from('student_group_enrollments')
+        .select('''
+          student_id,
+          group_id,
+          students!inner(
+            id,
+            user_id,
+            full_name,
+            phone,
+            avatar_url,
+            student_code
+          )
+        ''')
+        .inFilter('group_id', uniqueGroupIds)
+        .eq('status', 'active');
+
+    return (enrollmentsResponse as List).map((e) {
+      final student = e['students'] as Map<String, dynamic>;
+      return {
+        'id': student['id'],
+        'student_user_id': student['user_id'], // Needed to match with submissions
+        'student_name': student['full_name'],
+        'student_phone': student['phone'],
+        'student_avatar': student['avatar_url'],
+        'student_code': student['student_code'],
+        'group_id': e['group_id'],
+      };
+    }).toList();
+  }
 }

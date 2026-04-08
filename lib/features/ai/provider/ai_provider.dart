@@ -16,9 +16,13 @@ class AIProvider extends ChangeNotifier {
   // State
   // ═══════════════════════════════════════════════════════════════════════
 
-  // Credits
-  int _freeCredits = 0;
-  int _paidCredits = 0;
+  // Daily usage limit
+  static const int kDailyGenerationLimit = 5;
+  int _todayGenerationCount = 0;
+
+  // Legacy credits (kept for DB compat — no longer blocks usage)
+  final int _freeCredits = 0;
+  final int _paidCredits = 0;
   bool _isLoadingCredits = false;
 
   // Knowledge Base
@@ -42,6 +46,13 @@ class AIProvider extends ChangeNotifier {
   // Getters
   // ═══════════════════════════════════════════════════════════════════════
 
+  int get todayGenerationCount => _todayGenerationCount;
+  bool get hasReachedDailyLimit =>
+      _todayGenerationCount >= kDailyGenerationLimit;
+  int get remainingToday => (kDailyGenerationLimit - _todayGenerationCount)
+      .clamp(0, kDailyGenerationLimit);
+
+  // Legacy getters (kept for backward compat)
   int get freeCredits => _freeCredits;
   int get paidCredits => _paidCredits;
   int get totalCredits => _freeCredits + _paidCredits;
@@ -55,57 +66,44 @@ class AIProvider extends ChangeNotifier {
   bool get isLoadingConversations => _isLoadingConversations;
 
   // ═══════════════════════════════════════════════════════════════════════
-  // إدارة الرصيد
+  // Daily Usage Tracking (replaces credit system)
   // ═══════════════════════════════════════════════════════════════════════
 
-  /// جلب رصيد المعلم
-  Future<void> loadCredits() async {
-    _isLoadingCredits = true;
-    notifyListeners();
-
+  /// Load today's generation count from usage log
+  Future<void> loadDailyUsage() async {
     try {
       final userId = _repository.client.auth.currentUser?.id;
       if (userId == null) return;
 
-      final result = await _repository.client.rpc(
-        'get_ai_credits',
-        params: {'p_teacher_id': userId},
-      );
+      final today = DateTime.now();
+      final startOfDay = DateTime(today.year, today.month, today.day);
 
-      if (result != null) {
-        _freeCredits = result['free_credits'] ?? 0;
-        _paidCredits = result['paid_credits'] ?? 0;
-      }
-    } catch (e) {
-      debugPrint('Error loading credits: $e');
-    } finally {
-      _isLoadingCredits = false;
+      final response = await _repository.client
+          .from('ai_usage_log')
+          .select('id')
+          .eq('teacher_id', userId)
+          .inFilter('action_type', ['generate_exam', 'generate_assignment'])
+          .gte('created_at', startOfDay.toIso8601String());
+
+      _todayGenerationCount = (response as List).length;
       notifyListeners();
-    }
-  }
-
-  /// خصم رصيد (يتم أولاً قبل الطلب)
-  Future<bool> useCredits(int amount) async {
-    if (amount <= 0) return true;
-    try {
-      final userId = _repository.client.auth.currentUser?.id;
-      if (userId == null) return false;
-
-      final result = await _repository.client.rpc(
-        'use_ai_credits',
-        params: {'p_teacher_id': userId, 'p_credits_needed': amount},
-      );
-
-      if (result['success'] == true) {
-        await loadCredits();
-        return true;
-      }
-      return false;
     } catch (e) {
-      debugPrint('Error using credits: $e');
-      return false;
+      debugPrint('Error loading daily usage: $e');
     }
   }
+
+  /// Check if teacher can generate and increment counter
+  bool canGenerate() => _todayGenerationCount < kDailyGenerationLimit;
+
+  /// Legacy credit methods (kept as no-op stubs for backward compat)
+  Future<void> loadCredits() async {
+    // NOTE: Credit system removed. Keeping method signature to avoid
+    // breaking any existing callers.
+    _isLoadingCredits = false;
+    notifyListeners();
+  }
+
+  Future<bool> useCredits(int amount) async => true;
 
   // ═══════════════════════════════════════════════════════════════════════
   // إدارة المحادثات
@@ -436,9 +434,9 @@ class AIProvider extends ChangeNotifier {
     String? extractedText,
     List<String>? targetChapters,
   }) async {
-    final cost = AiConfig.getCost(EdSentreTask.teacherGenerateExam);
-    if (totalCredits < cost) {
-      _generationError = 'رصيد غير كافٍ. تحتاج $cost رصيد';
+    // NOTE: Daily limit replaces credit system
+    if (!canGenerate()) {
+      _generationError = 'اكتمل حدك اليومي (5 امتحانات). عد غداً!';
       notifyListeners();
       return null;
     }
@@ -448,13 +446,6 @@ class AIProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // خصم الرصيد أولاً
-      final deducted = await useCredits(cost);
-      if (!deducted) {
-        _generationError = 'فشل خصم الرصيد';
-        return null;
-      }
-
       String content = '';
       String subject = '';
       String grade = '';
@@ -499,7 +490,7 @@ class AIProvider extends ChangeNotifier {
       if (response.isValid && response.json != null) {
         await _logUsage(
           actionType: 'generate_exam',
-          creditsUsed: cost,
+          creditsUsed: 0,
           inputData: {
             'knowledge_base_id': knowledgeBaseId,
             'difficulty': difficulty,
@@ -507,6 +498,8 @@ class AIProvider extends ChangeNotifier {
           },
           outputData: response.json,
         );
+        // Increment daily counter immediately
+        _todayGenerationCount++;
         return response.json;
       } else {
         _generationError = response.error ?? 'فشل في إنشاء الامتحان';
@@ -540,9 +533,9 @@ class AIProvider extends ChangeNotifier {
     required String topic,
     required int questionCount,
   }) async {
-    final cost = AiConfig.getCost(EdSentreTask.teacherGenerateAssignment);
-    if (totalCredits < cost) {
-      _generationError = 'رصيد غير كافٍ';
+    // NOTE: Daily limit replaces credit system
+    if (!canGenerate()) {
+      _generationError = 'اكتمل حدك اليومي (5 امتحانات). عد غداً!';
       notifyListeners();
       return null;
     }
@@ -552,13 +545,6 @@ class AIProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // خصم الرصيد أولاً
-      final deducted = await useCredits(cost);
-      if (!deducted) {
-        _generationError = 'فشل خصم الرصيد';
-        return null;
-      }
-
       final knowledge = _knowledgeBase.firstWhere(
         (k) => k['id'] == knowledgeBaseId,
         orElse: () => {},
@@ -585,10 +571,12 @@ class AIProvider extends ChangeNotifier {
       if (response.isValid && response.json != null) {
         await _logUsage(
           actionType: 'generate_assignment',
-          creditsUsed: cost,
+          creditsUsed: 0,
           inputData: {'topic': topic, 'question_count': questionCount},
           outputData: response.json,
         );
+        // Increment daily counter immediately
+        _todayGenerationCount++;
         return response.json;
       } else {
         _generationError = response.error;

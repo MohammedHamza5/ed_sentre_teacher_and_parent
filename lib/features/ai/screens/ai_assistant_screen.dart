@@ -1,5 +1,5 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../../../core/config/app_colors.dart';
@@ -10,7 +10,7 @@ import 'ai_generate_exam_screen.dart';
 import 'ai_chat_screen.dart';
 import 'ai_student_analysis_screen.dart';
 
-/// شاشة المساعد الذكي الرئيسية - Premium Dark Mode
+/// شاشة المساعد الذكي — ديزاين حي ومبهر
 class AIAssistantScreen extends StatefulWidget {
   const AIAssistantScreen({super.key});
 
@@ -18,13 +18,28 @@ class AIAssistantScreen extends StatefulWidget {
   State<AIAssistantScreen> createState() => _AIAssistantScreenState();
 }
 
-class _AIAssistantScreenState extends State<AIAssistantScreen> {
+class _AIAssistantScreenState extends State<AIAssistantScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadData();
-    });
+
+    // NOTE: Single pulse animation for the AI "breathing" effect
+    // — makes the screen feel alive instead of static.
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat(reverse: true);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -32,7 +47,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
     final centerProvider = context.read<CenterProvider>();
     final centerId = centerProvider.currentCenterId;
 
-    await aiProvider.loadCredits();
+    await aiProvider.loadDailyUsage();
     if (centerId != null) {
       await aiProvider.loadKnowledgeBase(centerId);
     }
@@ -49,28 +64,18 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
         backgroundColor: AppColors.primary,
         color: AppColors.darkCard,
         child: CustomScrollView(
-          physics: const BouncingScrollPhysics(
+          physics: const ClampingScrollPhysics(
             parent: AlwaysScrollableScrollPhysics(),
           ),
           slivers: [
             _buildSliverAppBar(aiProvider),
-            SliverToBoxAdapter(child: SizedBox(height: 16.h)),
-            SliverToBoxAdapter(child: _buildWelcomeCard()),
+            SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+            SliverToBoxAdapter(child: _buildDailyUsagePulse(aiProvider)),
             SliverToBoxAdapter(child: SizedBox(height: 24.h)),
             SliverToBoxAdapter(
               child: _buildSectionHeader(
-                'قاعدة المعرفة',
-                Icons.menu_book,
-                onAdd: _addKnowledge,
-              ),
-            ),
-            SliverToBoxAdapter(child: SizedBox(height: 12.h)),
-            SliverToBoxAdapter(child: _buildKnowledgeBaseSection(aiProvider)),
-            SliverToBoxAdapter(child: SizedBox(height: 24.h)),
-            SliverToBoxAdapter(
-              child: _buildSectionHeader(
-                'أدوات المساعد',
-                Icons.build_circle_outlined,
+                'أدوات الذكاء الاصطناعي',
+                Icons.auto_awesome_rounded,
               ),
             ),
             SliverToBoxAdapter(child: SizedBox(height: 12.h)),
@@ -78,22 +83,27 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
             SliverToBoxAdapter(child: SizedBox(height: 24.h)),
             SliverToBoxAdapter(
               child: _buildSectionHeader(
-                'الرصيد والاستخدام',
-                Icons.monetization_on_outlined,
+                'قاعدة المعرفة',
+                Icons.menu_book_rounded,
+                onAdd: _addKnowledge,
               ),
             ),
             SliverToBoxAdapter(child: SizedBox(height: 12.h)),
-            SliverToBoxAdapter(child: _buildCreditsCard(aiProvider)),
-            SliverToBoxAdapter(child: SizedBox(height: 80.h)),
+            SliverToBoxAdapter(child: _buildKnowledgeBaseSection(aiProvider)),
+            SliverToBoxAdapter(child: SizedBox(height: 100.h)),
           ],
         ),
       ),
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // APP BAR
+  // ═══════════════════════════════════════════════════════════════════════
+
   Widget _buildSliverAppBar(AIProvider aiProvider) {
     return SliverAppBar(
-      expandedHeight: 140.h,
+      expandedHeight: 130.h,
       floating: false,
       pinned: true,
       backgroundColor: AppColors.darkSurface,
@@ -102,35 +112,40 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
         background: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF8B5CF6), Color(0xFFA78BFA), Color(0xFF6366F1)],
+              colors: [
+                Color(0xFF6C3CE1),
+                Color(0xFF8B5CF6),
+                Color(0xFF4F46E5),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
           ),
           child: Stack(
             children: [
-              // Animated AI brain decoration
+              // Decorative brain pattern
               Positioned(
-                right: -40,
-                top: -20,
+                right: -30,
+                top: -10,
                 child: Icon(
                   Icons.psychology_outlined,
-                  size: 180.sp,
-                  color: Colors.white.withValues(alpha: 0.07),
+                  size: 160.sp,
+                  color: Colors.white.withValues(alpha: 0.06),
                 ),
               ),
               Positioned(
-                bottom: -20,
-                left: -20,
+                left: -30,
+                bottom: -30,
                 child: Container(
                   width: 100,
                   height: 100,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.06),
+                    color: Colors.white.withValues(alpha: 0.04),
                     shape: BoxShape.circle,
                   ),
                 ),
               ),
+              // Title
               Align(
                 alignment: Alignment.bottomRight,
                 child: Padding(
@@ -142,35 +157,39 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                       Row(
                         children: [
                           Container(
-                            padding: EdgeInsets.all(8.w),
+                            padding: EdgeInsets.all(10.w),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(10.r),
+                              borderRadius: BorderRadius.circular(12.r),
                             ),
                             child: Icon(
-                              Icons.smart_toy_rounded,
+                              Icons.auto_awesome_rounded,
                               color: Colors.white,
                               size: 22.sp,
                             ),
                           ),
                           SizedBox(width: 12.w),
-                          Text(
-                            'المساعد الذكي',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'المساعد الذكي',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                'أنشئ امتحانات وحلّل أداء طلابك',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 11.sp,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        'أنشئ امتحانات وواجبات بالذكاء الاصطناعي',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12.sp,
-                        ),
                       ),
                     ],
                   ),
@@ -180,58 +199,91 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
           ),
         ),
       ),
-      actions: [
-        // Credit badge
-        Container(
-          margin: EdgeInsets.only(left: 12.w, top: 8.h),
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(20.r),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.stars, size: 16.sp, color: Colors.amber),
-              SizedBox(width: 4.w),
-              Text(
-                '${aiProvider.totalCredits}',
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(width: 8.w),
-      ],
     );
   }
 
-  Widget _buildWelcomeCard() {
+  // ═══════════════════════════════════════════════════════════════════════
+  // DAILY USAGE — Live Pulse Card (replaces credit system)
+  // ═══════════════════════════════════════════════════════════════════════
+
+  Widget _buildDailyUsagePulse(AIProvider aiProvider) {
+    final used = aiProvider.todayGenerationCount;
+    const limit = 5;
+    final remaining = (limit - used).clamp(0, limit);
+    final progress = used / limit;
+
+    // Dynamic color based on remaining
+    final Color statusColor;
+    final String statusText;
+    final IconData statusIcon;
+
+    if (remaining == 0) {
+      statusColor = AppColors.error;
+      statusText = 'اكتمل حدك اليومي — عد غداً!';
+      statusIcon = Icons.hourglass_empty_rounded;
+    } else if (remaining <= 2) {
+      statusColor = AppColors.warning;
+      statusText = 'باقي $remaining من $limit لهذا اليوم';
+      statusIcon = Icons.warning_amber_rounded;
+    } else {
+      statusColor = const Color(0xFF8B5CF6);
+      statusText = 'باقي $remaining من $limit لهذا اليوم';
+      statusIcon = Icons.bolt_rounded;
+    }
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: PremiumCard(
-        hasGlow: true,
-        glowColor: const Color(0xFF8B5CF6),
-        padding: EdgeInsets.all(20.w),
+      child: AnimatedBuilder(
+        animation: _pulseController,
+        builder: (context, child) {
+          // NOTE: Subtle glow pulse to make the card feel "alive"
+          final glowOpacity = 0.2 + (_pulseController.value * 0.15);
+
+          return Container(
+            padding: EdgeInsets.all(20.w),
+            decoration: BoxDecoration(
+              color: AppColors.darkCard,
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(
+                color: statusColor.withValues(alpha: 0.3),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: statusColor.withValues(alpha: glowOpacity),
+                  blurRadius: 20,
+                  spreadRadius: -2,
+                ),
+              ],
+            ),
+            child: child,
+          );
+        },
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
+                // Animated icon
                 Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF8B5CF6), Color(0xFFA78BFA)],
+                    gradient: LinearGradient(
+                      colors: [
+                        statusColor,
+                        statusColor.withValues(alpha: 0.7),
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(14.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: statusColor.withValues(alpha: 0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Icon(
-                    Icons.auto_awesome,
+                    statusIcon,
                     color: Colors.white,
                     size: 24.sp,
                   ),
@@ -242,61 +294,90 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'مرحباً بك في المساعد الذكي',
+                        'الاستخدام اليومي',
                         style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.bold,
                           color: AppColors.textOnDark,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        'أنشئ امتحانات وواجبات من كتبك وملازمك',
+                        statusText,
                         style: TextStyle(
+                          color: statusColor,
                           fontSize: 12.sp,
-                          color: AppColors.textOnDarkSecondary,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-            Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFF8B5CF6).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.lightbulb_outlined,
-                    color: Colors.amber,
-                    size: 20.sp,
+                // Count display
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 14.w,
+                    vertical: 8.h,
                   ),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: Text(
-                      'ارفع الكتاب مرة واحدة، وسينشئ لك AI أسئلة جديدة!',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: AppColors.textOnDark,
-                      ),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(14.r),
+                    border: Border.all(
+                      color: statusColor.withValues(alpha: 0.25),
                     ),
                   ),
-                ],
+                  child: RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '$remaining',
+                          style: TextStyle(
+                            color: statusColor,
+                            fontSize: 22.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        TextSpan(
+                          text: '/$limit',
+                          style: TextStyle(
+                            color: statusColor.withValues(alpha: 0.6),
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 14.h),
+            // Progress bar
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6.r),
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: progress),
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeOutCubic,
+                builder: (context, value, _) {
+                  return LinearProgressIndicator(
+                    value: value,
+                    minHeight: 6.h,
+                    backgroundColor: AppColors.darkBorder,
+                    valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
-    ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.1, end: 0);
+    );
   }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION HEADER
+  // ═══════════════════════════════════════════════════════════════════════
 
   Widget _buildSectionHeader(
     String title,
@@ -310,10 +391,14 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
           Container(
             padding: EdgeInsets.all(6.w),
             decoration: BoxDecoration(
-              color: AppColors.primarySoft,
+              color: const Color(0xFF8B5CF6).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(8.r),
             ),
-            child: Icon(icon, color: AppColors.primaryLight, size: 18.sp),
+            child: Icon(
+              icon,
+              color: const Color(0xFF8B5CF6),
+              size: 18.sp,
+            ),
           ),
           SizedBox(width: 10.w),
           Text(
@@ -337,7 +422,9 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                     vertical: 6.h,
                   ),
                   decoration: BoxDecoration(
-                    gradient: AppColors.primaryGradient,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF8B5CF6), Color(0xFF6C3CE1)],
+                    ),
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Row(
@@ -362,6 +449,73 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // AI TOOLS — فقط الأدوات الحقيقية التي تعمل
+  // ═══════════════════════════════════════════════════════════════════════
+
+  Widget _buildAITools(AIProvider aiProvider) {
+    final atLimit = aiProvider.todayGenerationCount >= 5;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Column(
+        children: [
+          _AIToolCard(
+            icon: Icons.quiz_rounded,
+            label: 'إنشاء امتحان',
+            description: 'أنشئ امتحان شامل من محتوى كتابك أو ملزمتك',
+            gradient: const LinearGradient(
+              colors: [Color(0xFFF59E0B), Color(0xFFFB923C)],
+            ),
+            tag: 'امتحان',
+            isDisabled: atLimit,
+            onTap: () => _openGenerateExam('exam'),
+          ),
+          SizedBox(height: 10.h),
+          _AIToolCard(
+            icon: Icons.assignment_turned_in_rounded,
+            label: 'إنشاء كويز / واجب',
+            description: 'كويز سريع أو واجب منزلي مخصص',
+            gradient: const LinearGradient(
+              colors: [Color(0xFF8B5CF6), Color(0xFFA78BFA)],
+            ),
+            tag: 'واجب',
+            isDisabled: atLimit,
+            onTap: () => _openGenerateExam('homework'),
+          ),
+          SizedBox(height: 10.h),
+          _AIToolCard(
+            icon: Icons.chat_bubble_outline_rounded,
+            label: 'محادثة مع المساعد',
+            description: 'اسأل المساعد أي سؤال — تربوي، تحضير، أفكار',
+            gradient: const LinearGradient(
+              colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+            ),
+            tag: 'محادثة',
+            isDisabled: false, // NOTE: Chat is always available — no daily limit
+            onTap: _openAIChat,
+          ),
+          SizedBox(height: 10.h),
+          _AIToolCard(
+            icon: Icons.analytics_rounded,
+            label: 'تحليل أداء الطالب',
+            description: 'تحليل شامل بالذكاء الاصطناعي لنقاط القوة والضعف',
+            gradient: const LinearGradient(
+              colors: [Color(0xFF10B981), Color(0xFF34D399)],
+            ),
+            tag: 'تحليل',
+            isDisabled: false, // NOTE: Analysis is always available
+            onTap: _openStudentAnalysis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // KNOWLEDGE BASE SECTION
+  // ═══════════════════════════════════════════════════════════════════════
+
   Widget _buildKnowledgeBaseSection(AIProvider aiProvider) {
     if (aiProvider.knowledgeBase.isEmpty) {
       return _buildEmptyKnowledge();
@@ -375,7 +529,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
         itemCount: aiProvider.knowledgeBase.length,
         separatorBuilder: (_, __) => SizedBox(width: 12.w),
         itemBuilder: (context, index) {
-          return _buildKnowledgeCard(aiProvider.knowledgeBase[index], index);
+          return _buildKnowledgeCard(aiProvider.knowledgeBase[index]);
         },
       ),
     );
@@ -392,15 +546,15 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
             Container(
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
-                color: AppColors.primarySoft,
+                color: const Color(0xFF8B5CF6).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(16.r),
                 border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.2),
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
                 ),
               ),
               child: Icon(
                 Icons.upload_file_rounded,
-                color: AppColors.primaryLight,
+                color: const Color(0xFF8B5CF6),
                 size: 30.sp,
               ),
             ),
@@ -419,7 +573,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    'اضغط لإضافة كتاب أو ملزمة ليتمكن AI من إنشاء الامتحانات',
+                    'ارفع كتاب أو ملزمة مرة واحدة — وسينشئ AI أسئلة منها كل مرة!',
                     style: TextStyle(
                       fontSize: 12.sp,
                       color: AppColors.textOnDarkSecondary,
@@ -436,383 +590,112 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
           ],
         ),
       ),
-    ).animate().fadeIn(duration: 400.ms);
+    );
   }
 
-  Widget _buildKnowledgeCard(Map<String, dynamic> knowledge, int index) {
+  Widget _buildKnowledgeCard(Map<String, dynamic> knowledge) {
     final title = knowledge['title'] ?? 'بدون عنوان';
     final type = knowledge['content_type'] ?? 'textbook';
     final subject = knowledge['subject_name'] ?? '';
 
-    IconData typeIcon;
-    Color typeColor;
-    switch (type) {
-      case 'notes':
-        typeIcon = Icons.note_outlined;
-        typeColor = AppColors.warning;
-        break;
-      case 'exercises':
-        typeIcon = Icons.assignment_outlined;
-        typeColor = AppColors.accent;
-        break;
-      default:
-        typeIcon = Icons.menu_book_outlined;
-        typeColor = AppColors.primary;
-    }
+    final (IconData typeIcon, Color typeColor) = switch (type) {
+      'notes' => (Icons.note_outlined, AppColors.warning),
+      'exercises' => (Icons.assignment_outlined, const Color(0xFF8B5CF6)),
+      _ => (Icons.menu_book_outlined, const Color(0xFF3B82F6)),
+    };
 
     return SizedBox(
-          width: 200.w,
-          child: PremiumCard(
-            padding: EdgeInsets.all(14.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      width: 200.w,
+      child: PremiumCard(
+        padding: EdgeInsets.all(14.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(8.w),
-                      decoration: BoxDecoration(
-                        color: typeColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(10.r),
+                Container(
+                  padding: EdgeInsets.all(8.w),
+                  decoration: BoxDecoration(
+                    color: typeColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Icon(typeIcon, color: typeColor, size: 18.sp),
+                ),
+                const Spacer(),
+                PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.more_vert,
+                    size: 18.sp,
+                    color: AppColors.textOnDarkHint,
+                  ),
+                  color: AppColors.darkElevated,
+                  onSelected: (action) =>
+                      _handleKnowledgeAction(action, knowledge),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'generate',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.auto_awesome,
+                            size: 16.sp,
+                            color: const Color(0xFF8B5CF6),
+                          ),
+                          SizedBox(width: 8.w),
+                          Text(
+                            'إنشاء امتحان',
+                            style: TextStyle(color: AppColors.textOnDark),
+                          ),
+                        ],
                       ),
-                      child: Icon(typeIcon, color: typeColor, size: 18.sp),
                     ),
-                    const Spacer(),
-                    PopupMenuButton<String>(
-                      icon: Icon(
-                        Icons.more_vert,
-                        size: 18.sp,
-                        color: AppColors.textOnDarkHint,
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.delete,
+                            size: 16.sp,
+                            color: AppColors.error,
+                          ),
+                          SizedBox(width: 8.w),
+                          Text(
+                            'حذف',
+                            style: TextStyle(color: AppColors.error),
+                          ),
+                        ],
                       ),
-                      color: AppColors.darkElevated,
-                      onSelected: (action) =>
-                          _handleKnowledgeAction(action, knowledge),
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          value: 'generate',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.auto_awesome,
-                                size: 16.sp,
-                                color: AppColors.primary,
-                              ),
-                              SizedBox(width: 8.w),
-                              Text(
-                                'إنشاء امتحان',
-                                style: TextStyle(color: AppColors.textOnDark),
-                              ),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.delete,
-                                size: 16.sp,
-                                color: AppColors.error,
-                              ),
-                              SizedBox(width: 8.w),
-                              Text(
-                                'حذف',
-                                style: TextStyle(color: AppColors.error),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),
-                const Spacer(),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13.sp,
-                    color: AppColors.textOnDark,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (subject.isNotEmpty) ...[
-                  SizedBox(height: 4.h),
-                  Text(
-                    subject,
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      color: AppColors.textOnDarkSecondary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
               ],
             ),
-          ),
-        )
-        .animate(delay: Duration(milliseconds: 100 * index))
-        .fadeIn(duration: 300.ms)
-        .slideX(begin: 0.1, end: 0);
-  }
-
-  Widget _buildAITools(AIProvider aiProvider) {
-    final tools = [
-      {
-        'icon': Icons.quiz_outlined,
-        'label': 'إنشاء امتحان',
-        'desc': 'امتحان شامل من المحتوى',
-        'color': AppColors.warning,
-        'credits': 10,
-        'enabled': true,
-        'onTap': () => _openGenerateExam('exam'),
-      },
-      {
-        'icon': Icons.assignment_outlined,
-        'label': 'واجب منزلي',
-        'desc': 'واجب مخصص من المحتوى',
-        'color': AppColors.primary,
-        'credits': 5,
-        'enabled': true,
-        'onTap': () => _openGenerateExam('homework'),
-      },
-      {
-        'icon': Icons.summarize_outlined,
-        'label': 'ملخص تلقائي',
-        'desc': 'ملخص مبسط للمحتوى',
-        'color': AppColors.secondary,
-        'credits': 3,
-        'enabled': true,
-        'onTap': _generateSummary,
-      },
-      {
-        'icon': Icons.chat_bubble_outline,
-        'label': 'محادثة AI',
-        'desc': 'اسأل المساعد الذكي',
-        'color': const Color(0xFF8B5CF6),
-        'credits': 1,
-        'enabled': true,
-        'onTap': _openAIChat,
-      },
-      {
-        'icon': Icons.analytics_outlined,
-        'label': 'تحليل طالب',
-        'desc': 'تحليل شامل لأداء الطالب',
-        'color': AppColors.accent,
-        'credits': 5,
-        'enabled': true,
-        'onTap': _openStudentAnalysis,
-      },
-    ];
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Column(
-        children: tools.asMap().entries.map((entry) {
-          final i = entry.key;
-          final tool = entry.value;
-          return Padding(
-            padding: EdgeInsets.only(bottom: 10.h),
-            child: _buildToolCard(
-              icon: tool['icon'] as IconData,
-              label: tool['label'] as String,
-              description: tool['desc'] as String,
-              color: tool['color'] as Color,
-              credits: tool['credits'] as int,
-              enabled: tool['enabled'] as bool,
-              onTap: tool['onTap'] as VoidCallback,
-              index: i,
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildToolCard({
-    required IconData icon,
-    required String label,
-    required String description,
-    required Color color,
-    required int credits,
-    required bool enabled,
-    required VoidCallback onTap,
-    required int index,
-  }) {
-    return PremiumCard(
-          onTap: enabled ? onTap : null,
-          padding: EdgeInsets.all(16.w),
-          child: Opacity(
-            opacity: enabled ? 1.0 : 0.5,
-            child: Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(14.r),
-                    border: Border.all(color: color.withValues(alpha: 0.2)),
-                  ),
-                  child: Icon(icon, color: color, size: 24.sp),
-                ),
-                SizedBox(width: 14.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        label,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14.sp,
-                          color: AppColors.textOnDark,
-                        ),
-                      ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        description,
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          color: AppColors.textOnDarkSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Credits badge
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(
-                      color: Colors.amber.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.stars, size: 12.sp, color: Colors.amber),
-                      SizedBox(width: 3.w),
-                      Text(
-                        '$credits',
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.amber,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 8.w),
-                Icon(
-                  Icons.chevron_right,
-                  color: AppColors.textOnDarkHint,
-                  size: 18.sp,
-                ),
-              ],
-            ),
-          ),
-        )
-        .animate(delay: Duration(milliseconds: 80 * index))
-        .fadeIn(duration: 300.ms)
-        .slideX(begin: 0.05, end: 0);
-  }
-
-  Widget _buildCreditsCard(AIProvider aiProvider) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: PremiumCard(
-        padding: EdgeInsets.all(20.w),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildCreditStat(
-                  'الرصيد الكلي',
-                  aiProvider.totalCredits,
-                  Colors.amber,
-                ),
-                Container(width: 1, height: 50.h, color: AppColors.darkBorder),
-                _buildCreditStat(
-                  'المجاني',
-                  aiProvider.freeCredits,
-                  AppColors.success,
-                ),
-                Container(width: 1, height: 50.h, color: AppColors.darkBorder),
-                _buildCreditStat(
-                  'المدفوع',
-                  aiProvider.paidCredits,
-                  AppColors.primary,
-                ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-            // Progress bar
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6.r),
-              child: LinearProgressIndicator(
-                value: aiProvider.totalCredits > 0
-                    ? aiProvider.paidCredits / aiProvider.totalCredits
-                    : 0,
-                minHeight: 6.h,
-                backgroundColor: AppColors.darkBorder,
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                  Color(0xFF8B5CF6),
-                ),
+            const Spacer(),
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13.sp,
+                color: AppColors.textOnDark,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            SizedBox(height: 16.h),
-            SizedBox(
-              width: double.infinity,
-              child: GradientButton(
-                text: 'شراء رصيد إضافي',
-                icon: Icons.add_shopping_cart,
-                onPressed: _buyCredits,
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFF59E0B), Color(0xFFFB923C)],
+            if (subject.isNotEmpty) ...[
+              SizedBox(height: 4.h),
+              Text(
+                subject,
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  color: AppColors.textOnDarkSecondary,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
+            ],
           ],
         ),
       ),
-    ).animate().fadeIn(duration: 500.ms, delay: 200.ms);
-  }
-
-  Widget _buildCreditStat(String label, int value, Color color) {
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.all(8.w),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.12),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(Icons.stars, color: color, size: 18.sp),
-        ),
-        SizedBox(height: 8.h),
-        Text(
-          '$value',
-          style: TextStyle(
-            fontSize: 20.sp,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textOnDark,
-          ),
-        ),
-        SizedBox(height: 2.h),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10.sp,
-            color: AppColors.textOnDarkSecondary,
-          ),
-        ),
-      ],
     );
   }
 
@@ -854,34 +737,40 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
   Future<void> _deleteKnowledge(Map<String, dynamic> knowledge) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkElevated,
-        title: Text(
-          'حذف المحتوى',
-          style: TextStyle(color: AppColors.textOnDark),
-        ),
-        content: Text(
-          'هل تريد حذف "${knowledge['title']}"؟',
-          style: TextStyle(color: AppColors.textOnDarkSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              'إلغاء',
-              style: TextStyle(color: AppColors.textOnDarkSecondary),
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+        child: AlertDialog(
+          backgroundColor: AppColors.darkElevated,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.r),
+          ),
+          title: Text(
+            'حذف المحتوى',
+            style: TextStyle(color: AppColors.textOnDark),
+          ),
+          content: Text(
+            'هل تريد حذف "${knowledge['title']}"؟',
+            style: TextStyle(color: AppColors.textOnDarkSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(
+                'إلغاء',
+                style: TextStyle(color: AppColors.textOnDarkSecondary),
+              ),
             ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('حذف'),
-          ),
-        ],
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+              child: const Text('حذف'),
+            ),
+          ],
+        ),
       ),
     );
 
-    if (confirmed == true) {
+    if (confirmed == true && mounted) {
       final aiProvider = context.read<AIProvider>();
       final centerProvider = context.read<CenterProvider>();
       await aiProvider.deleteFromKnowledgeBase(
@@ -892,18 +781,33 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
   }
 
   void _openGenerateExam(String type) {
+    final aiProvider = context.read<AIProvider>();
+
+    if (aiProvider.todayGenerationCount >= 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.hourglass_empty, color: Colors.white),
+              SizedBox(width: 8.w),
+              const Expanded(
+                child: Text('اكتمل حدك اليومي (5 امتحانات). عد غداً!'),
+              ),
+            ],
+          ),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+        ),
+      );
+      return;
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => AIGenerateExamScreen(examType: type)),
-    );
-  }
-
-  void _generateSummary() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('قريباً...'),
-        backgroundColor: AppColors.darkElevated,
-      ),
     );
   }
 
@@ -920,19 +824,154 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
       MaterialPageRoute(builder: (_) => const AIStudentAnalysisScreen()),
     );
   }
+}
 
-  void _buyCredits() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('قريباً...'),
-        backgroundColor: AppColors.darkElevated,
+// ═══════════════════════════════════════════════════════════════════════
+// AI TOOL CARD — Premium Interactive Design
+// ═══════════════════════════════════════════════════════════════════════
+
+class _AIToolCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String description;
+  final LinearGradient gradient;
+  final String tag;
+  final bool isDisabled;
+  final VoidCallback onTap;
+
+  const _AIToolCard({
+    required this.icon,
+    required this.label,
+    required this.description,
+    required this.gradient,
+    required this.tag,
+    required this.isDisabled,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: isDisabled ? null : onTap,
+        borderRadius: BorderRadius.circular(18.r),
+        splashColor: gradient.colors.first.withValues(alpha: 0.12),
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 200),
+          opacity: isDisabled ? 0.4 : 1.0,
+          child: Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: AppColors.darkCard,
+              borderRadius: BorderRadius.circular(18.r),
+              border: Border.all(
+                color: isDisabled
+                    ? AppColors.darkBorder
+                    : gradient.colors.first.withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                // Icon with gradient
+                Container(
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    gradient: isDisabled ? null : gradient,
+                    color: isDisabled ? AppColors.darkBorder : null,
+                    borderRadius: BorderRadius.circular(14.r),
+                    boxShadow: isDisabled
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: gradient.colors.first
+                                  .withValues(alpha: 0.35),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                  ),
+                  child: Icon(
+                    icon,
+                    color: isDisabled
+                        ? AppColors.textOnDarkHint
+                        : Colors.white,
+                    size: 24.sp,
+                  ),
+                ),
+                SizedBox(width: 14.w),
+                // Label & Description
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14.sp,
+                          color: isDisabled
+                              ? AppColors.textOnDarkHint
+                              : AppColors.textOnDark,
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        description,
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: AppColors.textOnDarkSecondary,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                // Tag
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 8.w,
+                    vertical: 4.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDisabled
+                        ? AppColors.darkBorder.withValues(alpha: 0.5)
+                        : gradient.colors.first.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Text(
+                    tag,
+                    style: TextStyle(
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.bold,
+                      color: isDisabled
+                          ? AppColors.textOnDarkHint
+                          : gradient.colors.first,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 4.w),
+                Icon(
+                  isDisabled ? Icons.lock_rounded : Icons.chevron_right,
+                  color: isDisabled
+                      ? AppColors.textOnDarkHint
+                      : AppColors.textOnDarkSecondary,
+                  size: 18.sp,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// شاشة إضافة محتوى لقاعدة المعرفة - Dark Mode
+// ADD KNOWLEDGE SHEET
 // ═══════════════════════════════════════════════════════════════════════
 
 class _AddKnowledgeSheet extends StatefulWidget {
@@ -978,7 +1017,10 @@ class _AddKnowledgeSheetState extends State<_AddKnowledgeSheet> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12.r),
-        borderSide: BorderSide(color: AppColors.primary, width: 2),
+        borderSide: const BorderSide(
+          color: Color(0xFF8B5CF6),
+          width: 2,
+        ),
       ),
     );
   }
@@ -1016,7 +1058,7 @@ class _AddKnowledgeSheetState extends State<_AddKnowledgeSheet> {
             ),
             SizedBox(height: 20.h),
 
-            // نوع المحتوى
+            // Content type
             Text(
               'نوع المحتوى',
               style: TextStyle(
@@ -1036,18 +1078,18 @@ class _AddKnowledgeSheetState extends State<_AddKnowledgeSheet> {
             ),
             SizedBox(height: 16.h),
 
-            // العنوان
+            // Title
             TextField(
               controller: _titleController,
               style: TextStyle(color: AppColors.textOnDark),
               decoration: _inputDecoration(
                 'عنوان المحتوى',
-                hint: 'مثال: كتاب الرياضيات - الباب الأول',
+                hint: 'مثال: كتاب الرياضيات — الباب الأول',
               ),
             ),
             SizedBox(height: 12.h),
 
-            // المادة والصف
+            // Subject and Grade
             Row(
               children: [
                 Expanded(
@@ -1069,7 +1111,7 @@ class _AddKnowledgeSheetState extends State<_AddKnowledgeSheet> {
             ),
             SizedBox(height: 12.h),
 
-            // المحتوى النصي
+            // Content
             TextField(
               controller: _contentController,
               style: TextStyle(color: AppColors.textOnDark),
@@ -1085,7 +1127,9 @@ class _AddKnowledgeSheetState extends State<_AddKnowledgeSheet> {
               decoration: BoxDecoration(
                 color: Colors.amber.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(color: Colors.amber.withValues(alpha: 0.2)),
+                border: Border.all(
+                  color: Colors.amber.withValues(alpha: 0.2),
+                ),
               ),
               child: Row(
                 children: [
@@ -1109,7 +1153,7 @@ class _AddKnowledgeSheetState extends State<_AddKnowledgeSheet> {
             ),
             SizedBox(height: 20.h),
 
-            // أزرار
+            // Buttons
             Row(
               children: [
                 Expanded(
@@ -1130,7 +1174,9 @@ class _AddKnowledgeSheetState extends State<_AddKnowledgeSheet> {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF8B5CF6), Color(0xFF6C3CE1)],
+                      ),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: ElevatedButton(
@@ -1174,7 +1220,11 @@ class _AddKnowledgeSheetState extends State<_AddKnowledgeSheet> {
         duration: const Duration(milliseconds: 300),
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
         decoration: BoxDecoration(
-          gradient: isSelected ? AppColors.primaryGradient : null,
+          gradient: isSelected
+              ? const LinearGradient(
+                  colors: [Color(0xFF8B5CF6), Color(0xFF6C3CE1)],
+                )
+              : null,
           color: isSelected ? null : AppColors.darkCard,
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
@@ -1242,9 +1292,11 @@ class _AddKnowledgeSheetState extends State<_AddKnowledgeSheet> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('خطأ: $e'), backgroundColor: AppColors.error),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('خطأ: $e'), backgroundColor: AppColors.error),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

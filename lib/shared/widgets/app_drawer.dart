@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +11,7 @@ import '../../features/teacher/provider/teacher_provider.dart';
 import '../../features/parent/provider/parent_provider.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// GLOBAL SCAFFOLD KEYS - يسمح لأي شاشة بفتح الـ Drawer
+// GLOBAL SCAFFOLD KEYS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 final GlobalKey<ScaffoldState> teacherScaffoldKey = GlobalKey<ScaffoldState>(
@@ -23,14 +22,11 @@ final GlobalKey<ScaffoldState> parentScaffoldKey = GlobalKey<ScaffoldState>(
   debugLabel: 'ParentShell',
 );
 
-/// فتح Drawer المعلم من أي شاشة
 void openTeacherDrawer() => teacherScaffoldKey.currentState?.openDrawer();
-
-/// فتح Drawer ولي الأمر من أي شاشة
 void openParentDrawer() => parentScaffoldKey.currentState?.openDrawer();
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// DRAWER MENU BUTTON - زر قائمة بسيط يُضاف لأي AppBar أو Header
+// DRAWER MENU BUTTON
 // ═══════════════════════════════════════════════════════════════════════════════
 
 class DrawerMenuButton extends StatelessWidget {
@@ -54,13 +50,6 @@ class DrawerMenuButton extends StatelessWidget {
             color: effectiveColor.withValues(alpha: 0.2),
             width: 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: effectiveColor.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -68,13 +57,16 @@ class DrawerMenuButton extends StatelessWidget {
           children: [
             _Bar(width: 22, color: effectiveColor),
             SizedBox(height: 5.h),
-            _Bar(width: 14, color: effectiveColor.withValues(alpha: 0.8)),
+            _Bar(
+              width: 14,
+              color: effectiveColor.withValues(alpha: 0.8),
+            ),
             SizedBox(height: 5.h),
             _Bar(width: 22, color: effectiveColor),
           ],
         ),
       ),
-    ).animate().fadeIn(duration: 300.ms).scale(begin: const Offset(0.8, 0.8));
+    );
   }
 }
 
@@ -141,18 +133,18 @@ class TeacherAppDrawer extends StatelessWidget {
           ),
         ],
       ),
-      sections: [
-        _DrawerSection(
+      items: [
+        _DrawerSectionData(
           title: 'الوصول السريع',
           items: [
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.home_rounded,
               label: 'الرئيسية',
               route: '/teacher',
               gradient: AppColors.premiumOcean,
               isActive: location == '/teacher',
             ),
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.calendar_month_rounded,
               label: 'الجدول الدراسي',
               route: '/teacher/schedule',
@@ -161,38 +153,38 @@ class TeacherAppDrawer extends StatelessWidget {
             ),
           ],
         ),
-        _DrawerSection(
+        _DrawerSectionData(
           title: 'إدارة الفصول',
           items: [
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.groups_rounded,
               label: 'المجموعات',
               route: '/teacher/groups',
               gradient: AppColors.premiumRoyal,
               isActive: location.startsWith('/teacher/groups'),
             ),
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.people_alt_rounded,
               label: 'الطلاب',
               route: '/teacher/students',
               gradient: AppColors.premiumEmerald,
               isActive: location.startsWith('/teacher/students'),
             ),
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.assignment_rounded,
               label: 'الواجبات',
               route: '/teacher/assignments',
               gradient: AppColors.premiumRoyal,
               isActive: location.startsWith('/teacher/assignments'),
             ),
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.fact_check_rounded,
               label: 'الحضور',
               route: '/teacher/attendance',
               gradient: AppColors.premiumEmerald,
               isActive: location.startsWith('/teacher/attendance'),
             ),
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.menu_book_rounded,
               label: 'إدارة المناهج',
               route: '/teacher/curriculum',
@@ -201,24 +193,24 @@ class TeacherAppDrawer extends StatelessWidget {
             ),
           ],
         ),
-        _DrawerSection(
+        _DrawerSectionData(
           title: 'الموارد والتقارير',
           items: [
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.folder_copy_rounded,
               label: 'الملزمات',
               route: '/teacher/materials',
               gradient: AppColors.premiumSunset,
               isActive: location.startsWith('/teacher/materials'),
             ),
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.bar_chart_rounded,
               label: 'التقارير',
               route: '/teacher/reports',
               gradient: AppColors.premiumOcean,
               isActive: location.startsWith('/teacher/reports'),
             ),
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.message_rounded,
               label: 'الرسائل',
               route: '/teacher/messages',
@@ -227,17 +219,17 @@ class TeacherAppDrawer extends StatelessWidget {
             ),
           ],
         ),
-        _DrawerSection(
+        _DrawerSectionData(
           title: 'أدوات متقدمة',
           items: [
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.account_balance_wallet_rounded,
               label: 'المالية',
               route: '/teacher/payments',
               gradient: AppColors.premiumEmerald,
               isActive: location.startsWith('/teacher/payments'),
             ),
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.auto_awesome_rounded,
               label: 'مساعد الذكاء الاصطناعي',
               route: '/teacher/ai-assistant',
@@ -247,10 +239,10 @@ class TeacherAppDrawer extends StatelessWidget {
             ),
           ],
         ),
-        _DrawerSection(
+        _DrawerSectionData(
           title: 'الحساب',
           items: [
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.person_rounded,
               label: 'حسابي',
               route: '/teacher/profile',
@@ -301,18 +293,18 @@ class ParentAppDrawer extends StatelessWidget {
         gradient: parentGradient,
         stats: const [],
       ),
-      sections: [
-        _DrawerSection(
+      items: [
+        _DrawerSectionData(
           title: 'المتابعة',
           items: [
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.home_rounded,
               label: 'الرئيسية',
               route: '/parent',
               gradient: parentGradient,
               isActive: location == '/parent',
             ),
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.calendar_today_rounded,
               label: 'الجدول الدراسي',
               route: '/parent/schedule',
@@ -321,7 +313,7 @@ class ParentAppDrawer extends StatelessWidget {
               ),
               isActive: location.startsWith('/parent/schedule'),
             ),
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.fact_check_rounded,
               label: 'الحضور والغياب',
               route: '/parent/attendance',
@@ -330,7 +322,7 @@ class ParentAppDrawer extends StatelessWidget {
               ),
               isActive: location.startsWith('/parent/attendance'),
             ),
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.school_rounded,
               label: 'الدرجات والتقييمات',
               route: '/parent/grades',
@@ -339,10 +331,10 @@ class ParentAppDrawer extends StatelessWidget {
             ),
           ],
         ),
-        _DrawerSection(
+        _DrawerSectionData(
           title: 'المالية والتواصل',
           items: [
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.account_balance_wallet_rounded,
               label: 'المدفوعات',
               route: '/parent/payments',
@@ -351,7 +343,7 @@ class ParentAppDrawer extends StatelessWidget {
               ),
               isActive: location.startsWith('/parent/payments'),
             ),
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.message_rounded,
               label: 'الرسائل',
               route: '/parent/messages',
@@ -360,7 +352,7 @@ class ParentAppDrawer extends StatelessWidget {
               ),
               isActive: location.startsWith('/parent/messages'),
             ),
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.notifications_rounded,
               label: 'الإشعارات',
               route: '/parent/notifications',
@@ -371,10 +363,10 @@ class ParentAppDrawer extends StatelessWidget {
             ),
           ],
         ),
-        _DrawerSection(
+        _DrawerSectionData(
           title: 'الحساب',
           items: [
-            _DrawerItem(
+            _DrawerItemData(
               icon: Icons.person_rounded,
               label: 'حسابي',
               route: '/parent/profile',
@@ -397,7 +389,7 @@ class ParentAppDrawer extends StatelessWidget {
 
 Future<void> _confirmLogout(BuildContext context, AuthProvider auth) async {
   Navigator.of(context).pop(); // close drawer first
-  await Future.delayed(300.ms);
+  await Future.delayed(const Duration(milliseconds: 300));
 
   if (!context.mounted) return;
 
@@ -464,11 +456,17 @@ Future<void> _confirmLogout(BuildContext context, AuthProvider auth) async {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20.w,
+                  vertical: 10.h,
+                ),
               ),
               child: Text(
                 'تسجيل الخروج',
-                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -483,22 +481,285 @@ Future<void> _confirmLogout(BuildContext context, AuthProvider auth) async {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// DRAWER SHELL - الهيكل العام للـ Drawer
+// DATA CLASSES (immutable, no widgets — zero overhead)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-class _DrawerShell extends StatelessWidget {
+class _DrawerSectionData {
+  final String title;
+  final List<_DrawerItemData> items;
+  const _DrawerSectionData({required this.title, required this.items});
+}
+
+class _DrawerItemData {
+  final IconData icon;
+  final String label;
+  final String route;
+  final LinearGradient gradient;
+  final bool isActive;
+  final String? badge;
+
+  const _DrawerItemData({
+    required this.icon,
+    required this.label,
+    required this.route,
+    required this.gradient,
+    this.isActive = false,
+    this.badge,
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DRAWER SHELL — Staggered entrance animation, butter-smooth scroll
+// ═══════════════════════════════════════════════════════════════════════════════
+
+class _DrawerShell extends StatefulWidget {
   final _DrawerHeader header;
-  final List<_DrawerSection> sections;
+  final List<_DrawerSectionData> items;
   final VoidCallback onLogout;
 
   const _DrawerShell({
     required this.header,
-    required this.sections,
+    required this.items,
     required this.onLogout,
   });
 
   @override
+  State<_DrawerShell> createState() => _DrawerShellState();
+}
+
+class _DrawerShellState extends State<_DrawerShell>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnim;
+  late Animation<Offset> _slideAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    // NOTE: Single animation controller for the entire drawer entrance.
+    // This replaces the previous approach of one .animate() per item
+    // which created ~20+ animation controllers simultaneously, causing jank.
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _fadeAnim = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0.08, 0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  // NOTE: Flatten all sections+items into a single list for ListView.builder.
+  // This enables item recycling and eliminates widget tree depth issues.
+  List<Widget> _buildFlatList() {
+    final widgets = <Widget>[];
+
+    for (final section in widget.items) {
+      // Section header
+      widgets.add(
+        Padding(
+          padding: EdgeInsets.only(
+            top: 20.h,
+            bottom: 8.h,
+            left: 8.w,
+            right: 8.w,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 3.w,
+                height: 12.h,
+                decoration: BoxDecoration(
+                  gradient: AppColors.secondaryGradient,
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                section.title,
+                style: TextStyle(
+                  color: AppColors.textOnDarkHint,
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.8,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      // Section items
+      for (final item in section.items) {
+        widgets.add(_buildDrawerItem(item));
+      }
+    }
+
+    return widgets;
+  }
+
+  Widget _buildDrawerItem(_DrawerItemData item) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 4.h),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.of(context).pop();
+            context.go(item.route);
+          },
+          borderRadius: BorderRadius.circular(16.r),
+          splashColor: item.gradient.colors.first.withValues(alpha: 0.15),
+          highlightColor: item.gradient.colors.first.withValues(alpha: 0.08),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16.r),
+              color: item.isActive
+                  ? item.gradient.colors.first.withValues(alpha: 0.12)
+                  : Colors.transparent,
+              border: item.isActive
+                  ? Border.all(
+                      color: item.gradient.colors.first
+                          .withValues(alpha: 0.25),
+                      width: 1,
+                    )
+                  : null,
+            ),
+            child: Row(
+              children: [
+                // Active indicator bar
+                if (item.isActive)
+                  Container(
+                    width: 3.w,
+                    height: 24.h,
+                    margin: EdgeInsets.only(left: 0, right: 10.w),
+                    decoration: BoxDecoration(
+                      gradient: item.gradient,
+                      borderRadius: BorderRadius.circular(4.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: item.gradient.colors.first
+                              .withValues(alpha: 0.6),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                // Icon
+                Container(
+                  padding: EdgeInsets.all(8.w),
+                  decoration: BoxDecoration(
+                    gradient: item.isActive ? item.gradient : null,
+                    color: item.isActive
+                        ? null
+                        : AppColors.textOnDarkSecondary
+                              .withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12.r),
+                    boxShadow: item.isActive
+                        ? [
+                            BoxShadow(
+                              color: item.gradient.colors.first
+                                  .withValues(alpha: 0.4),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Icon(
+                    item.icon,
+                    color: item.isActive
+                        ? Colors.white
+                        : AppColors.textOnDarkSecondary,
+                    size: 20.sp,
+                  ),
+                ),
+                SizedBox(width: 14.w),
+                // Label
+                Expanded(
+                  child: Text(
+                    item.label,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight:
+                          item.isActive ? FontWeight.bold : FontWeight.w500,
+                      color: item.isActive
+                          ? Colors.white
+                          : AppColors.textOnDarkSecondary,
+                      fontFamily: 'Cairo',
+                    ),
+                  ),
+                ),
+                // Badge
+                if (item.badge != null)
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 8.w),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 4.h,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: item.gradient,
+                      borderRadius: BorderRadius.circular(12.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: item.gradient.colors.last
+                              .withValues(alpha: 0.4),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      item.badge!,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Cairo',
+                      ),
+                    ),
+                  ),
+                // Active dot
+                if (item.isActive)
+                  Container(
+                    width: 6.w,
+                    height: 6.w,
+                    decoration: BoxDecoration(
+                      color: item.gradient.colors.last,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: item.gradient.colors.last
+                              .withValues(alpha: 0.5),
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final flatItems = _buildFlatList();
+
     return Drawer(
       width: 300.w,
       backgroundColor: Colors.transparent,
@@ -511,7 +772,7 @@ class _DrawerShell extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.forestPrimary.withValues(alpha: 0.88),
+              color: AppColors.forestPrimary.withValues(alpha: 0.92),
               border: Border(
                 left: BorderSide(
                   color: AppColors.glassBorderHighlight,
@@ -521,33 +782,31 @@ class _DrawerShell extends StatelessWidget {
             ),
             child: Column(
               children: [
-                // ── Header ──────────────────────────────────────
-                header,
+                // ── Header ──────────────────────────────────
+                widget.header,
 
-                // ── Scrollable Nav ───────────────────────────────
+                // ── Scrollable Nav ──────────────────────────
                 Expanded(
-                  child: ListView(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 16.w,
-                      vertical: 16.h,
+                  child: FadeTransition(
+                    opacity: _fadeAnim,
+                    child: SlideTransition(
+                      position: _slideAnim,
+                      child: ListView.builder(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 8.h,
+                        ),
+                        // NOTE: ClampingScrollPhysics gives Android-native
+                        // scroll feel — snappy with no over-scroll bounce.
+                        physics: const ClampingScrollPhysics(),
+                        itemCount: flatItems.length,
+                        itemBuilder: (_, i) => flatItems[i],
+                      ),
                     ),
-                    physics: const BouncingScrollPhysics(),
-                    children: sections
-                        .asMap()
-                        .entries
-                        .map(
-                          (e) => e.value
-                              .animate(
-                                delay: Duration(milliseconds: 60 * e.key),
-                              )
-                              .fadeIn(duration: 350.ms)
-                              .slideX(begin: 0.15),
-                        )
-                        .toList(),
                   ),
                 ),
 
-                // ── Version Badge ────────────────────────────────
+                // ── Version Badge ───────────────────────────
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
                   child: Container(
@@ -579,19 +838,17 @@ class _DrawerShell extends StatelessWidget {
                       ],
                     ),
                   ),
-                ).animate(delay: 350.ms).fadeIn(),
+                ),
 
-                // ── Divider ──────────────────────────────────────
+                // ── Divider ─────────────────────────────────
                 Divider(
                   color: AppColors.darkBorder.withValues(alpha: 0.5),
                   thickness: 1,
                   height: 1,
                 ),
 
-                // ── Logout ───────────────────────────────────────
-                _LogoutButton(
-                  onTap: onLogout,
-                ).animate(delay: 400.ms).fadeIn().slideY(begin: 0.3),
+                // ── Logout ──────────────────────────────────
+                _LogoutButton(onTap: widget.onLogout),
               ],
             ),
           ),
@@ -711,7 +968,10 @@ class _DrawerHeader extends StatelessWidget {
             ),
             if (stats.isNotEmpty) ...[
               SizedBox(height: 16.h),
-              Divider(color: Colors.white.withValues(alpha: 0.2), height: 1),
+              Divider(
+                color: Colors.white.withValues(alpha: 0.2),
+                height: 1,
+              ),
               SizedBox(height: 16.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -784,12 +1044,7 @@ class _AvatarFallback extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final initials = name.isNotEmpty
-        ? name
-              .trim()
-              .split(' ')
-              .map((w) => w.isNotEmpty ? w[0] : '')
-              .take(2)
-              .join()
+        ? name.trim().split(' ').map((w) => w.isNotEmpty ? w[0] : '').take(2).join()
         : '?';
     return Container(
       color: Colors.white.withValues(alpha: 0.15),
@@ -808,7 +1063,7 @@ class _AvatarFallback extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// STAT CHIP - إحصاء صغير في الـ Header
+// STAT CHIP
 // ═══════════════════════════════════════════════════════════════════════════════
 
 class _StatChip extends StatelessWidget {
@@ -837,7 +1092,11 @@ class _StatChip extends StatelessWidget {
         ),
         Row(
           children: [
-            Icon(icon, color: Colors.white.withValues(alpha: 0.8), size: 12.sp),
+            Icon(
+              icon,
+              color: Colors.white.withValues(alpha: 0.8),
+              size: 12.sp,
+            ),
             SizedBox(width: 4.w),
             Text(
               label,
@@ -850,225 +1109,6 @@ class _StatChip extends StatelessWidget {
           ],
         ),
       ],
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// DRAWER SECTION - قسم في القائمة بعنوان
-// ═══════════════════════════════════════════════════════════════════════════════
-
-class _DrawerSection extends StatelessWidget {
-  final String title;
-  final List<_DrawerItem> items;
-
-  const _DrawerSection({required this.title, required this.items});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(height: 16.h),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8.w),
-          child: Row(
-            children: [
-              Container(
-                width: 3.w,
-                height: 12.h,
-                decoration: BoxDecoration(
-                  gradient: AppColors.secondaryGradient,
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                title,
-                style: TextStyle(
-                  color: AppColors.textOnDarkHint,
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.8,
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: 6.h),
-        ...items.asMap().entries.map(
-          (e) => e.value
-              .animate(delay: Duration(milliseconds: 40 * e.key))
-              .fadeIn(duration: 300.ms)
-              .slideX(begin: 0.1),
-        ),
-      ],
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// DRAWER ITEM - عنصر واحد في القائمة
-// ═══════════════════════════════════════════════════════════════════════════════
-
-class _DrawerItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String route;
-  final LinearGradient gradient;
-  final bool isActive;
-  final String? badge;
-
-  const _DrawerItem({
-    required this.icon,
-    required this.label,
-    required this.route,
-    required this.gradient,
-    this.isActive = false,
-    this.badge,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 8.h),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            Navigator.of(context).pop();
-            context.go(route);
-          },
-          borderRadius: BorderRadius.circular(16.r),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16.r),
-              color: isActive
-                  ? gradient.colors.first.withValues(alpha: 0.12)
-                  : Colors.transparent,
-              border: isActive
-                  ? Border.all(
-                      color: gradient.colors.first.withValues(alpha: 0.25),
-                      width: 1,
-                    )
-                  : Border.all(color: Colors.transparent),
-            ),
-            child: Row(
-              children: [
-                // Glowing active indicator bar
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  width: 3.w,
-                  height: isActive ? 24.h : 0,
-                  margin: EdgeInsets.only(left: 0, right: 10.w),
-                  decoration: BoxDecoration(
-                    gradient: isActive ? gradient : null,
-                    borderRadius: BorderRadius.circular(4.r),
-                    boxShadow: isActive
-                        ? [
-                            BoxShadow(
-                              color: gradient.colors.first.withValues(
-                                alpha: 0.6,
-                              ),
-                              blurRadius: 8,
-                              spreadRadius: 1,
-                            ),
-                          ]
-                        : null,
-                  ),
-                ),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: EdgeInsets.all(8.w),
-                  decoration: BoxDecoration(
-                    gradient: isActive ? gradient : null,
-                    color: isActive
-                        ? null
-                        : AppColors.textOnDarkSecondary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: isActive
-                        ? [
-                            BoxShadow(
-                              color: gradient.colors.first.withValues(
-                                alpha: 0.4,
-                              ),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Icon(
-                    icon,
-                    color: isActive
-                        ? Colors.white
-                        : AppColors.textOnDarkSecondary,
-                    size: 20.sp,
-                  ),
-                ),
-                SizedBox(width: 14.w),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                      color: isActive
-                          ? Colors.white
-                          : AppColors.textOnDarkSecondary,
-                      fontFamily: 'Cairo',
-                    ),
-                  ),
-                ),
-                if (badge != null)
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 8.w),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 8.w,
-                      vertical: 4.h,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: gradient,
-                      borderRadius: BorderRadius.circular(12.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: gradient.colors.last.withValues(alpha: 0.4),
-                          blurRadius: 4,
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      badge!,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Cairo',
-                      ),
-                    ),
-                  ),
-                if (isActive)
-                  Container(
-                    width: 6.w,
-                    height: 6.w,
-                    decoration: BoxDecoration(
-                      color: gradient.colors.last,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: gradient.colors.last.withValues(alpha: 0.5),
-                          blurRadius: 6,
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -1104,7 +1144,11 @@ class _LogoutButton extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.logout_rounded, color: AppColors.error, size: 20.sp),
+                Icon(
+                  Icons.logout_rounded,
+                  color: AppColors.error,
+                  size: 20.sp,
+                ),
                 SizedBox(width: 10.w),
                 Text(
                   'تسجيل الخروج',

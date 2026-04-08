@@ -105,7 +105,29 @@ mixin TeacherRepositoryMixin on BaseRepository {
         .eq('status', 'active')
         .maybeSingle();
 
-    if (response == null) return null;
+    if (response == null) {
+      // Fallback: Check if we can find it via teacher_id using the teachers table
+      final teacherResponse = await client
+          .from('teachers')
+          .select('id')
+          .eq('user_id', teacherUserId)
+          .maybeSingle();
+          
+      if (teacherResponse != null && teacherResponse['id'] != null) {
+        final fallbackResponse = await client
+            .from('teacher_enrollments')
+            .select()
+            .eq('center_id', centerId)
+            .eq('teacher_id', teacherResponse['id'])
+            .eq('status', 'active')
+            .maybeSingle();
+
+        if (fallbackResponse != null) {
+          return TeacherEnrollmentModel.fromJson(fallbackResponse);
+        }
+      }
+      return null;
+    }
     return TeacherEnrollmentModel.fromJson(response);
   }
 

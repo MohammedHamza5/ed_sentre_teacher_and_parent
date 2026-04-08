@@ -323,6 +323,8 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
   Widget _buildSummaryCards() {
     final grossPreview =
         (_salaryData['gross_preview'] as num?)?.toDouble() ?? 0;
+    final expectedGrossPreview =
+        (_salaryData['expected_gross_preview'] as num?)?.toDouble() ?? grossPreview;
     final salaryType = _salaryData['salary_type'] ?? 'fixed';
     final percentage =
         (_salaryData['salary_percentage'] as num?)?.toDouble() ?? 0;
@@ -374,6 +376,16 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                   letterSpacing: 1.2,
                 ),
               ),
+              if (salaryType == 'percentage') ...[
+                SizedBox(height: 8.h),
+                Text(
+                  'المتوقع قبل التحصيل: ${_formatCurrency(expectedGrossPreview)} ج.م',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: Colors.white.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
               SizedBox(height: 12.h),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
@@ -607,6 +619,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
     final percentage = (item['percentage'] as num?)?.toDouble() ?? 0;
     final teacherTotal = (item['total'] as num?)?.toDouble() ?? 0;
     final centerTotal = (item['center_share'] as num?)?.toDouble() ?? 0;
+    final expectedTeacherTotal = (item['expected_total'] as num?)?.toDouble() ?? teacherTotal;
 
     return PremiumCard(
           margin: EdgeInsets.only(bottom: 12.h),
@@ -675,13 +688,19 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                     '${_formatCurrency(collected)} ج.م',
                     Theme.of(context).colorScheme.primary,
                   ),
-                  SizedBox(width: 8.w),
+                  SizedBox(width: 6.w),
                   _buildDetailChip(
                     'نصيبك (${percentage.toInt()}%)',
                     '${_formatCurrency(teacherTotal)} ج.م',
                     Colors.green,
                   ),
-                  SizedBox(width: 8.w),
+                  SizedBox(width: 6.w),
+                  _buildDetailChip(
+                    'نصيبك المتوقع',
+                    '${_formatCurrency(expectedTeacherTotal)} ج.م',
+                    Colors.orange.shade700,
+                  ),
+                  SizedBox(width: 6.w),
                   _buildDetailChip(
                     'السنتر',
                     '${_formatCurrency(centerTotal)} ج.م',
