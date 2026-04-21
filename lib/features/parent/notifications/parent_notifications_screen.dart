@@ -4,9 +4,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import '../../../core/config/app_colors.dart';
-import '../../../shared/data/supabase_repository.dart';
-import '../../../shared/models/notification_model.dart';
+import '../../../../core/config/app_colors.dart';
+import '../../../../shared/data/supabase_repository.dart';
+import '../../../../shared/models/notification_model.dart';
 
 /// Parent Notifications Screen - Premium Design with Real Data
 class ParentNotificationsScreen extends StatefulWidget {

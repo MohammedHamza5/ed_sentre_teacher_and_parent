@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../shared/models/models.dart';
-import '../../shared/data/supabase_repository.dart';
+import '../../../../shared/models/models.dart';
+import '../../../../shared/data/supabase_repository.dart';
 
 /// CenterProvider - Manages multi-center functionality
 /// Handles center selection and switching for Teacher/Parent apps

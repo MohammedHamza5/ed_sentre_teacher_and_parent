@@ -19,7 +19,7 @@ import 'core/services/notification_service.dart';
 import 'core/utils/app_logger.dart';
 import 'shared/data/supabase_repository.dart';
 import 'shared/widgets/error_widgets.dart';
-import 'app_router.dart';
+import 'core/router/app_router.dart';
 import 'core/di/setup_di.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';

@@ -1,5 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../shared/models/exam_models.dart';
+import '../../../../shared/models/exam_models.dart';
 
 class ExamQuestionsRepository {
   final SupabaseClient client;

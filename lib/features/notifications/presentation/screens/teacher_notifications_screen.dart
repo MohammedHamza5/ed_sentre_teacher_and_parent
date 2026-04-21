@@ -4,10 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../../../../core/config/app_colors.dart';
-import '../../../../../shared/data/supabase_repository.dart';
-import '../../../../../shared/models/models.dart';
-import '../../../../../shared/models/notification_model.dart';
+import '../../../../core/config/app_colors.dart';
+import '../../../../shared/data/supabase_repository.dart';
+import '../../../../shared/models/models.dart';
+import '../../../../shared/models/notification_model.dart';
 
 class TeacherNotificationsScreen extends StatefulWidget {
   const TeacherNotificationsScreen({super.key});
@@ -121,6 +121,7 @@ class _TeacherNotificationsScreenState
             .toList();
       });
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('فشل تحديد الكل كمقروء')));

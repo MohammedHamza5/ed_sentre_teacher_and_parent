@@ -211,8 +211,9 @@ class AiExamModel {
       var clean = raw.trim();
       if (clean.startsWith('```json')) {
         clean = clean.substring(7);
-      } else if (clean.startsWith('```'))
+      } else if (clean.startsWith('```')) {
         clean = clean.substring(3);
+      }
       if (clean.endsWith('```')) clean = clean.substring(0, clean.length - 3);
       clean = clean.trim();
 

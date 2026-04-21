@@ -5,7 +5,7 @@ import 'dart:ui' as ui;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/config/app_colors.dart';
+import '../../../../core/config/app_colors.dart';
 import '../provider/auth_provider.dart';
 
 /// Splash Screen - App loading screen

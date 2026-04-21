@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../shared/models/models.dart';
-import '../../../shared/data/supabase_repository.dart';
+import '../../../../core/utils/app_logger.dart';
+import '../../../../shared/models/models.dart';
+import '../../../../shared/data/supabase_repository.dart';
 
 /// ParentProvider - Manages parent-specific functionality
 /// Handles child selection and center management for parent users
@@ -30,37 +31,32 @@ class ParentProvider extends ChangeNotifier {
 
   /// Load parent's children
   Future<void> loadChildren(String parentUserId) async {
-    debugPrint('═══════════════════════════════════════════════════════════');
-    debugPrint('👨‍👩‍👧 [ParentProvider] loadChildren START');
-    debugPrint('   📥 parentUserId: $parentUserId');
     _isLoading = true;
     _error = null;
     _safeNotifyListeners();
 
+    log.debug('loadChildren: parentUserId=$parentUserId', tag: 'ParentProvider');
+
     try {
       _children = await _repository.getParentChildren(parentUserId);
-      debugPrint('   ✅ Children loaded: ${_children.length}');
-      for (var child in _children) {
-        debugPrint(
-          '      👧 ${child.fullName} (id: ${child.id}, userId: ${child.userId})',
-        );
-      }
+      log.debug('Children loaded: ${_children.length}', tag: 'ParentProvider');
 
       if (_children.isNotEmpty) {
-        debugPrint('   📌 Selecting first child: ${_children.first.fullName}');
         await selectChild(_children.first.id);
       } else {
-        debugPrint('   ⚠️ No children found!');
+        log.warning('No children found', tag: 'ParentProvider');
       }
     } catch (e, stack) {
       _error = e.toString();
-      debugPrint('   ❌ ERROR: $e');
-      debugPrint('   📍 Stack: $stack');
+      log.error(
+        'loadChildren failed',
+        tag: 'ParentProvider',
+        error: e,
+        stackTrace: stack,
+      );
     }
 
     _isLoading = false;
-    debugPrint('👨‍👩‍👧 [ParentProvider] loadChildren END');
-    debugPrint('═══════════════════════════════════════════════════════════');
     _safeNotifyListeners();
   }
 
@@ -73,209 +69,166 @@ class ParentProvider extends ChangeNotifier {
 
   /// Select a child and load their centers
   Future<void> selectChild(String childId) async {
-    debugPrint('───────────────────────────────────────────────────────────');
-    debugPrint('👧 [ParentProvider] selectChild: $childId');
     _selectedChild = _children.firstWhere(
       (c) => c.id == childId,
       orElse: () => _children.first,
     );
-    debugPrint('   ✅ Selected: ${_selectedChild?.fullName}');
+    log.debug(
+      'Selected child: ${_selectedChild?.fullName}',
+      tag: 'ParentProvider',
+    );
 
-    // Load child's centers
     await _loadChildCenters();
-
     _safeNotifyListeners();
   }
 
   /// Load centers for selected child
   Future<void> _loadChildCenters() async {
-    debugPrint('🏫 [ParentProvider] _loadChildCenters START');
-    if (_selectedChild == null) {
-      debugPrint('   ⚠️ No selected child - skipping');
-      return;
-    }
+    if (_selectedChild == null) return;
 
     try {
       final childUserId = _selectedChild!.userId ?? _selectedChild!.id;
-      debugPrint('   📥 childUserId: $childUserId');
       _childCenters = await _repository.getChildCenters(childUserId);
-      debugPrint('   ✅ Centers loaded: ${_childCenters.length}');
-      for (var center in _childCenters) {
-        debugPrint('      🏫 ${center.centerName} (id: ${center.centerId})');
-      }
+      log.debug(
+        'Child centers loaded: ${_childCenters.length}',
+        tag: 'ParentProvider',
+      );
 
       if (_childCenters.isNotEmpty) {
         _selectedCenter = _childCenters.first;
-        debugPrint('   📌 Selected center: ${_selectedCenter?.centerName}');
-      } else {
-        debugPrint('   ⚠️ No centers found!');
       }
     } catch (e, stack) {
       _error = e.toString();
-      debugPrint('   ❌ ERROR loading centers: $e');
-      debugPrint('   📍 Stack: $stack');
+      log.error(
+        'Loading child centers failed',
+        tag: 'ParentProvider',
+        error: e,
+        stackTrace: stack,
+      );
     }
-    debugPrint('🏫 [ParentProvider] _loadChildCenters END');
   }
 
   /// Select a center for the current child
   void selectCenter(String centerId) {
-    debugPrint('🏫 [ParentProvider] selectCenter: $centerId');
     _selectedCenter = _childCenters.firstWhere(
       (c) => c.centerId == centerId,
       orElse: () => _childCenters.first,
     );
-    debugPrint('   ✅ Selected: ${_selectedCenter?.centerName}');
     notifyListeners();
   }
 
   /// Get dashboard summary for selected child and center
   Future<Map<String, dynamic>> getChildDashboard() async {
-    debugPrint('📊 [ParentProvider] getChildDashboard START');
-    debugPrint(
-      '   👧 selectedChild: ${_selectedChild?.fullName} (${_selectedChild?.id})',
-    );
-    debugPrint(
-      '   🏫 selectedCenter: ${_selectedCenter?.centerName} (${_selectedCenter?.centerId})',
-    );
-
-    if (_selectedChild == null || _selectedCenter == null) {
-      debugPrint('   ⚠️ Missing child or center - returning empty');
-      return {};
-    }
+    if (_selectedChild == null || _selectedCenter == null) return {};
 
     try {
-      final result = await _repository.getStudentDashboardSummary(
+      return await _repository.getStudentDashboardSummary(
         studentId: _selectedChild!.userId ?? _selectedChild!.id,
         centerId: _selectedCenter!.centerId,
       );
-      debugPrint('   ✅ Dashboard data: $result');
-      return result;
     } catch (e, stack) {
       _error = e.toString();
-      debugPrint('   ❌ ERROR: $e');
-      debugPrint('   📍 Stack: $stack');
+      log.error(
+        'getChildDashboard failed',
+        tag: 'ParentProvider',
+        error: e,
+        stackTrace: stack,
+      );
       return {};
     }
   }
 
   /// Get attendance for selected child
   Future<List<AttendanceModel>> getChildAttendance() async {
-    debugPrint('📅 [ParentProvider] getChildAttendance START');
-    debugPrint('   🏫 centerId: ${_selectedCenter?.centerId}');
-
-    if (_selectedChild == null || _selectedCenter == null) {
-      debugPrint('   ⚠️ Missing child or center - returning empty');
-      return [];
-    }
+    if (_selectedChild == null || _selectedCenter == null) return [];
 
     try {
-      final result = await _repository.getStudentAttendance(
+      return await _repository.getStudentAttendance(
         centerId: _selectedCenter!.centerId,
-        studentUserId:
-            _selectedChild?.userId ??
-            _selectedChild?.id, // Pass student user ID
+        studentUserId: _selectedChild?.userId ?? _selectedChild?.id,
       );
-      debugPrint('   ✅ Attendance records: ${result.length}');
-      return result;
     } catch (e, stack) {
       _error = e.toString();
-      debugPrint('   ❌ ERROR: $e');
-      debugPrint('   📍 Stack: $stack');
+      log.error(
+        'getChildAttendance failed',
+        tag: 'ParentProvider',
+        error: e,
+        stackTrace: stack,
+      );
       return [];
     }
   }
 
   /// Get grades for selected child
   Future<List<StudentGradeView>> getChildGrades() async {
-    debugPrint('📝 [ParentProvider] getChildGrades START');
-    debugPrint('   🏫 centerId: ${_selectedCenter?.centerId}');
-
-    if (_selectedChild == null || _selectedCenter == null) {
-      debugPrint('   ⚠️ Missing child or center - returning empty');
-      return [];
-    }
+    if (_selectedChild == null || _selectedCenter == null) return [];
 
     try {
-      final result = await _repository.getStudentGrades(
+      return await _repository.getStudentGrades(
         centerId: _selectedCenter!.centerId,
-        studentUserId:
-            _selectedChild?.userId ??
-            _selectedChild?.id, // Pass student user ID
+        studentUserId: _selectedChild?.userId ?? _selectedChild?.id,
       );
-      debugPrint('   ✅ Grades: ${result.length}');
-      return result;
     } catch (e, stack) {
       _error = e.toString();
-      debugPrint('   ❌ ERROR: $e');
-      debugPrint('   📍 Stack: $stack');
+      log.error(
+        'getChildGrades failed',
+        tag: 'ParentProvider',
+        error: e,
+        stackTrace: stack,
+      );
       return [];
     }
   }
 
   /// Get payments for selected child
   Future<List<PaymentModel>> getChildPayments() async {
-    debugPrint('💰 [ParentProvider] getChildPayments START');
-    debugPrint('   🏫 centerId: ${_selectedCenter?.centerId}');
-
-    if (_selectedCenter == null) {
-      debugPrint('   ⚠️ No center selected - returning empty');
-      return [];
-    }
+    if (_selectedCenter == null) return [];
 
     try {
-      final result = await _repository.getStudentPayments(
+      return await _repository.getStudentPayments(
         centerId: _selectedCenter!.centerId,
-        studentUserId:
-            _selectedChild?.userId ??
-            _selectedChild?.id, // Pass student user ID
+        studentUserId: _selectedChild?.userId ?? _selectedChild?.id,
       );
-      debugPrint('   ✅ Payments: ${result.length}');
-      return result;
     } catch (e, stack) {
       _error = e.toString();
-      debugPrint('   ❌ ERROR: $e');
-      debugPrint('   📍 Stack: $stack');
+      log.error(
+        'getChildPayments failed',
+        tag: 'ParentProvider',
+        error: e,
+        stackTrace: stack,
+      );
       return [];
     }
   }
 
   /// Get schedule for selected child and center
   Future<List<Map<String, dynamic>>> getChildSchedule() async {
-    debugPrint('📅 [ParentProvider] getChildSchedule START');
-    if (_selectedChild == null || _selectedCenter == null) {
-      debugPrint('   ⚠️ Missing child or center - returning empty');
-      return [];
-    }
+    if (_selectedChild == null || _selectedCenter == null) return [];
 
     try {
-      final result = await _repository.getStudentSchedule(
+      return await _repository.getStudentSchedule(
         centerId: _selectedCenter!.centerId,
         studentUserId: _selectedChild!.userId ?? _selectedChild!.id,
       );
-      debugPrint('   ✅ Schedule items: ${result.length}');
-      return result;
     } catch (e, stack) {
       _error = e.toString();
-      debugPrint('   ❌ ERROR: $e');
-      debugPrint('   📍 Stack: $stack');
+      log.error(
+        'getChildSchedule failed',
+        tag: 'ParentProvider',
+        error: e,
+        stackTrace: stack,
+      );
       return [];
     }
   }
 
   /// Get recent activity (aggregated)
   Future<List<Map<String, dynamic>>> getRecentActivity() async {
-    debugPrint('📋 [ParentProvider] getRecentActivity START');
-    if (_selectedChild == null || _selectedCenter == null) {
-      debugPrint('   ⚠️ Missing child or center - returning empty');
-      return [];
-    }
+    if (_selectedChild == null || _selectedCenter == null) return [];
 
     try {
       final centerId = _selectedCenter!.centerId;
-      debugPrint('   📥 Fetching attendance and grades for center: $centerId');
 
-      // Fetch in parallel
       final results = await Future.wait([
         _repository.getStudentAttendance(
           centerId: centerId,
@@ -291,13 +244,9 @@ class ParentProvider extends ChangeNotifier {
 
       final attendance = results[0] as List<AttendanceModel>;
       final grades = results[1] as List<StudentGradeView>;
-      debugPrint(
-        '   📅 Attendance: ${attendance.length}, 📝 Grades: ${grades.length}',
-      );
 
       List<Map<String, dynamic>> activities = [];
 
-      // Add Attendance
       for (var a in attendance) {
         activities.add({
           'type': 'attendance',
@@ -313,7 +262,6 @@ class ParentProvider extends ChangeNotifier {
         });
       }
 
-      // Add Grades
       for (var g in grades) {
         activities.add({
           'type': 'grade',
@@ -324,24 +272,25 @@ class ParentProvider extends ChangeNotifier {
         });
       }
 
-      // Sort by date descending
       activities.sort(
         (a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime),
       );
 
-      debugPrint('   ✅ Total activities: ${activities.length}');
       return activities.take(10).toList();
     } catch (e, stack) {
       _error = e.toString();
-      debugPrint('   ❌ ERROR: $e');
-      debugPrint('   📍 Stack: $stack');
+      log.error(
+        'getRecentActivity failed',
+        tag: 'ParentProvider',
+        error: e,
+        stackTrace: stack,
+      );
       return [];
     }
   }
 
   /// Clear selection (on logout)
   void clearSelection() {
-    debugPrint('🧹 [ParentProvider] clearSelection');
     _children = [];
     _selectedChild = null;
     _childCenters = [];

@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/services/ai_service.dart';
-import '../../../core/config/ai_config.dart';
+import '../../../../core/services/ai_service.dart';
+import '../../../../core/config/ai_config.dart';
 import '../services/ai_weakness_detector.dart';
-import '../../../shared/data/supabase_repository.dart';
+import '../../../../shared/data/supabase_repository.dart';
 
 /// مزود AI للمساعد الذكي — تطبيق المعلم
 class AIProvider extends ChangeNotifier {

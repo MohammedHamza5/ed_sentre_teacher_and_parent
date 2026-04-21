@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/services/notification_helper.dart';
-import '../../../shared/models/models.dart';
+import '../../../../core/services/notification_helper.dart';
+import '../../../../shared/models/models.dart';
 import '../base_repository.dart';
 
 /// Materials Repository Mixin

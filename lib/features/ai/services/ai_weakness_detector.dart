@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import '../../../shared/data/supabase_repository.dart';
-import '../../../core/services/ai_service.dart';
-import '../../../core/config/ai_config.dart';
+import '../../../../shared/data/supabase_repository.dart';
+import '../../../../core/services/ai_service.dart';
+import '../../../../core/config/ai_config.dart';
 
 enum WeaknessType { grades, attendance, behavior }
 

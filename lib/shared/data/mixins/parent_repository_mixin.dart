@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../shared/models/models.dart';
+import '../../../../shared/models/models.dart';
 import '../base_repository.dart';
 
 /// Parent Repository Mixin

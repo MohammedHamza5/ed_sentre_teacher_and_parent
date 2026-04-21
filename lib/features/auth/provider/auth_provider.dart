@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../shared/models/models.dart';
-import '../../../shared/data/supabase_repository.dart';
-import '../../../core/utils/app_logger.dart';
+import '../../../../shared/models/models.dart';
+import '../../../../shared/data/supabase_repository.dart';
+import '../../../../core/utils/app_logger.dart';
 
 /// AuthProvider - يدير حالة المصادقة ويحدد نوع المستخدم
 ///

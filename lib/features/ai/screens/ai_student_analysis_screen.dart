@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import '../../../core/config/app_colors.dart';
+import '../../../../core/config/app_colors.dart';
 import '../../teacher/provider/teacher_provider.dart';
 import '../../ai/provider/ai_provider.dart';
-import '../../../core/providers/center_provider.dart';
-import '../../../shared/data/supabase_repository.dart';
+import '../../../../core/providers/center_provider.dart';
+import '../../../../shared/data/supabase_repository.dart';
 
 /// شاشة تحليل أداء الطلاب بالذكاء الاصطناعي
 class AIStudentAnalysisScreen extends StatefulWidget {

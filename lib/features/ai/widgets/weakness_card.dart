@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../core/config/app_colors.dart';
+import '../../../../core/config/app_colors.dart';
 import '../../ai/services/ai_weakness_detector.dart';
 
 class WeaknessCard extends StatelessWidget {

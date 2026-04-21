@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../core/utils/app_logger.dart';
+import '../../../../core/utils/app_logger.dart';
 
 class LogViewerScreen extends StatefulWidget {
   const LogViewerScreen({super.key});

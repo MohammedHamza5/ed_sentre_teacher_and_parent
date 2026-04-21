@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../../shared/models/models.dart';
+import '../../../../shared/models/models.dart';
 import 'safe_repository.dart';
 import 'base_repository.dart';
 import 'mixins/auth_repository_mixin.dart';
@@ -33,6 +33,12 @@ class SupabaseRepository extends BaseRepository
     with
         SafeRepositoryMixin,
         AuthRepositoryMixin,
+        TeacherProfileMixin,
+        TeacherGroupsMixin,
+        TeacherAttendanceMixin,
+        TeacherScheduleMixin,
+        TeacherDashboardMixin,
+        TeacherReportsMixin,
         TeacherRepositoryMixin,
         ParentRepositoryMixin,
         AssignmentRepositoryMixin,

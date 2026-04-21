@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../shared/models/models.dart';
-import '../../../shared/data/supabase_repository.dart';
+import '../../../../core/utils/app_logger.dart';
+import '../../../../shared/models/models.dart';
+import '../../../../shared/data/supabase_repository.dart';
 
 /// TeacherProvider - يدير حالة المعلم وبياناته
 /// يربط المعلم بمجموعاته وطلابه في كل سنتر
@@ -43,7 +44,6 @@ class TeacherProvider extends ChangeNotifier {
 
   // Unified Data Getters (Single Source of Truth)
   int get totalUniqueStudents {
-    // Calculate unique students across all loaded groups
     final uniqueIds = <String>{};
     for (var s in _students) {
       if (s['student_id'] != null) uniqueIds.add(s['student_id']);
@@ -57,8 +57,7 @@ class TeacherProvider extends ChangeNotifier {
   int get statsTotalStudents =>
       (_dashboardStats['students_count'] as num?)?.toInt() ?? 0;
   int get statsAttendanceRate =>
-      (_dashboardStats['attendance_rate'] as num?)?.toInt() ??
-      0; // Not in repo?
+      (_dashboardStats['attendance_rate'] as num?)?.toInt() ?? 0;
   int get statsTotalSessions =>
       (_dashboardStats['today_classes_count'] as num?)?.toInt() ?? 0;
 
@@ -72,51 +71,43 @@ class TeacherProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
-    debugPrint('🔄 [Provider] loadTeacherData: Starting for $userId'); // DEBUG
+    log.debug('loadTeacherData: Starting for $userId', tag: 'TeacherProvider');
 
     try {
-      // 1. جلب بيانات المعلم
       _teacherProfile = await _repository.getTeacherByUserId(userId);
 
       if (_teacherProfile == null) {
-        debugPrint('❌ [Provider] Teacher Profile NOT FOUND'); // DEBUG
+        log.warning('Teacher profile NOT FOUND', tag: 'TeacherProvider');
         _error = 'لم يتم العثور على بيانات المعلم';
         _isLoading = false;
         notifyListeners();
         return;
       }
-      debugPrint(
-        '✅ [Provider] Profile Loaded: ${_teacherProfile?.id}',
-      ); // DEBUG
+      log.debug(
+        'Profile loaded: ${_teacherProfile?.id}',
+        tag: 'TeacherProvider',
+      );
 
-      // 2. جلب السناتر المسجل فيها
-      // ✅ Repository يتولى تجربة الاحتمالات الأربعة تلقائياً:
-      //    teacher_user_id=userId → teacher_id=userId
-      //    → teacher_id=teacherProfile.id → teacher_user_id=teacherProfile.id
+      // NOTE: Repository يتولى تجربة الاحتمالات الأربعة تلقائياً
       // راجع teacher_repository_mixin.dart للتفاصيل.
       _centers = await _repository.getTeacherCentersEnrolled(
         userId,
         teacherTableId: _teacherProfile?.id,
       );
-      debugPrint('✅ [Provider] Centers Loaded: ${_centers.length}'); // DEBUG
+      log.debug('Centers loaded: ${_centers.length}', tag: 'TeacherProvider');
 
-      // 3. اختيار السنتر الأول افتراضياً
       if (_centers.isNotEmpty) {
-        debugPrint(
-          'ℹ️ [Provider] Auto-selecting first center: ${_centers.first.id}',
-        ); // DEBUG
         await selectCenter(_centers.first.id);
       } else {
-        debugPrint('⚠️ [Provider] NO CENTERS FOUND to select.'); // DEBUG
+        log.warning('No centers found', tag: 'TeacherProvider');
       }
     } catch (e) {
-      debugPrint('❌ [Provider] loadTeacherData Error: $e'); // DEBUG
+      log.error('loadTeacherData failed', tag: 'TeacherProvider', error: e);
       _error = e.toString();
     }
 
     _isLoading = false;
     notifyListeners();
-    debugPrint('✅ [Provider] loadTeacherData COMPLETE'); // DEBUG
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -125,7 +116,6 @@ class TeacherProvider extends ChangeNotifier {
 
   /// اختيار سنتر وتحميل بياناته
   Future<void> selectCenter(String centerId) async {
-    debugPrint('🔄 [Provider] selectCenter: $centerId'); // DEBUG
     if (_centers.isEmpty) {
       _selectedCenter = null;
       notifyListeners();
@@ -136,34 +126,24 @@ class TeacherProvider extends ChangeNotifier {
       (c) => c.id == centerId,
       orElse: () => _centers.first,
     );
-    debugPrint(
-      '✅ [Provider] Center Selected: ${_selectedCenter?.name}',
-    ); // DEBUG
+    log.debug(
+      'Center selected: ${_selectedCenter?.name}',
+      tag: 'TeacherProvider',
+    );
 
-    // تحميل بيانات السنتر المحدد
     await _loadCenterData();
-
     notifyListeners();
   }
 
   /// تحميل بيانات السنتر (المجموعات، الطلاب، الإحصائيات)
   Future<void> _loadCenterData() async {
-    debugPrint('🔄 [Provider] _loadCenterData: START'); // DEBUG
-    if (_selectedCenter == null || _teacherProfile == null) {
-      debugPrint('⚠️ [Provider] Abort: Center or Profile is null'); // DEBUG
-      return;
-    }
+    if (_selectedCenter == null || _teacherProfile == null) return;
 
     try {
-      // 🔧 FIX: groups.teacher_id = teachers.id (NOT user_id)
       final teacherId = _teacherProfile!.id;
       final centerId = _selectedCenter!.id;
 
-      debugPrint(
-        'ℹ️ [Provider] Fetching data for Teacher=$teacherId, Center=$centerId',
-      ); // DEBUG
-
-      // 1. Load Critical Data (Groups & Students)
+      // 1. Load Critical Data (Groups & Students & Enrollment)
       try {
         final results = await Future.wait([
           _repository.getTeacherGroups(teacherId, centerId),
@@ -171,7 +151,6 @@ class TeacherProvider extends ChangeNotifier {
             teacherId: teacherId,
             centerId: centerId,
           ),
-          // Load Enrollment Data (Financials)
           _repository.getTeacherEnrollment(
             centerId: centerId,
             teacherUserId: _teacherProfile!.userId,
@@ -182,19 +161,19 @@ class TeacherProvider extends ChangeNotifier {
         _students = results[1] as List<Map<String, dynamic>>;
         _currentEnrollment = results[2] as TeacherEnrollmentModel?;
 
-        debugPrint(
-          '✅ [Provider] Critical Data Loaded: Groups=${_groups.length}, Students=${_students.length}, Enrollment=${_currentEnrollment?.id}',
+        log.debug(
+          'Critical data loaded: Groups=${_groups.length}, Students=${_students.length}',
+          tag: 'TeacherProvider',
         );
-        notifyListeners(); // Notify immediately so UI shows data
+        notifyListeners();
       } catch (e) {
-        debugPrint('❌ [Provider] Critical Data Load Failed: $e');
+        log.error('Critical data load failed', tag: 'TeacherProvider', error: e);
         _error = 'failed_to_load_data';
-        return; // Stop if critical data fails
+        return;
       }
 
       // 2. Load Non-Critical Data (Stats)
       try {
-        debugPrint('ℹ️ [Provider] Loading usage stats...');
         final statsUserId = _teacherProfile?.userId ?? _teacherProfile?.id;
 
         if (statsUserId != null) {
@@ -203,16 +182,13 @@ class TeacherProvider extends ChangeNotifier {
             teacherUserId: statsUserId,
             centerId: centerId,
           );
-          debugPrint('✅ [Provider] Stats Loaded');
-        } else {
-          debugPrint('⚠️ [Provider] Skipped stats: No User ID found');
         }
       } catch (e) {
-        debugPrint('⚠️ [Provider] Stats Load Failed (Non-fatal): $e');
-        // Do not fail the whole process
+        // NOTE: Stats failure is non-fatal — UI still works without them
+        log.warning('Stats load failed (non-fatal)', tag: 'TeacherProvider');
       }
     } catch (e) {
-      debugPrint('❌ [Provider] _loadCenterData General Error: $e'); // DEBUG
+      log.error('_loadCenterData failed', tag: 'TeacherProvider', error: e);
       _error = e.toString();
     }
   }
@@ -243,15 +219,7 @@ class TeacherProvider extends ChangeNotifier {
       teacherShare = totalIncome * (percentage / 100);
       centerShare = totalIncome - teacherShare;
     } else if (_currentEnrollment!.salaryType == 'fixed') {
-      // Fixed salary is usually per month total, not per group.
-      // But if we want to attribute a portion to this group, we could divide by total groups.
-      // For now, let's assume fixed salary means we can't calculate per-group share easily
-      // unless we know the 'total' fixed amount.
-      // Alternatively, maybe 'fixed' here means fixed amount per student?
-      // Let's assume standard 'percentage' mostly.
-      // If fixed, we just return 0 share for now or treat as 100% center?
-      // Let's assume standard behavior:
-      teacherShare = 0; // It's a fixed monthly salary, not per group revenue
+      teacherShare = 0;
       centerShare = totalIncome;
     }
 
@@ -270,7 +238,7 @@ class TeacherProvider extends ChangeNotifier {
         total += calculateGroupFinancials(group)['teacher_share'] ?? 0;
       }
     }
-    // If fixed salary, add it once (simplified logic)
+    // NOTE: If fixed salary, add it once (the looped calculation returns 0)
     if (_currentEnrollment?.salaryType == 'fixed') {
       total += _currentEnrollment!.salaryAmount ?? 0;
     }
@@ -293,17 +261,11 @@ class TeacherProvider extends ChangeNotifier {
 
     final today = DateTime.now();
     final dayNames = [
-      'Sunday',
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
+      'Sunday', 'Monday', 'Tuesday', 'Wednesday',
+      'Thursday', 'Friday', 'Saturday',
     ];
     final dayOfWeek = dayNames[today.weekday % 7];
 
-    // 🔧 FIX: Use teachers.id for schedule query
     return await _repository.getTeacherSchedule(
       teacherId: _teacherProfile!.id,
       centerId: _selectedCenter!.id,
@@ -315,7 +277,6 @@ class TeacherProvider extends ChangeNotifier {
   Future<List<ScheduleItem>> getWeeklySchedule() async {
     if (_selectedCenter == null || _teacherProfile == null) return [];
 
-    // 🔧 FIX: Use teachers.id for schedule query
     return await _repository.getTeacherSchedule(
       teacherId: _teacherProfile!.id,
       centerId: _selectedCenter!.id,
@@ -385,15 +346,10 @@ class TeacherProvider extends ChangeNotifier {
   // ═══════════════════════════════════════════════════════════════════════
 
   /// تحديث البيانات
-  /// يقوم بتحديث بيانات السنتر الحالي إذا كان محدداً، وإلا يعيد تحميل كل شيء
   Future<void> refreshData() async {
     if (_selectedCenter != null) {
-      debugPrint(
-        '🔄 [Provider] refreshData: Refreshing current center data...',
-      );
       await _loadCenterData();
     } else {
-      debugPrint('🔄 [Provider] refreshData: Full reload...');
       await refresh();
     }
   }

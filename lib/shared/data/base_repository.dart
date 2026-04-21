@@ -25,7 +25,7 @@ abstract class BaseRepository {
   }) async {
     // 1. Check Connectivity
     final connectivity = await Connectivity().checkConnectivity();
-    final hasInternet = connectivity != ConnectivityResult.none;
+    final hasInternet = !connectivity.contains(ConnectivityResult.none);
 
     // 2. Try Network if Online
     if (hasInternet && !forceRefresh) {

@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../shared/models/models.dart';
+import '../../../../shared/models/models.dart';
 import '../base_repository.dart';
-import '../../../core/services/notification_helper.dart';
+import '../../../../core/services/notification_helper.dart';
 
 /// Assignment Repository Mixin
 /// Handles assignments and submissions CRUD operations

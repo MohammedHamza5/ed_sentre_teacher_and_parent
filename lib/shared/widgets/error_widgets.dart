@@ -4,7 +4,7 @@ library;
 
 import 'package:flutter/material.dart';
 
-import '../../core/errors/app_exceptions.dart';
+import '../../../../core/errors/app_exceptions.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Error View - عرض الخطأ كامل الشاشة

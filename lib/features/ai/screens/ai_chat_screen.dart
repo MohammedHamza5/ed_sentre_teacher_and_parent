@@ -3,7 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import '../../../core/config/app_colors.dart';
+import '../../../../core/config/app_colors.dart';
 import '../../ai/provider/ai_provider.dart';
 
 /// شاشة المحادثة مع المساعد الذكي — مع حفظ السجل
