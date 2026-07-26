@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:ed_sentre_techer_and_parent/core/config/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,6 +8,7 @@ import '../../../../core/providers/center_provider.dart';
 import '../../../auth/provider/auth_provider.dart';
 import '../../../../shared/data/supabase_repository.dart';
 import '../../../../shared/models/models.dart';
+import '../../provider/teacher_provider.dart';
 import '../widgets/assignment_date_selector.dart';
 import '../widgets/assignment_duration_selector.dart';
 import '../widgets/assignment_file_attachment.dart';
@@ -20,8 +21,9 @@ import '../widgets/assignment_submit_button.dart';
 import '../widgets/assignment_text_field.dart';
 import '../widgets/quiz_bottom_nav.dart';
 import '../widgets/quiz_questions_editor.dart';
+import '../../../../core/widgets/genius/shimmer_skeleton.dart';
 
-/// Ø´Ø§Ø´Ø© Ø¥Ù†Ø´Ø§Ø¡ ÙˆØ§Ø¬Ø¨/Ø§Ù…ØªØ­Ø§Ù†/ÙƒÙˆÙŠØ² - ØªØµÙ…ÙŠÙ… Ù…Ø¨Ø³Ù‘Ø· ÙˆÙØ¹Ø§Ù„
+/// Ø´Ø§Ø´Ø© Ø¥Ù†Ø´Ø§Ø¡ ÙˆØ§Ø¬Ø¨/Ø§Ù…ØªØ­Ø§Ù†/ÙƒÙˆÙŠØ² - ØªØµÙ…ÙŠÙ… Ù…Ø¨Ø³Ù‘Ø· ÙˆÙ Ø¹Ø§Ù„
 class CreateAssignmentScreen extends StatefulWidget {
   final String type; // 'assignment', 'exam', 'quiz'
   final String? initialTitle;
@@ -111,9 +113,10 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
 
       final teacherId = auth.teacherProfile?.id;
       final centerId = center.currentCenterId;
+      final teacherProvider = context.read<TeacherProvider>();
 
       if (teacherId != null && centerId != null) {
-        _groups = await repo.getTeacherGroups(teacherId, centerId);
+        _groups = List<GroupModel>.from(teacherProvider.groups);
         if (_groups.isNotEmpty) {
           _selectedGroups = [_groups.first];
         }
@@ -183,22 +186,22 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
 
   Widget _buildSimpleScreen() {
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(
           'Ø¥Ù†Ø´Ø§Ø¡ $_typeLabel',
-          style: const TextStyle(color: AppColors.textDisplay),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
-        backgroundColor: AppColors.forestPrimary,
-        foregroundColor: AppColors.textDisplay,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         elevation: 0,
         iconTheme: const IconThemeData(color: AppColors.textDisplay),
       ),
       body: _isLoadingGroups
-          ? const Center(
-              child: CircularProgressIndicator(
-                backgroundColor: AppColors.accentVivid,
-              ),
+          ? Padding(
+              padding: EdgeInsets.all(16.w),
+              child: const CardShimmerSkeleton(itemCount: 3),
             )
           : _groups.isEmpty
           ? const AssignmentNoGroupsState()
@@ -476,7 +479,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: AppColors.errorRed),
+      SnackBar(content: Text(message), backgroundColor: Theme.of(context).colorScheme.error),
     );
   }
 
@@ -486,24 +489,24 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
 
   Widget _buildQuizScreen() {
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(
           _currentStep == 0
               ? 'Ø¥Ù†Ø´Ø§Ø¡ ÙƒÙˆÙŠØ² - Ø§Ù„Ù…Ø¹Ù„ÙˆÙ…Ø§Øª'
               : 'Ø¥Ù†Ø´Ø§Ø¡ ÙƒÙˆÙŠØ² - Ø§Ù„Ø£Ø³Ø¦Ù„Ø©',
-          style: const TextStyle(color: AppColors.textDisplay),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
-        backgroundColor: AppColors.forestPrimary,
-        foregroundColor: AppColors.textDisplay,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         elevation: 0,
         iconTheme: const IconThemeData(color: AppColors.textDisplay),
       ),
       body: _isLoadingGroups
-          ? const Center(
-              child: CircularProgressIndicator(
-                backgroundColor: AppColors.accentVivid,
-              ),
+          ? Padding(
+              padding: EdgeInsets.all(16.w),
+              child: const CardShimmerSkeleton(itemCount: 3),
             )
           : _groups.isEmpty
           ? const AssignmentNoGroupsState()
@@ -696,7 +699,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('ØªÙ… Ù†Ø´Ø± Ø§Ù„ÙƒÙˆÙŠØ² Ø¨Ù†Ø¬Ø§Ø­! ðŸŽ‰'),
+            content: Text('ØªÙ… Ù†Ø´Ø± Ø§Ù„ÙƒÙˆÙŠØ² Ø¨Ù†Ø¬Ø§Ø­! ðŸŽ‰'),
             backgroundColor: Colors.green,
           ),
         );

@@ -313,9 +313,9 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
         ),
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(
-                backgroundColor: AppColors.accentVivid,
+                backgroundColor: Theme.of(context).colorScheme.primary,
               ),
             )
           : _error != null
@@ -332,7 +332,7 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color:
-                              AppColors.accentVivid.withValues(alpha: 0.15),
+                              Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                         ),
                         child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
@@ -428,7 +428,7 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 48.sp, color: AppColors.errorRed),
+          Icon(Icons.error_outline, size: 48.sp, color: Theme.of(context).colorScheme.error),
           SizedBox(height: 16.h),
           Text(
             _error ?? 'حدث خطأ',
@@ -439,12 +439,12 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
           ElevatedButton(
             onPressed: _loadAnswers,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accentVivid,
+              backgroundColor: Theme.of(context).colorScheme.primary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
               ),
             ),
-            child: const Text('إعادة المحاولة'),
+            child: Text('إعادة المحاولة'),
           ),
         ],
       ),

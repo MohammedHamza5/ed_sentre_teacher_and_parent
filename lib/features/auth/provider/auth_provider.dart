@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../shared/models/models.dart';
 import '../../../../shared/data/supabase_repository.dart';
 import '../../../../core/utils/app_logger.dart';
+import '../../../../core/config/app_config.dart';
 
 /// AuthProvider - يدير حالة المصادقة ويحدد نوع المستخدم
 ///
@@ -41,6 +42,7 @@ class AuthProvider extends ChangeNotifier {
   bool get isTeacher => _currentUser?.role == UserRole.teacher;
   bool get isParent => _currentUser?.role == UserRole.parent;
   bool get isStudent => _currentUser?.role == UserRole.student;
+  bool get isCoordinator => _currentUser?.role == UserRole.coordinator;
   bool get isUnauthorizedRole => _isUnauthorizedRole;
   bool get needsInvitationCode => _needsInvitationCode;
   Map<String, dynamic>? get pendingInvitationInfo => _pendingInvitationInfo;
@@ -49,6 +51,12 @@ class AuthProvider extends ChangeNotifier {
   Future<void> _initAuth() async {
     _isLoading = true;
     notifyListeners();
+
+    if (AppConfig.isDemoMode) {
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
 
     try {
       // Listen to auth state changes
@@ -182,6 +190,11 @@ class AuthProvider extends ChangeNotifier {
           _parentProfile = await _repository.getParentByUserId(
             _currentUser!.id,
           );
+        } else if (role == UserRole.coordinator || role == UserRole.reception) {
+          // المساعد / موظف الاستقبال يكتفي ببيانات المستخدم الأساسية للمصادقة
+          if (kDebugMode) {
+            debugPrint('✅ [Auth] Loading Staff/Coordinator Profile');
+          }
         } else {
           // أي نوع آخر غير مسموح - إلا إذا كان في انتظار كود الدعوة
           if (_needsInvitationCode) {
@@ -212,6 +225,47 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
+
+    if (identifier == 'DEMO1234' || identifier == '123456') {
+      AppConfig.isDemoMode = true;
+    }
+
+    if (AppConfig.isDemoMode) {
+      await Future.delayed(const Duration(seconds: 1));
+      
+      final isTeacher = identifier.toLowerCase().contains('teacher') || identifier == '123' || identifier == 'demo_teacher';
+      
+      _currentUser = UserModel(
+        id: isTeacher ? 'demo_teacher_id' : 'demo_parent_id',
+        email: isTeacher ? 'teacher@edsentre.demo' : 'parent@edsentre.demo',
+        fullName: isTeacher ? 'أ. أحمد السيد (تجريبي)' : 'أبو محمد (تجريبي)',
+        role: isTeacher ? UserRole.teacher : UserRole.parent,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      
+      if (isTeacher) {
+        _teacherProfile = TeacherModel(
+          id: 'teacher_0',
+          userId: 'demo_teacher_id',
+          fullName: 'أ. أحمد السيد (تجريبي)',
+          phone: '01012345678',
+          createdAt: DateTime.now().subtract(const Duration(days: 100)),
+          updatedAt: DateTime.now(),
+        );
+      } else {
+        _parentProfile = {
+          'id': 'demo_parent_id',
+          'name': 'أبو محمد (تجريبي)',
+          'phone': '01112345678',
+        };
+      }
+      
+      _needsInvitationCode = false;
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    }
 
     try {
       await _repository.signInWithIdentifier(identifier, password);
@@ -246,6 +300,20 @@ class AuthProvider extends ChangeNotifier {
   Future<void> signOut() async {
     _isLoading = true;
     notifyListeners();
+
+    if (AppConfig.isDemoMode) {
+      _currentUser = null;
+      _teacherProfile = null;
+      _parentProfile = null;
+      _isUnauthorizedRole = false;
+      _needsInvitationCode = false;
+      _pendingInvitationInfo = null;
+      _error = null;
+      _isLoading = false;
+      AppConfig.isDemoMode = false;
+      notifyListeners();
+      return;
+    }
 
     try {
       await _repository.signOut();

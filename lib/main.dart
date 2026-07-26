@@ -18,6 +18,8 @@ import 'core/services/network_monitor.dart';
 import 'core/services/notification_service.dart';
 import 'core/utils/app_logger.dart';
 import 'shared/data/supabase_repository.dart';
+import 'demo/mock_supabase_repository.dart';
+import 'core/config/app_config.dart';
 import 'shared/widgets/error_widgets.dart';
 import 'core/router/app_router.dart';
 import 'core/di/setup_di.dart';
@@ -41,6 +43,9 @@ void main() async {
   await runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+
+      // إعداد معلومات الإصدار للتطبيق
+      await AppConfig.initVersion();
 
       // إعداد DI للتطبيق وللميزات مثل ExamGenerator
       await setupDI();
@@ -116,37 +121,48 @@ class EdSentreApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Create repository instance
-    final repository = SupabaseRepository(Supabase.instance.client);
+    return ListenableBuilder(
+      listenable: AppConfig.instance,
+      builder: (context, _) {
+        final repository = AppConfig.isDemoMode
+            ? MockSupabaseRepository()
+            : SupabaseRepository(Supabase.instance.client);
 
-    return MultiProvider(
-      providers: [
-        // Repository Provider
-        Provider<SupabaseRepository>.value(value: repository),
+        return MultiProvider(
+          key: ValueKey(AppConfig.isDemoMode),
+          providers: [
+            // Repository Provider
+            Provider<SupabaseRepository>.value(value: repository),
 
-        // ✅ App Settings — Theme و اللغة وغيرها
-        ChangeNotifierProvider<AppSettingsProvider>.value(value: appSettings),
+            // ✅ App Settings — Theme و اللغة وغيرها
+            ChangeNotifierProvider<AppSettingsProvider>.value(value: appSettings),
 
-        // Auth Provider
-        ChangeNotifierProvider(create: (_) => AuthProvider(repository)),
+            // Auth Provider
+            ChangeNotifierProvider(create: (_) => AuthProvider(repository)),
 
-        // Center Provider
-        ChangeNotifierProvider(create: (_) => CenterProvider(repository)),
+            // Center Provider
+            ChangeNotifierProvider(create: (_) => CenterProvider(repository)),
 
-        // Teacher Provider - لإدارة بيانات المعلم
-        ChangeNotifierProvider(create: (_) => TeacherProvider(repository)),
+            // Teacher Provider - لإدارة بيانات المعلم
+            ChangeNotifierProvider(create: (_) => TeacherProvider(repository)),
 
-        // Parent Provider - لإدارة بيانات ولي الأمر
-        ChangeNotifierProvider(create: (_) => ParentProvider(repository)),
+            // Parent Provider - لإدارة بيانات ولي الأمر
+            ChangeNotifierProvider(create: (_) => ParentProvider(repository)),
 
-        // AI Provider - للمساعد الذكي (يستخدم Edge Function للأمان)
-        ChangeNotifierProvider(create: (_) => AIProvider(repository)),
+            // AI Provider - للمساعد الذكي (يستخدم Edge Function للأمان)
+            ChangeNotifierProvider(create: (_) => AIProvider(repository)),
 
-        // AI Exam Provider - للتوليد من الملفات
-        ChangeNotifierProvider(
-          create: (_) => AiExamProvider(Supabase.instance.client),
-        ),
-      ],
+            // AI Exam Provider - للتوليد من الملفات
+            ChangeNotifierProvider(
+              create: (_) => AiExamProvider(Supabase.instance.client),
+            ),
+
+            // Update Provider - لإدارة التحديثات
+            ChangeNotifierProvider(
+              create: (_) => UpdateProvider(sl())..checkForUpdates(),
+            ),
+          ],
+
       // ✅ Consumer<AppSettingsProvider> يضمن إعادة بناء MaterialApp
       //    فوراً عند تغيير الـ ThemeMode من شاشة الإعدادات
       child: Consumer<AppSettingsProvider>(
@@ -202,6 +218,8 @@ class EdSentreApp extends StatelessWidget {
           );
         },
       ),
+    );
+      },
     );
   }
 }

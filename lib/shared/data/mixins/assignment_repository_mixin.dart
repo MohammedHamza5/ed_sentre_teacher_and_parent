@@ -189,6 +189,11 @@ mixin AssignmentRepositoryMixin on BaseRepository {
   Future<List<Map<String, dynamic>>> getTeacherAssignments({
     required String centerId,
     String? courseId,
+    String? groupId,
+    String? typeFilter, // 'assignment', 'exam' (includes 'quiz')
+    bool archivedOnly = false,
+    String? searchQuery,
+    String? statusFilter, // 'active', 'ended'
     int? limit,
     int? offset,
   }) async {
@@ -206,8 +211,25 @@ mixin AssignmentRepositoryMixin on BaseRepository {
           .eq('teacher_user_id', userId)
           .isFilter('deleted_at', null);
 
-      if (courseId != null) {
-        query = query.eq('course_id', courseId);
+      if (courseId != null) query = query.eq('course_id', courseId);
+      if (groupId != null) query = query.eq('group_id', groupId);
+
+      if (typeFilter == 'exam') {
+        query = query.inFilter('type', ['exam', 'quiz']);
+      } else if (typeFilter != null) {
+        query = query.eq('type', typeFilter);
+      }
+
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        query = query.ilike('title', '%$searchQuery%');
+      }
+
+      if (statusFilter == 'active') {
+        final now = DateTime.now().toIso8601String();
+        query = query.or('due_date.gte.$now,due_date.is.null');
+      } else if (statusFilter == 'ended') {
+        final now = DateTime.now().toIso8601String();
+        query = query.lt('due_date', now);
       }
 
       var transform = query.order('created_at', ascending: false);
@@ -221,9 +243,22 @@ mixin AssignmentRepositoryMixin on BaseRepository {
         '✅ SupabaseRepository: Found ${(response as List).length} assignments',
       );
 
-      return (response as List).map((e) {
-        return Map<String, dynamic>.from(e as Map);
+      // Locally filter archived since it's deep inside JSONb `settings` column.
+      var locals = (response).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      locals = locals.where((a) {
+        final settings = a['settings'];
+        bool archived = false;
+        if (settings is Map) archived = settings['archived'] == true;
+        if (settings is String) {
+          try {
+            archived = jsonDecode(settings)['archived'] == true;
+          } catch (_) {}
+        }
+        if (archivedOnly) return archived;
+        return !archived;
       }).toList();
+
+      return locals;
     } catch (e) {
       debugPrint("❌ SupabaseRepository: Error fetching assignments: $e");
       return [];

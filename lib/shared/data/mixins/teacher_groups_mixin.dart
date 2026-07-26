@@ -44,27 +44,16 @@ mixin TeacherGroupsMixin on BaseRepository {
       if (groupModels.isNotEmpty) {
         final groupIds = groupModels.map((g) => g.id).toList();
 
-        // NOTE: Try 'group_schedules' first (canonical table), fallback to 'schedules'
+        // NOTE: Query 'schedules' directly — 'group_schedules' table does not exist
         List allScheduleRows = [];
         try {
           final schedulesResponse = await client
-              .from('group_schedules')
+              .from('schedules')
               .select('*, classrooms(name)')
               .inFilter('group_id', groupIds);
           allScheduleRows = schedulesResponse as List;
-        } catch (e1) {
-          debugPrint(
-            '⚠️ [Repo] group_schedules failed ($e1), trying schedules table...',
-          );
-          try {
-            final schedulesResponse = await client
-                .from('schedules')
-                .select('*, classrooms(name)')
-                .inFilter('group_id', groupIds);
-            allScheduleRows = schedulesResponse as List;
-          } catch (e2) {
-            debugPrint('⚠️ [Repo] Both schedule tables failed: $e2');
-          }
+        } catch (e) {
+          debugPrint('⚠️ [Repo] Schedules query failed: $e');
         }
 
         final allSchedules = allScheduleRows.map((e) {
@@ -100,14 +89,17 @@ mixin TeacherGroupsMixin on BaseRepository {
   }
 
   /// Get teacher's students
+  /// NOTE: Pass [preloadedGroups] to avoid a duplicate getTeacherGroups() call
+  /// when groups are already loaded by the caller (e.g., TeacherProvider).
   Future<List<Map<String, dynamic>>> getTeacherStudents({
     required String teacherId,
     required String centerId,
+    List<GroupModel>? preloadedGroups,
     int? limit,
     int? offset,
   }) async {
     try {
-      final groups = await getTeacherGroups(teacherId, centerId);
+      final groups = preloadedGroups ?? await getTeacherGroups(teacherId, centerId);
 
       if (groups.isEmpty) return [];
       final groupIds = groups.map((g) => g.id).toList();

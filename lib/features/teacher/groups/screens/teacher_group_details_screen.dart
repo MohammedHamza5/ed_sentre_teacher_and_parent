@@ -92,11 +92,11 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
     final tabBarHeight = kTextTabBarHeight + 12.h;
 
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(
-                backgroundColor: AppColors.accentVivid,
+                backgroundColor: Theme.of(context).colorScheme.primary,
               ),
             )
           : _group == null
@@ -108,14 +108,14 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
                         expandedHeight: 260.h,
                         floating: false,
                         pinned: true,
-                        backgroundColor: AppColors.forestPrimary,
+                        backgroundColor: Theme.of(context).colorScheme.surface,
                         title: innerBoxIsScrolled
                             ? Text(
                                 _group!.groupName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  color: AppColors.textDisplay,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18.sp,
                                 ),
@@ -123,9 +123,9 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
                             : null,
                         centerTitle: true,
                         leading: IconButton(
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.arrow_back_ios_new_rounded,
-                            color: AppColors.textDisplay,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                           onPressed: () => context.pop(),
                         ),
@@ -151,17 +151,17 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
                                           'تم نسخ كود المجموعة: $code',
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            color: AppColors.forestDeep,
+                                            color: Theme.of(context).scaffoldBackgroundColor,
                                           ),
                                         ),
                                         backgroundColor:
-                                            AppColors.emeraldGreen,
+                                            Colors.green,
                                       ),
                                     );
                                   },
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.copy_all_rounded,
-                              color: AppColors.textDisplay,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                             tooltip: 'نسخ كود المجموعة',
                           ),
@@ -175,9 +175,9 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
                               }
                               _showMonitorWindowHint();
                             },
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.fact_check_rounded,
-                              color: AppColors.textDisplay,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                             tooltip: 'مراقبة الحضور',
                           ),
@@ -186,9 +186,9 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
                         bottom: TabBar(
                           controller: _tabController,
                           isScrollable: true,
-                          indicatorColor: AppColors.accentVivid,
-                          labelColor: AppColors.accentVivid,
-                          unselectedLabelColor: AppColors.textMuted,
+                          indicatorColor: Theme.of(context).colorScheme.primary,
+                          labelColor: Theme.of(context).colorScheme.primary,
+                          unselectedLabelColor: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                           indicatorWeight: 3,
                           dividerColor: Colors.transparent,
                           tabs: const [
@@ -239,14 +239,14 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: AppColors.forestPrimary,
+              color: Theme.of(context).colorScheme.surface,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.glassBorderHighlight),
+              border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
             ),
             child: Icon(
               Icons.error_outline_rounded,
               size: 64.sp,
-              color: AppColors.errorRed,
+              color: Theme.of(context).colorScheme.error,
             ),
           ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
           SizedBox(height: 24.h),
@@ -254,7 +254,7 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
             'لم يتم العثور على المجموعة',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              color: AppColors.textDisplay,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
           if (_error != null) ...[
@@ -267,7 +267,7 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium
-                    ?.copyWith(color: AppColors.textMuted),
+                    ?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
               ).animate().fadeIn(delay: 300.ms),
             ),
           ],
@@ -283,7 +283,7 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
           'المراقبة متاحة قبل الحصة بـ 30 دقيقة وحتى بعدها بـ 30 دقيقة فقط',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: AppColors.warmAmber,
+        backgroundColor: Colors.orange,
       ),
     );
   }

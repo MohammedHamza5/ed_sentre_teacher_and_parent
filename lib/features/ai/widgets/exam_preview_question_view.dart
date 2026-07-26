@@ -28,9 +28,9 @@ class ExamPreviewQuestionView extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,12 +161,12 @@ class ExamPreviewQuestionView extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isCorrect
                     ? AppColors.success.withValues(alpha: 0.1)
-                    : AppColors.darkInput,
+                    : Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(8.r),
                 border: Border.all(
                   color: isCorrect
                       ? AppColors.success.withValues(alpha: 0.4)
-                      : AppColors.darkBorder,
+                      : (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
                 ),
               ),
               child: Row(

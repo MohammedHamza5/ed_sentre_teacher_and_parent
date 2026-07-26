@@ -41,8 +41,8 @@ class TeacherAssignmentsHeader extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.forestPrimary,
-            AppColors.forestPrimary.withValues(alpha: 0.8),
+            Theme.of(context).colorScheme.surface,
+            Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
           ],
         ),
       ),

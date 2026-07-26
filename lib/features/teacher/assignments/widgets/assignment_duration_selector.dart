@@ -18,10 +18,10 @@ class AssignmentDurationSelector extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: AppColors.glassBorderHighlight.withValues(alpha: 0.5),
+          color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300).withValues(alpha: 0.5),
         ),
       ),
       child: Column(
@@ -36,7 +36,7 @@ class AssignmentDurationSelector extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textDisplay,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -80,7 +80,7 @@ class AssignmentDurationSelector extends StatelessWidget {
                   controller: durationController,
                   keyboardType: TextInputType.number,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.textDisplay),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                   decoration: InputDecoration(
                     hintText: 'أو أدخل عدد مخصص',
                     hintStyle: TextStyle(
@@ -155,16 +155,16 @@ class _DurationChip extends StatelessWidget {
         controller.text = minutes.toString();
       },
       selectedColor: typeColor.withValues(alpha: 0.2),
-      backgroundColor: AppColors.darkSurface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       side: BorderSide(
         color: isSelected
             ? typeColor
-            : AppColors.glassBorderHighlight.withValues(alpha: 0.5),
+            : (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300).withValues(alpha: 0.5),
       ),
       labelStyle: TextStyle(
         color: isSelected
             ? typeColor
-            : AppColors.textDisplay.withValues(alpha: 0.7),
+            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
       ),
     );
   }

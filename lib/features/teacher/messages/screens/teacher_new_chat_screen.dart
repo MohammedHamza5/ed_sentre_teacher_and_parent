@@ -136,8 +136,7 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
           studentAvatar: student['student_avatar'] as String?,
         );
 
-        Navigator.pushReplacement(
-          context,
+        Navigator.of(context, rootNavigator: true).pushReplacement(
           MaterialPageRoute(
             builder: (_) => TeacherChatScreen(conversation: conversation),
           ),
@@ -149,7 +148,7 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('فشل بدء المحادثة: $e'),
-            backgroundColor: AppColors.errorRed,
+            backgroundColor: Theme.of(context).colorScheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -160,7 +159,7 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Column(
         children: [
           _buildHeader(),
@@ -187,7 +186,7 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
         bottom: 24.h,
       ),
       decoration: BoxDecoration(
-        color: AppColors.forestPrimary,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(32.r)),
       ),
       child: Column(
@@ -199,14 +198,14 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
                 child: Container(
                   padding: EdgeInsets.all(10.w),
                   decoration: BoxDecoration(
-                    color: AppColors.darkSurface,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: AppColors.glassBorderHighlight),
+                    border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                   ),
                   child: Icon(
                     Icons.arrow_back_ios_rounded,
                     size: 18.sp,
-                    color: AppColors.textDisplay,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ),
@@ -216,23 +215,23 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
                   'محادثة جديدة',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textDisplay,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ),
               Container(
                 padding: EdgeInsets.all(10.w),
                 decoration: BoxDecoration(
-                  color: AppColors.accentVivid.withValues(alpha: 0.15),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
-                    color: AppColors.accentVivid.withValues(alpha: 0.3),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Icon(
                   Icons.chat_bubble_outline_rounded,
                   size: 20.sp,
-                  color: AppColors.accentVivid,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ],
@@ -272,7 +271,7 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
       child: GestureDetector(
         onTap: () => _startConversation(student),
         child: GlassCard(
-          color: AppColors.darkSurface.withValues(alpha: 0.7),
+          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
           padding: EdgeInsets.all(16.w),
           child: Row(
             children: [
@@ -281,11 +280,11 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
                 padding: EdgeInsets.all(2.w),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.glassBorderHighlight),
+                  border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                 ),
                 child: CircleAvatar(
                   radius: 24.r,
-                  backgroundColor: AppColors.forestPrimary,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
                   child: avatar != null
                       ? ClipOval(
                           child: Image.network(
@@ -295,14 +294,14 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => Icon(
                               Icons.person_rounded,
-                              color: AppColors.textMuted,
+                              color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                             ),
                           ),
                         )
                       : Text(
                           name.isNotEmpty ? name[0] : 'ط',
                           style: TextStyle(
-                            color: AppColors.textDisplay,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
                           ),
@@ -319,7 +318,7 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
                     Text(
                       name,
                       style: TextStyle(
-                        color: AppColors.textDisplay,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
                         fontSize: 15.sp,
                       ),
@@ -335,13 +334,13 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
                           _buildTag(
                             icon: Icons.group_rounded,
                             text: groupName,
-                            color: AppColors.warmAmber,
+                            color: Colors.orange,
                           ),
                         if (courseName != null)
                           _buildTag(
                             icon: Icons.book_rounded,
                             text: courseName,
-                            color: AppColors.infoPurple,
+                            color: Colors.purple,
                           ),
                       ],
                     ),
@@ -353,15 +352,15 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
               Container(
                 padding: EdgeInsets.all(10.w),
                 decoration: BoxDecoration(
-                  color: AppColors.accentVivid.withValues(alpha: 0.15),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
-                    color: AppColors.accentVivid.withValues(alpha: 0.3),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Icon(
                   Icons.chat_rounded,
-                  color: AppColors.accentVivid,
+                  color: Theme.of(context).colorScheme.primary,
                   size: 18.sp,
                 ),
               ),
@@ -438,14 +437,14 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
             Container(
               padding: EdgeInsets.all(24.w),
               decoration: BoxDecoration(
-                color: AppColors.forestPrimary,
+                color: Theme.of(context).colorScheme.surface,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.glassBorderHighlight),
+                border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
               ),
               child: Icon(
                 Icons.search_off_rounded,
                 size: 56.sp,
-                color: AppColors.textMuted,
+                color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
               ),
             ).animate().scale(
                   delay: 200.ms,
@@ -457,14 +456,14 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
               'لم يتم العثور على طلاب',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textDisplay,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
               textAlign: TextAlign.center,
             ).animate().fadeIn(delay: 300.ms),
             SizedBox(height: 8.h),
             Text(
               'جرب البحث باسم مختلف',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 14.sp),
+              style: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey), fontSize: 14.sp),
               textAlign: TextAlign.center,
             ).animate().fadeIn(delay: 400.ms),
           ],
@@ -483,14 +482,14 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
             Container(
               padding: EdgeInsets.all(24.w),
               decoration: BoxDecoration(
-                color: AppColors.forestPrimary,
+                color: Theme.of(context).colorScheme.surface,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.glassBorderHighlight),
+                border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
               ),
               child: Icon(
                 Icons.error_outline_rounded,
                 size: 56.sp,
-                color: AppColors.errorRed,
+                color: Theme.of(context).colorScheme.error,
               ),
             ),
             SizedBox(height: 24.h),
@@ -498,14 +497,14 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
               'تعذر تحميل الطلاب',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textDisplay,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 8.h),
             Text(
               _errorMessage ?? '',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 13.sp),
+              style: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey), fontSize: 13.sp),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 24.h),
@@ -520,13 +519,13 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                 decoration: BoxDecoration(
-                  color: AppColors.accentVivid,
+                  color: Theme.of(context).colorScheme.primary,
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Text(
                   'إعادة المحاولة',
                   style: TextStyle(
-                    color: AppColors.forestDeep,
+                    color: Theme.of(context).scaffoldBackgroundColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 14.sp,
                   ),

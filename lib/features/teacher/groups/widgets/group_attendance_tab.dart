@@ -76,23 +76,23 @@ class GroupAttendanceTab extends StatelessWidget {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return GlassCard(
-                color: AppColors.darkSurface.withValues(alpha: 0.7),
+                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
                 padding: EdgeInsets.all(20.w),
                 child: Row(
                   children: [
                     SizedBox(
                       width: 20.w,
                       height: 20.w,
-                      child: const CircularProgressIndicator(
+                      child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        backgroundColor: AppColors.accentVivid,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     SizedBox(width: 16.w),
                     Text(
                       'تحميل ملخص حضور اليوم...',
                       style: TextStyle(
-                        color: AppColors.textMuted,
+                        color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -121,7 +121,7 @@ class GroupAttendanceTab extends StatelessWidget {
                 .length;
 
             return GlassCard(
-              color: AppColors.darkSurface.withValues(alpha: 0.7),
+              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
               padding: EdgeInsets.all(24.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,14 +130,14 @@ class GroupAttendanceTab extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.today_rounded,
-                        color: AppColors.textDisplay,
+                        color: Theme.of(context).colorScheme.onSurface,
                         size: 20.sp,
                       ),
                       SizedBox(width: 10.w),
                       Text(
                         'حضور اليوم',
                         style: TextStyle(
-                          color: AppColors.textDisplay,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontWeight: FontWeight.bold,
                           fontSize: 17.sp,
                         ),
@@ -151,7 +151,7 @@ class GroupAttendanceTab extends StatelessWidget {
                         child: _buildMiniStat(
                           label: 'حضور',
                           value: present,
-                          color: AppColors.emeraldGreen,
+                          color: Colors.green,
                           icon: Icons.check_circle_rounded,
                         ),
                       ),
@@ -160,7 +160,7 @@ class GroupAttendanceTab extends StatelessWidget {
                         child: _buildMiniStat(
                           label: 'تأخير',
                           value: late,
-                          color: AppColors.warmAmber,
+                          color: Colors.orange,
                           icon: Icons.access_time_rounded,
                         ),
                       ),
@@ -169,7 +169,7 @@ class GroupAttendanceTab extends StatelessWidget {
                         child: _buildMiniStat(
                           label: 'غياب',
                           value: absent,
-                          color: AppColors.errorRed,
+                          color: Theme.of(context).colorScheme.error,
                           icon: Icons.cancel_rounded,
                         ),
                       ),
@@ -178,7 +178,7 @@ class GroupAttendanceTab extends StatelessWidget {
                         child: _buildMiniStat(
                           label: 'لم يُسجل',
                           value: pending,
-                          color: AppColors.textMuted,
+                          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                           icon: Icons.help_outline_rounded,
                         ),
                       ),
@@ -191,7 +191,7 @@ class GroupAttendanceTab extends StatelessWidget {
         ),
         SizedBox(height: 20.h),
         GlassCard(
-          color: AppColors.darkSurface.withValues(alpha: 0.7),
+          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
           padding: EdgeInsets.all(24.w),
           child: Column(
             children: [
@@ -199,8 +199,8 @@ class GroupAttendanceTab extends StatelessWidget {
                     Icons.broadcast_on_personal_rounded,
                     size: 56.sp,
                     color: isLiveActive
-                        ? AppColors.errorRed
-                        : AppColors.textMuted,
+                        ? Theme.of(context).colorScheme.error
+                        : (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                   )
                   .animate(target: isLiveActive ? 1 : 0)
                   .scale(
@@ -214,7 +214,7 @@ class GroupAttendanceTab extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textDisplay,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               SizedBox(height: 8.h),
@@ -223,7 +223,7 @@ class GroupAttendanceTab extends StatelessWidget {
                     ? 'الحصة جارية الآن. يمكنك بدء مراقبة الحضور.'
                     : 'لا توجد حصة جارية حالياً (يفتح قبل الموعد بـ 30 دقيقة).',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14.sp, color: AppColors.textMuted),
+                style: TextStyle(fontSize: 14.sp, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
               ),
               SizedBox(height: 24.h),
               SizedBox(
@@ -253,22 +253,22 @@ class GroupAttendanceTab extends StatelessWidget {
             );
           },
           child: GlassCard(
-            color: AppColors.darkSurface.withValues(alpha: 0.7),
+            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
             padding: EdgeInsets.all(20.w),
             child: Row(
               children: [
                 Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: AppColors.infoPurple.withValues(alpha: 0.15),
+                    color: Colors.purple.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
-                      color: AppColors.infoPurple.withValues(alpha: 0.3),
+                      color: Colors.purple.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Icon(
                     Icons.history_rounded,
-                    color: AppColors.infoPurple,
+                    color: Colors.purple,
                   ),
                 ),
                 SizedBox(width: 16.w),
@@ -281,7 +281,7 @@ class GroupAttendanceTab extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textDisplay,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       SizedBox(height: 4.h),
@@ -289,7 +289,7 @@ class GroupAttendanceTab extends StatelessWidget {
                         'مراجعة الحضور للأيام السابقة',
                         style: TextStyle(
                           fontSize: 13.sp,
-                          color: AppColors.textMuted,
+                          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                         ),
                       ),
                     ],
@@ -298,7 +298,7 @@ class GroupAttendanceTab extends StatelessWidget {
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 16.sp,
-                  color: AppColors.textMuted,
+                  color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                 ),
               ],
             ),

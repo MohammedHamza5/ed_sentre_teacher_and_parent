@@ -19,22 +19,22 @@ class GroupScheduleTab extends StatelessWidget {
         return Padding(
           padding: EdgeInsets.all(20.w),
           child: GlassCard(
-            color: AppColors.darkSurface.withValues(alpha: 0.7),
+            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
             padding: EdgeInsets.all(16.w),
             child: Row(
               children: [
                 Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: AppColors.accentVivid.withValues(alpha: 0.15),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
-                      color: AppColors.accentVivid.withValues(alpha: 0.3),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Icon(
                     Icons.schedule_rounded,
-                    color: AppColors.accentVivid,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 SizedBox(width: 16.w),
@@ -42,7 +42,7 @@ class GroupScheduleTab extends StatelessWidget {
                   child: Text(
                     'الموعد: ${GroupDetailsHelper.getFieldDayName(group.dayOfWeek)} • ${group.startTime}',
                     style: TextStyle(
-                      color: AppColors.textDisplay,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.bold,
                       fontSize: 15.sp,
                     ),
@@ -60,13 +60,13 @@ class GroupScheduleTab extends StatelessWidget {
             Icon(
               Icons.calendar_today_rounded,
               size: 64.sp,
-              color: AppColors.textMuted.withValues(alpha: 0.5),
+              color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
             ),
             SizedBox(height: 16.h),
             Text(
               'لا توجد مواعيد',
               style: TextStyle(
-                color: AppColors.textDisplay,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
               ),
@@ -74,7 +74,7 @@ class GroupScheduleTab extends StatelessWidget {
             SizedBox(height: 8.h),
             Text(
               'لم يتم تحديد مواعيد لهذه المجموعة',
-              style: TextStyle(color: AppColors.textMuted),
+              style: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
             ),
           ],
         ),
@@ -89,22 +89,22 @@ class GroupScheduleTab extends StatelessWidget {
         return Padding(
           padding: EdgeInsets.only(bottom: 14.h),
           child: GlassCard(
-            color: AppColors.darkSurface.withValues(alpha: 0.7),
+            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
             padding: EdgeInsets.all(16.w),
             child: Row(
               children: [
                 Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: AppColors.infoPurple.withValues(alpha: 0.15),
+                    color: Colors.purple.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(14.r),
                     border: Border.all(
-                      color: AppColors.infoPurple.withValues(alpha: 0.3),
+                      color: Colors.purple.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Icon(
                     Icons.access_time_rounded,
-                    color: AppColors.infoPurple,
+                    color: Colors.purple,
                     size: 24.sp,
                   ),
                 ),
@@ -116,7 +116,7 @@ class GroupScheduleTab extends StatelessWidget {
                       Text(
                         GroupDetailsHelper.translateDay(schedule.dayOfWeek),
                         style: TextStyle(
-                          color: AppColors.textDisplay,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontWeight: FontWeight.bold,
                           fontSize: 16.sp,
                         ),
@@ -125,7 +125,7 @@ class GroupScheduleTab extends StatelessWidget {
                       Text(
                         '${schedule.startTime} - ${schedule.endTime}',
                         style: TextStyle(
-                          color: AppColors.textMuted,
+                          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -139,16 +139,16 @@ class GroupScheduleTab extends StatelessWidget {
                     vertical: 8.h,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.forestPrimary,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(14.r),
-                    border: Border.all(color: AppColors.glassBorderHighlight),
+                    border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                   ),
                   child: Text(
                     schedule.roomName?.isNotEmpty == true
                         ? schedule.roomName!
                         : '—',
                     style: TextStyle(
-                      color: AppColors.textMuted,
+                      color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                       fontSize: 12.sp,
                       fontWeight: FontWeight.bold,
                     ),

@@ -43,7 +43,8 @@ class _TeacherNotificationsScreenState
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     final position = _scrollController.position;
-    if (position.pixels >= position.maxScrollExtent - 200) {
+    if (position.maxScrollExtent > 0 &&
+        position.pixels >= position.maxScrollExtent - 50) {
       _loadMore();
     }
   }
@@ -87,6 +88,7 @@ class _TeacherNotificationsScreenState
         setState(() {
           _isLoading = false;
           _isLoadingMore = false;
+          _hasMore = false;
         });
       }
       debugPrint('Error loading notifications: $e');
@@ -133,25 +135,25 @@ class _TeacherNotificationsScreenState
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'الإشعارات',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
-        foregroundColor: AppColors.textPrimary,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         elevation: 0,
         actions: [
           if (_notifications.any((n) => !n.isRead))
             IconButton(
-              icon: const Icon(Icons.done_all, color: AppColors.primary),
+              icon: Icon(Icons.done_all, color: AppColors.primary),
               tooltip: 'تحديد الكل كمقروء',
               onPressed: _markAllRead,
             ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _notifications.isEmpty
           ? _buildEmptyState()
           : RefreshIndicator(
@@ -206,13 +208,13 @@ class _TeacherNotificationsScreenState
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           SizedBox(height: 8.h),
           Text(
             'سنعلمك عند وجود أي تحديثات جديدة',
-            style: TextStyle(fontSize: 14.sp, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 14.sp, color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey)),
           ),
         ],
       ),
@@ -257,7 +259,7 @@ class _TeacherNotificationsScreenState
               child: Icon(
                 _getIconForType(notification.type),
                 color: notification.isRead
-                    ? AppColors.textSecondary
+                    ? (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey)
                     : AppColors.primary,
                 size: 20.sp,
               ),
@@ -280,7 +282,7 @@ class _TeacherNotificationsScreenState
                             fontWeight: notification.isRead
                                 ? FontWeight.w600
                                 : FontWeight.bold,
-                            color: AppColors.textPrimary,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                       ),
@@ -288,7 +290,7 @@ class _TeacherNotificationsScreenState
                         Container(
                           width: 8.w,
                           height: 8.w,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             color: AppColors.secondary,
                             shape: BoxShape.circle,
                           ),
@@ -300,7 +302,7 @@ class _TeacherNotificationsScreenState
                     notification.body,
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: AppColors.textSecondary,
+                      color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
                       height: 1.4,
                     ),
                   ),

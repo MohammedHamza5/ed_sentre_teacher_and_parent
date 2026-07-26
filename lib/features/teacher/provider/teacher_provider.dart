@@ -21,6 +21,7 @@ class TeacherProvider extends ChangeNotifier {
   // حالة التحميل
   bool _isLoading = false;
   String? _error;
+  DateTime? _lastFetchTime;
 
   TeacherProvider(this._repository);
 
@@ -136,56 +137,73 @@ class TeacherProvider extends ChangeNotifier {
   }
 
   /// تحميل بيانات السنتر (المجموعات، الطلاب، الإحصائيات)
-  Future<void> _loadCenterData() async {
+  /// NOTE: Optimized load order — groups first, then everything else in parallel.
+  Future<void> _loadCenterData({bool forceRefresh = false}) async {
     if (_selectedCenter == null || _teacherProfile == null) return;
+
+    if (!forceRefresh && _lastFetchTime != null) {
+      final diff = DateTime.now().difference(_lastFetchTime!);
+      if (diff.inMinutes < 3) {
+        log.debug('Data is fresh (${diff.inSeconds}s old). Bypassing network fetch.', tag: 'TeacherProvider');
+        return;
+      }
+    }
 
     try {
       final teacherId = _teacherProfile!.id;
       final centerId = _selectedCenter!.id;
+      final teacherUserId = _teacherProfile!.userId;
 
-      // 1. Load Critical Data (Groups & Students & Enrollment)
+      // 1. Load Groups first (needed by students query)
       try {
-        final results = await Future.wait([
-          _repository.getTeacherGroups(teacherId, centerId),
-          _repository.getTeacherStudents(
-            teacherId: teacherId,
-            centerId: centerId,
-          ),
-          _repository.getTeacherEnrollment(
-            centerId: centerId,
-            teacherUserId: _teacherProfile!.userId,
-          ),
-        ]);
-
-        _groups = results[0] as List<GroupModel>;
-        _students = results[1] as List<Map<String, dynamic>>;
-        _currentEnrollment = results[2] as TeacherEnrollmentModel?;
-
+        _groups = await _repository.getTeacherGroups(teacherId, centerId);
         log.debug(
-          'Critical data loaded: Groups=${_groups.length}, Students=${_students.length}',
+          'Groups loaded: ${_groups.length}',
           tag: 'TeacherProvider',
         );
         notifyListeners();
       } catch (e) {
-        log.error('Critical data load failed', tag: 'TeacherProvider', error: e);
+        log.error('Groups load failed', tag: 'TeacherProvider', error: e);
         _error = 'failed_to_load_data';
         return;
       }
 
-      // 2. Load Non-Critical Data (Stats)
+      // 2. Load Students + Enrollment + Stats ALL in parallel
+      // NOTE: Students uses preloaded groups to avoid duplicate getTeacherGroups call
       try {
-        final statsUserId = _teacherProfile?.userId ?? _teacherProfile?.id;
-
-        if (statsUserId != null) {
-          _dashboardStats = await _repository.getTeacherDashboardStats(
+        final results = await Future.wait([
+          _repository.getTeacherStudents(
             teacherId: teacherId,
-            teacherUserId: statsUserId,
             centerId: centerId,
-          );
-        }
+            preloadedGroups: _groups,
+          ),
+          _repository.getTeacherEnrollment(
+            centerId: centerId,
+            teacherUserId: teacherUserId,
+            teacherTableId: teacherId,
+          ),
+          _repository.getTeacherDashboardStats(
+            teacherId: teacherId,
+            teacherUserId: teacherUserId,
+            centerId: centerId,
+          ),
+        ]);
+
+        _students = results[0] as List<Map<String, dynamic>>;
+        _currentEnrollment = results[1] as TeacherEnrollmentModel?;
+        _dashboardStats = results[2] as Map<String, dynamic>;
+
+        _lastFetchTime = DateTime.now();
+
+        log.debug(
+          'All data loaded: Students=${_students.length}, Stats=$_dashboardStats',
+          tag: 'TeacherProvider',
+        );
+        notifyListeners();
       } catch (e) {
-        // NOTE: Stats failure is non-fatal — UI still works without them
-        log.warning('Stats load failed (non-fatal)', tag: 'TeacherProvider');
+        log.error('Data load failed', tag: 'TeacherProvider', error: e);
+        // NOTE: Non-fatal — UI can still work with groups data
+        log.warning('Partial data load, continuing...', tag: 'TeacherProvider');
       }
     } catch (e) {
       log.error('_loadCenterData failed', tag: 'TeacherProvider', error: e);
@@ -346,15 +364,16 @@ class TeacherProvider extends ChangeNotifier {
   // ═══════════════════════════════════════════════════════════════════════
 
   /// تحديث البيانات
-  Future<void> refreshData() async {
+  Future<void> refreshData({bool forceRefresh = true}) async {
     if (_selectedCenter != null) {
-      await _loadCenterData();
+      await _loadCenterData(forceRefresh: forceRefresh);
     } else {
       await refresh();
     }
   }
 
   Future<void> refresh() async {
+    _lastFetchTime = null; // Clear cache on manual hard refresh
     if (_teacherProfile?.userId != null) {
       await loadTeacherData(_teacherProfile!.userId);
     }
@@ -369,6 +388,7 @@ class TeacherProvider extends ChangeNotifier {
     _students = [];
     _dashboardStats = {};
     _error = null;
+    _lastFetchTime = null;
     notifyListeners();
   }
 

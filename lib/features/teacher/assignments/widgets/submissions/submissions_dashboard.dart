@@ -80,10 +80,10 @@ class SubmissionsDashboard extends StatelessWidget {
                             strokeWidth: 4,
                             strokeCap: StrokeCap.round,
                             color: avgPercentage >= 80
-                                ? AppColors.emeraldGreen
+                                ? Colors.green
                                 : avgPercentage >= 50
-                                    ? AppColors.warmAmber
-                                    : AppColors.errorRed,
+                                    ? Colors.orange
+                                    : Theme.of(context).colorScheme.error,
                           ),
                           Text(
                             '${avgPercentage.toStringAsFixed(0)}%',
@@ -135,7 +135,7 @@ class SubmissionsDashboard extends StatelessWidget {
                                   color: Colors.white70, fontSize: 10.sp)),
                           Text('$gradedCount',
                               style: TextStyle(
-                                  color: AppColors.emeraldGreen,
+                                  color: Colors.green,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12.sp)),
                         ],
@@ -148,7 +148,7 @@ class SubmissionsDashboard extends StatelessWidget {
                           minHeight: 4.h,
                           backgroundColor: Colors.white12,
                           valueColor: const AlwaysStoppedAnimation(
-                              AppColors.emeraldGreen),
+                              Colors.green),
                         ),
                       ),
                       SizedBox(height: 8.h),
@@ -160,7 +160,7 @@ class SubmissionsDashboard extends StatelessWidget {
                                   color: Colors.white70, fontSize: 10.sp)),
                           Text('$pendingCount',
                               style: TextStyle(
-                                  color: AppColors.warmAmber,
+                                  color: Colors.orange,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12.sp)),
                         ],

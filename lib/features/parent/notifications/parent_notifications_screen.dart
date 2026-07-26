@@ -7,6 +7,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../../../../core/config/app_colors.dart';
 import '../../../../shared/data/supabase_repository.dart';
 import '../../../../shared/models/notification_model.dart';
+import '../../../../core/widgets/genius/shimmer_skeleton.dart';
 
 /// Parent Notifications Screen - Premium Design with Real Data
 class ParentNotificationsScreen extends StatefulWidget {
@@ -43,7 +44,8 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     final position = _scrollController.position;
-    if (position.pixels >= position.maxScrollExtent - 200) {
+    if (position.maxScrollExtent > 0 &&
+        position.pixels >= position.maxScrollExtent - 50) {
       _loadMore();
     }
   }
@@ -108,13 +110,13 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
     final unreadCount = _notifications.where((n) => !n.isRead).length;
 
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Column(
         children: [
           // Premium Header
           Container(
             decoration: BoxDecoration(
-              gradient: AppColors.premiumOcean,
+              gradient: AppColors.premiumEmerald,
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(32.r),
                 bottomRight: Radius.circular(32.r),
@@ -135,7 +137,7 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
                           style: TextStyle(
                             fontSize: 24.sp,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textDisplay,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                         if (unreadCount > 0)
@@ -183,7 +185,10 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
           // Content
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? Padding(
+                    padding: EdgeInsets.all(16.w),
+                    child: const CardShimmerSkeleton(itemCount: 5),
+                  )
                 : RefreshIndicator(
                     onRefresh: () => _loadNotifications(reset: true),
                     child: _notifications.isEmpty
@@ -200,7 +205,7 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
                                 return Padding(
                                   padding: EdgeInsets.symmetric(vertical: 12.h),
                                   child: const Center(
-                                    child: CircularProgressIndicator(),
+                                    child: ShimmerListItem(),
                                   ),
                                 );
                               }
@@ -221,20 +226,20 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       decoration: BoxDecoration(
-        color: AppColors.textDisplay.withValues(alpha: 0.1),
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.textDisplay, size: 18.sp),
+          Icon(icon, color: Theme.of(context).colorScheme.onSurface, size: 18.sp),
           SizedBox(width: 8.w),
           Text(
             count,
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.bold,
-              color: AppColors.textDisplay,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           SizedBox(width: 4.w),
@@ -257,11 +262,11 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16.r),
         border: !notification.isRead
             ? Border.all(color: color.withValues(alpha: 0.5), width: 2)
-            : Border.all(color: AppColors.darkBorder),
+            : Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
         boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: notification.isRead ? 0.05 : 0.1),
@@ -309,7 +314,7 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
                                 fontWeight: notification.isRead
                                     ? FontWeight.w500
                                     : FontWeight.bold,
-                                color: AppColors.textDisplay,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                           ),
@@ -329,7 +334,7 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
                         notification.body,
                         style: TextStyle(
                           fontSize: 13.sp,
-                          color: AppColors.textMuted,
+                          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                           height: 1.4,
                         ),
                         maxLines: 2,
@@ -340,7 +345,7 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
                         timeago.format(notification.createdAt, locale: 'ar'),
                         style: TextStyle(
                           fontSize: 11.sp,
-                          color: AppColors.textMuted.withValues(alpha: 0.7),
+                          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.7),
                         ),
                       ),
                     ],
@@ -357,19 +362,19 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
   Color _getTypeColor(String type) {
     switch (type) {
       case 'attendance':
-        return AppColors.emeraldGreen;
+        return Colors.green;
       case 'grade':
         return AppColors.warningAmber;
       case 'payment':
-        return AppColors.errorRed;
+        return Theme.of(context).colorScheme.error;
       case 'assignment':
-        return AppColors.infoPurple;
+        return Colors.purple;
       case 'message':
-        return AppColors.premiumOcean.colors.first;
+        return AppColors.premiumEmerald.colors.first;
       case 'announcement':
         return AppColors.premiumSunset.colors.first;
       default:
-        return AppColors.textMuted;
+        return (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey);
     }
   }
 
@@ -400,13 +405,13 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
           Container(
             padding: EdgeInsets.all(32.w),
             decoration: BoxDecoration(
-              color: AppColors.premiumOcean.colors.first.withValues(alpha: 0.1),
+              color: AppColors.parentPrimary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.notifications_off_rounded,
               size: 64.sp,
-              color: AppColors.premiumOcean.colors.first,
+              color: AppColors.parentPrimary,
             ),
           ).animate().scale(duration: 500.ms, curve: Curves.elasticOut),
           SizedBox(height: 24.h),
@@ -415,13 +420,13 @@ class _ParentNotificationsScreenState extends State<ParentNotificationsScreen> {
             style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,
-              color: AppColors.textDisplay,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ).animate().fadeIn(delay: 200.ms),
           SizedBox(height: 8.h),
           Text(
             'سنخبرك فور حدوث أي نشاط جديد لابنك',
-            style: TextStyle(fontSize: 14.sp, color: AppColors.textMuted),
+            style: TextStyle(fontSize: 14.sp, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
           ).animate().fadeIn(delay: 400.ms),
         ],
       ),

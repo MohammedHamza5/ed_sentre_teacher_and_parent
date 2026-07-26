@@ -17,7 +17,7 @@ class ExamReviewQuestionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (answer.question == null) return const SizedBox.shrink();
+    if (answer.question == null) return SizedBox.shrink();
 
     final question = answer.question!;
     final isCorrect = answer.isCorrect == true;
@@ -122,11 +122,11 @@ class ExamReviewQuestionCard extends StatelessWidget {
     if (isUnanswered) {
       return (const Color(0xFF94A3B8), Icons.hourglass_empty_rounded);
     } else if (isCorrect) {
-      return (AppColors.emeraldGreen, Icons.check_circle_rounded);
+      return (Colors.green, Icons.check_circle_rounded);
     } else if (isWrong) {
-      return (AppColors.errorRed, Icons.cancel_rounded);
+      return (AppColors.danger, Icons.cancel_rounded);
     } else {
-      return (AppColors.accentVivid, Icons.subject_rounded);
+      return (AppColors.primary, Icons.subject_rounded);
     }
   }
 
@@ -244,30 +244,30 @@ class ExamReviewQuestionCard extends StatelessWidget {
     Widget? trailing;
 
     if (isStudentChoice && isCorrectOption) {
-      bgColor = AppColors.emeraldGreen.withValues(alpha: 0.2);
-      borderColor = AppColors.emeraldGreen;
+      bgColor = Colors.green.withValues(alpha: 0.2);
+      borderColor = Colors.green;
       textColor = Colors.white;
       trailing = Icon(
         Icons.check_circle_rounded,
-        color: AppColors.emeraldGreen,
+        color: Colors.green,
         size: 24.sp,
       );
     } else if (isStudentChoice && !isCorrectOption) {
-      bgColor = AppColors.errorRed.withValues(alpha: 0.2);
-      borderColor = AppColors.errorRed;
+      bgColor = AppColors.danger.withValues(alpha: 0.2);
+      borderColor = AppColors.danger;
       textColor = Colors.white;
       trailing = Icon(
         Icons.cancel_rounded,
-        color: AppColors.errorRed,
+        color: AppColors.danger,
         size: 24.sp,
       );
     } else if (isCorrectOption) {
-      bgColor = AppColors.emeraldGreen.withValues(alpha: 0.05);
-      borderColor = AppColors.emeraldGreen.withValues(alpha: 0.5);
-      textColor = AppColors.emeraldGreen;
+      bgColor = Colors.green.withValues(alpha: 0.05);
+      borderColor = Colors.green.withValues(alpha: 0.5);
+      textColor = Colors.green;
       trailing = Icon(
         Icons.check_rounded,
-        color: AppColors.emeraldGreen,
+        color: Colors.green,
         size: 24.sp,
       );
     }
@@ -418,10 +418,10 @@ class ExamReviewQuestionCard extends StatelessWidget {
               width: double.infinity,
               padding: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
-                color: AppColors.emeraldGreen.withValues(alpha: 0.05),
+                color: Colors.green.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16.r),
                 border: Border.all(
-                  color: AppColors.emeraldGreen.withValues(alpha: 0.3),
+                  color: Colors.green.withValues(alpha: 0.3),
                 ),
               ),
               child: Column(
@@ -431,14 +431,14 @@ class ExamReviewQuestionCard extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.verified_rounded,
-                        color: AppColors.emeraldGreen,
+                        color: Colors.green,
                         size: 18.sp,
                       ),
                       SizedBox(width: 6.w),
                       Text(
                         'الإجابة النموذجية:',
                         style: TextStyle(
-                          color: AppColors.emeraldGreen,
+                          color: Colors.green,
                           fontSize: 13.sp,
                           fontWeight: FontWeight.bold,
                         ),

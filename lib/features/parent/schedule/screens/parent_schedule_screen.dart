@@ -34,8 +34,8 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
     AppColors.premiumSunset.colors.first,
     AppColors.premiumOcean.colors.first,
     AppColors.premiumRoyal.colors.first,
-    AppColors.errorRed,
-    AppColors.infoPurple,
+    AppColors.danger,
+    Colors.purple,
     AppColors.warningAmber,
   ];
 
@@ -81,10 +81,10 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.accentVivid),
+          ? Center(
+              child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
             )
           : Column(
               children: [
@@ -109,7 +109,7 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
                             style: TextStyle(
                               fontSize: 22.sp,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textDisplay,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                           SizedBox(height: 20.h),
@@ -138,14 +138,14 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
                                     ),
                                     decoration: BoxDecoration(
                                       color: isSelected
-                                          ? AppColors.textDisplay
-                                          : AppColors.textDisplay.withValues(
+                                          ? Theme.of(context).colorScheme.onSurface
+                                          : Theme.of(context).colorScheme.onSurface.withValues(
                                               alpha: 0.15,
                                             ),
                                       borderRadius: BorderRadius.circular(16.r),
                                       border: isToday && !isSelected
                                           ? Border.all(
-                                              color: AppColors.accentVivid,
+                                              color: Theme.of(context).colorScheme.primary,
                                               width: 2,
                                             )
                                           : null,
@@ -173,8 +173,8 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
                                                 ? FontWeight.bold
                                                 : FontWeight.w500,
                                             color: isSelected
-                                                ? AppColors.darkSurface
-                                                : AppColors.textDisplay,
+                                                ? Theme.of(context).colorScheme.surface
+                                                : Theme.of(context).colorScheme.onSurface,
                                           ),
                                         ),
                                       ],
@@ -207,7 +207,7 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
 
   Widget _buildDaySchedule(int dayIndex) {
     final daySchedule = _schedule.where((s) {
-      final sDay = s['day_of_week'] as int?;
+      final sDay = s['day'] as int?;
       return sDay == dayIndex;
     }).toList();
 
@@ -217,9 +217,9 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
           margin: EdgeInsets.all(24.w),
           padding: EdgeInsets.all(32.w),
           decoration: BoxDecoration(
-            color: AppColors.darkSurface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(color: AppColors.darkBorder),
+            border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -242,7 +242,7 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textMuted,
+                  color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                 ),
               ),
               SizedBox(height: 8.h),
@@ -250,7 +250,7 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
                 'يوم إجازة \u{1F389}',
                 style: TextStyle(
                   fontSize: 14.sp,
-                  color: AppColors.textMuted.withValues(alpha: 0.7),
+                  color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -283,9 +283,9 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
         boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: 0.1),
@@ -345,7 +345,7 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textDisplay,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   if (groupName.isNotEmpty) ...[
@@ -355,14 +355,14 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
                         Icon(
                           Icons.group_outlined,
                           size: 14.sp,
-                          color: AppColors.textMuted,
+                          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                         ),
                         SizedBox(width: 4.w),
                         Text(
                           groupName,
                           style: TextStyle(
                             fontSize: 13.sp,
-                            color: AppColors.textMuted,
+                            color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                           ),
                         ),
                       ],
@@ -378,7 +378,7 @@ class _ParentScheduleScreenState extends State<ParentScheduleScreen>
             padding: EdgeInsets.only(left: 16.w),
             child: Icon(
               Icons.chevron_left,
-              color: AppColors.textMuted.withValues(alpha: 0.5),
+              color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
               size: 24.sp,
             ),
           ),

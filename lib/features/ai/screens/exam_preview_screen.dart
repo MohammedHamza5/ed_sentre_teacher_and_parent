@@ -32,7 +32,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
   bool _isLoadingGroups = true;
   bool _isPublishing = false;
   List<GroupModel> _groups = [];
-  GroupModel? _selectedGroup;
+  Set<String> _selectedGroupIds = {};
   bool _showAnswersAfter = true;
   bool _shuffleQuestions = false;
 
@@ -93,7 +93,6 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
 
       if (teacherId != null && centerId != null) {
         _groups = await repo.getTeacherGroups(teacherId, centerId);
-        if (_groups.isNotEmpty) _selectedGroup = _groups.first;
       }
     } catch (e) {
       debugPrint('❌ Error loading groups: $e');
@@ -103,8 +102,8 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
   }
 
   Future<void> _publishExam() async {
-    if (_selectedGroup == null) {
-      _showSnack('يرجى اختيار مجموعة أولاً');
+    if (_selectedGroupIds.isEmpty) {
+      _showSnack('يرجى اختيار مجموعة واحدة على الأقل');
       return;
     }
     if (_titleController.text.trim().isEmpty) {
@@ -134,10 +133,12 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
         widget.examData['examType']?.toString() ??
         'exam';
 
+    final selectedGroups =
+        _groups.where((g) => _selectedGroupIds.contains(g.id)).toList();
+
     final assignmentId = await provider.saveAndPublishExam(
       centerId: centerId,
-      groupId: _selectedGroup!.id,
-      courseId: _selectedGroup!.courseId,
+      targetGroups: selectedGroups,
       title: _titleController.text.trim(),
       description: _descriptionController.text.trim().isEmpty
           ? null
@@ -169,7 +170,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.r),
         ),
@@ -189,7 +190,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
           ],
         ),
         content: Text(
-          'تم نشر الامتحان لمجموعة "${_selectedGroup?.groupName}" بنجاح.\n'
+          'تم نشر الامتحان بنجاح إلى ${_selectedGroupIds.length} مجموعة.\n'
           'سيظهر للطلاب في قائمة الامتحانات.',
           style: TextStyle(
             color: AppColors.textOnDarkSecondary,
@@ -212,7 +213,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                   borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 'حسناً',
                 style: TextStyle(
                   color: Colors.white,
@@ -347,7 +348,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
           'محرر الامتحانات الذكي',
           style: TextStyle(color: AppColors.textOnDark, fontSize: 18.sp),
         ),
-        backgroundColor: AppColors.darkSurface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         iconTheme: IconThemeData(color: AppColors.textOnDark),
       ),
@@ -375,8 +376,8 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                           descriptionController: _descriptionController,
                           durationController: _durationController,
                           groups: _groups,
-                          selectedGroup: _selectedGroup,
-                          onGroupChanged: (v) => setState(() => _selectedGroup = v),
+                          selectedGroupIds: _selectedGroupIds,
+                          onSelectionChanged: (v) => setState(() => _selectedGroupIds = v),
                           showAnswersAfter: _showAnswersAfter,
                           onShowAnswersChanged: (v) => setState(() => _showAnswersAfter = v),
                           shuffleQuestions: _shuffleQuestions,
@@ -467,8 +468,8 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                         Center(
                           child: OutlinedButton.icon(
                             onPressed: _addNewQuestion,
-                            icon: const Icon(Icons.add_circle_outline),
-                            label: const Text('إضافة سؤال جديد'),
+                            icon: Icon(Icons.add_circle_outline),
+                            label: Text('إضافة سؤال جديد'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.primary,
                               side: BorderSide(color: AppColors.primary),
@@ -492,9 +493,9 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                 Container(
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
-                    color: AppColors.darkSurface,
+                    color: Theme.of(context).colorScheme.surface,
                     border: Border(
-                      top: BorderSide(color: AppColors.darkBorder),
+                      top: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                     ),
                   ),
                   child: _buildPublishButton(),
@@ -520,11 +521,11 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
           ),
         ),
         child: _isPublishing
-            ? const CircularProgressIndicator(backgroundColor: Colors.white)
+            ? CircularProgressIndicator(backgroundColor: Colors.white)
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.send_rounded, color: Colors.white),
+                  Icon(Icons.send_rounded, color: Colors.white),
                   SizedBox(width: 10.w),
                   Text(
                     'نشر الامتحان للطلاب',

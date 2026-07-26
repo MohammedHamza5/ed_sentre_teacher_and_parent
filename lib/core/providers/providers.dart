@@ -6,3 +6,4 @@ export '../../features/ai/provider/ai_provider.dart';
 export '../../features/exam_generator/presentation/providers/ai_exam_provider.dart';
 export 'center_provider.dart';
 export 'app_settings_provider.dart';
+export '../../features/update/presentation/providers/update_provider.dart';

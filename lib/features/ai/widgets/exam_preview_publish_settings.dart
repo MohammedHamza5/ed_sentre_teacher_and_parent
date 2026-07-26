@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/config/app_colors.dart';
 import '../../../../shared/models/models.dart';
@@ -8,8 +8,8 @@ class ExamPreviewPublishSettings extends StatelessWidget {
   final TextEditingController descriptionController;
   final TextEditingController durationController;
   final List<GroupModel> groups;
-  final GroupModel? selectedGroup;
-  final ValueChanged<GroupModel?> onGroupChanged;
+  final Set<String> selectedGroupIds;
+  final ValueChanged<Set<String>> onSelectionChanged;
   final bool showAnswersAfter;
   final ValueChanged<bool> onShowAnswersChanged;
   final bool shuffleQuestions;
@@ -21,8 +21,8 @@ class ExamPreviewPublishSettings extends StatelessWidget {
     required this.descriptionController,
     required this.durationController,
     required this.groups,
-    required this.selectedGroup,
-    required this.onGroupChanged,
+    required this.selectedGroupIds,
+    required this.onSelectionChanged,
     required this.showAnswersAfter,
     required this.onShowAnswersChanged,
     required this.shuffleQuestions,
@@ -31,12 +31,24 @@ class ExamPreviewPublishSettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Group by Grade Level (or Course Name as fallback)
+    final Map<String, List<GroupModel>> groupedGroups = {};
+    for (final g in groups) {
+      final key = (g.gradeLevel?.isNotEmpty == true)
+          ? g.gradeLevel!
+          : (g.courseName?.isNotEmpty == true ? g.courseName! : 'عام');
+      if (!groupedGroups.containsKey(key)) {
+        groupedGroups[key] = [];
+      }
+      groupedGroups[key]!.add(g);
+    }
+
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,7 +83,7 @@ class ExamPreviewPublishSettings extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           Text(
-            'المجموعة المستهدفة',
+            'المجموعات المستهدفة (يمكنك اختيار أكثر من مجموعة أو سنة دراسية)',
             style: TextStyle(
               color: AppColors.textOnDarkSecondary,
               fontSize: 13.sp,
@@ -80,33 +92,113 @@ class ExamPreviewPublishSettings extends StatelessWidget {
           SizedBox(height: 8.h),
           if (groups.isEmpty)
             Text(
-              'لا توجد مجموعات',
+              'لا توجد مجموعات مسجلة',
               style: TextStyle(color: AppColors.error, fontSize: 13.sp),
             )
           else
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w),
-              decoration: BoxDecoration(
-                color: AppColors.darkInput,
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: AppColors.darkBorder),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<GroupModel>(
-                  value: selectedGroup,
-                  isExpanded: true,
-                  dropdownColor: AppColors.darkElevated,
-                  style: TextStyle(
-                    color: AppColors.textOnDark,
-                    fontSize: 14.sp,
-                  ),
-                  items: groups.map((g) {
-                    return DropdownMenuItem(value: g, child: Text(g.groupName));
-                  }).toList(),
-                  onChanged: onGroupChanged,
+            ...groupedGroups.entries.map((entry) {
+              final gradeName = entry.key;
+              final gradeGroups = entry.value;
+              final allSelected = gradeGroups.every(
+                  (g) => selectedGroupIds.contains(g.id));
+
+              return Container(
+                margin: EdgeInsets.only(bottom: 12.h),
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                 ),
-              ),
-            ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          gradeName,
+                          style: TextStyle(
+                            color: AppColors.textOnDark,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: () {
+                            final newSelection = Set<String>.from(selectedGroupIds);
+                            if (allSelected) {
+                              newSelection.removeAll(gradeGroups.map((g) => g.id));
+                            } else {
+                              newSelection.addAll(gradeGroups.map((g) => g.id));
+                            }
+                            onSelectionChanged(newSelection);
+                          },
+                          icon: Icon(
+                            allSelected
+                                ? Icons.deselect
+                                : Icons.select_all,
+                            size: 16.sp,
+                            color: const Color(0xFF8B5CF6),
+                          ),
+                          label: Text(
+                            allSelected ? 'إلغاء الكل' : 'تحديد السنة كاملة',
+                            style: TextStyle(
+                              color: const Color(0xFF8B5CF6),
+                              fontSize: 12.sp,
+                            ),
+                          ),
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8.h),
+                    Wrap(
+                      spacing: 8.w,
+                      runSpacing: 8.h,
+                      children: gradeGroups.map((g) {
+                        final isSelected = selectedGroupIds.contains(g.id);
+                        return FilterChip(
+                          label: Text(g.groupName),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            final newSelection = Set<String>.from(selectedGroupIds);
+                            if (selected) {
+                              newSelection.add(g.id);
+                            } else {
+                              newSelection.remove(g.id);
+                            }
+                            onSelectionChanged(newSelection);
+                          },
+                          selectedColor: const Color(0xFF8B5CF6).withOpacity(0.2),
+                          checkmarkColor: const Color(0xFF8B5CF6),
+                          backgroundColor: Theme.of(context).colorScheme.surface,
+                          labelStyle: TextStyle(
+                            color: isSelected
+                                ? const Color(0xFF8B5CF6)
+                                : AppColors.textOnDarkSecondary,
+                            fontSize: 12.sp,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20.r),
+                            side: BorderSide(
+                              color: isSelected
+                                  ? const Color(0xFF8B5CF6)
+                                  : (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              );
+            }),
           SizedBox(height: 16.h),
           _buildSwitch(
             'إظهار الإجابات بعد الحل',
@@ -140,7 +232,7 @@ class ExamPreviewPublishSettings extends StatelessWidget {
         labelStyle: TextStyle(color: AppColors.textOnDarkHint),
         prefixIcon: Icon(icon, color: AppColors.primary),
         filled: true,
-        fillColor: AppColors.darkInput,
+        fillColor: AppColors.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide.none,

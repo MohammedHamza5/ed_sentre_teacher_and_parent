@@ -37,10 +37,10 @@ class SubmissionGlassCard extends StatelessWidget {
 
     final borderColor = isGraded
         ? (pct >= 0.8
-            ? AppColors.emeraldGreen
+            ? Colors.green
             : pct >= 0.5
-                ? AppColors.warmAmber
-                : AppColors.errorRed)
+                ? Colors.orange
+                : Theme.of(context).colorScheme.error)
         : Colors.white24;
 
     return GestureDetector(
@@ -56,7 +56,7 @@ class SubmissionGlassCard extends StatelessWidget {
           boxShadow: isGraded && pct >= 0.8
               ? [
                   BoxShadow(
-                    color: AppColors.emeraldGreen.withValues(alpha: 0.1),
+                    color: Colors.green.withValues(alpha: 0.1),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   )
@@ -75,7 +75,7 @@ class SubmissionGlassCard extends StatelessWidget {
                     gradient: LinearGradient(
                       colors: isGraded
                           ? [borderColor, borderColor.withValues(alpha: 0.5)]
-                          : [AppColors.accentVivid, AppColors.secondary],
+                          : [Theme.of(context).colorScheme.primary, AppColors.secondary],
                     ),
                   ),
                   child: CircleAvatar(
@@ -167,7 +167,7 @@ class SubmissionGlassCard extends StatelessWidget {
                         EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [AppColors.accentVivid, AppColors.secondary],
+                        colors: [Theme.of(context).colorScheme.primary, AppColors.secondary],
                       ),
                       borderRadius: BorderRadius.circular(20.r),
                     ),

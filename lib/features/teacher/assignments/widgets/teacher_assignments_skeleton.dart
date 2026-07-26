@@ -16,12 +16,12 @@ class TeacherAssignmentsSkeleton extends StatelessWidget {
           margin: EdgeInsets.only(bottom: 16.h),
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: AppColors.darkSurface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: AppColors.glassBorderHighlight),
+            border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
           ),
           child: Shimmer.fromColors(
-            baseColor: AppColors.textDisplay.withValues(alpha: 0.1),
+            baseColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
             highlightColor: Theme.of(
               context,
             ).colorScheme.onSurface.withValues(alpha: 0.05),

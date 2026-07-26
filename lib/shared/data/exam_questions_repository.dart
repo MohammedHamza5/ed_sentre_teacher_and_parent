@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../shared/models/exam_models.dart';
+import '../../core/config/app_config.dart';
+import '../../demo/mock_database.dart';
 
 class ExamQuestionsRepository {
   final SupabaseClient client;
@@ -8,6 +10,17 @@ class ExamQuestionsRepository {
 
   /// Get all questions for an assignment
   Future<List<ExamQuestion>> getQuestions(String assignmentId) async {
+    if (AppConfig.isDemoMode) {
+      final ass = MockDatabase.instance.assignments.firstWhere(
+        (a) => a.id == assignmentId,
+        orElse: () => MockDatabase.instance.assignments.first,
+      );
+      if (ass.questions != null) {
+        return (ass.questions as List).map((q) => ExamQuestion.fromJson(Map<String, dynamic>.from(q))).toList();
+      }
+      return [];
+    }
+
     final response = await client
         .from('exam_questions')
         .select()
@@ -20,6 +33,10 @@ class ExamQuestionsRepository {
 
   /// Create a new question
   Future<ExamQuestion> createQuestion(ExamQuestion question) async {
+    if (AppConfig.isDemoMode) {
+      return question;
+    }
+
     final response = await client
         .from('exam_questions')
         .insert({
@@ -39,6 +56,10 @@ class ExamQuestionsRepository {
 
   /// Update an existing question
   Future<ExamQuestion> updateQuestion(ExamQuestion question) async {
+    if (AppConfig.isDemoMode) {
+      return question;
+    }
+
     final response = await client
         .from('exam_questions')
         .update({
@@ -58,6 +79,8 @@ class ExamQuestionsRepository {
 
   /// Soft delete a question
   Future<void> deleteQuestion(String questionId) async {
+    if (AppConfig.isDemoMode) return;
+
     await client
         .from('exam_questions')
         .update({'is_deleted': true})
@@ -66,8 +89,8 @@ class ExamQuestionsRepository {
 
   /// Reorder a list of questions
   Future<void> reorderQuestions(List<ExamQuestion> questions) async {
-    // Requires a batch update, but PostgREST via Supabase doesn't support bulk upsert without primary keys well.
-    // Iterating is fine for small lists (like 10-50 questions)
+    if (AppConfig.isDemoMode) return;
+
     for (int i = 0; i < questions.length; i++) {
       await client
           .from('exam_questions')
@@ -88,6 +111,8 @@ class ExamQuestionsRepository {
     bool? isCorrect,
     double? autoScore,
   }) async {
+    if (AppConfig.isDemoMode) return;
+
     await client.from('student_answers').upsert({
       'submission_id': submissionId,
       'question_id': questionId,
@@ -101,6 +126,36 @@ class ExamQuestionsRepository {
   Future<List<StudentAnswer>> getAnswersForSubmission(
     String submissionId,
   ) async {
+    if (AppConfig.isDemoMode) {
+      final sub = MockDatabase.instance.submissions.firstWhere(
+        (s) => s.id == submissionId,
+        orElse: () => MockDatabase.instance.submissions.first,
+      );
+      final ass = MockDatabase.instance.assignments.firstWhere(
+        (a) => a.id == sub.assignmentId,
+        orElse: () => MockDatabase.instance.assignments.first,
+      );
+      
+      if (ass.questions == null) return [];
+      
+      return (ass.questions as List).map((q) {
+        final eq = ExamQuestion.fromJson(Map<String, dynamic>.from(q));
+        return StudentAnswer(
+          id: 'ans_${eq.id}_$submissionId',
+          submissionId: submissionId,
+          questionId: eq.id,
+          studentAnswer: eq.type == QuestionType.mcq ? eq.correctAnswer : 'إجابة الطالب التجريبية للأسئلة المقالية.',
+          isCorrect: eq.type == QuestionType.mcq ? true : null,
+          autoScore: eq.type == QuestionType.mcq ? eq.marks : null,
+          manualScore: sub.status == 'graded' ? (eq.type == QuestionType.mcq ? null : eq.marks) : null,
+          teacherComment: sub.status == 'graded' ? 'عمل ممتاز ومجهود رائع!' : null,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          question: eq,
+        );
+      }).toList();
+    }
+
     final response = await client
         .from('student_answers')
         .select('*, exam_questions(*)')
@@ -116,6 +171,8 @@ class ExamQuestionsRepository {
     String? teacherComment,
     required String teacherId,
   }) async {
+    if (AppConfig.isDemoMode) return;
+
     await client
         .from('student_answers')
         .update({

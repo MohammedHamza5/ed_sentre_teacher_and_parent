@@ -106,7 +106,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        foregroundColor: AppColors.textPrimary,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         title: TextField(
           controller: _searchController,
           autofocus: true,
@@ -121,7 +121,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         actions: [
           if (_query.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.clear),
+              icon: Icon(Icons.clear),
               onPressed: () {
                 _searchController.clear();
                 _onSearchChanged('');
@@ -132,7 +132,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       body: _query.length < 2
           ? _buildInitialState()
           : _isSearching
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _buildResultsList(),
     );
   }
@@ -167,7 +167,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       return Center(
         child: Text(
           'لا توجد نتائج',
-          style: TextStyle(fontSize: 16.sp, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 16.sp, color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey)),
         ),
       );
     }
@@ -248,7 +248,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         subtitle: subtitle.isNotEmpty
             ? Text(subtitle, style: TextStyle(fontSize: 12.sp))
             : null,
-        trailing: const Icon(
+        trailing: Icon(
           Icons.arrow_forward_ios,
           size: 14,
           color: Colors.grey,

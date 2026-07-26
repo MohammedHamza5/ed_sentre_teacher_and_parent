@@ -11,6 +11,7 @@ import '../../../../shared/widgets/app_drawer.dart';
 import '../utils/app_logger.dart';
 import '../../../../shared/models/enums.dart';
 import '../widgets/genius/genius_bottom_nav.dart'; // Glassmorphism nav
+import '../../features/update/presentation/widgets/teacher_parent_update_banner.dart';
 
 // Screens
 import '../../features/auth/screens/splash_screen.dart';
@@ -44,6 +45,11 @@ import '../../features/parent/notifications/parent_notifications_screen.dart';
 import '../../features/parent/profile/screens/parent_profile_screen.dart';
 import '../../features/parent/schedule/screens/parent_schedule_screen.dart';
 
+// Assistant Screens
+import '../../features/assistant/screens/assistant_camera_scan_screen.dart';
+import '../../features/assistant/screens/live_center_rooms_screen.dart';
+import '../../features/assistant/screens/quick_manual_lookup_screen.dart';
+
 /// App Router Configuration using GoRouter
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -64,6 +70,7 @@ class AppRouter {
       final isOnLogin = state.matchedLocation == '/login';
       final isOnTeacherRoute = state.matchedLocation.startsWith('/teacher');
       final isOnParentRoute = state.matchedLocation.startsWith('/parent');
+      final isOnAssistantRoute = state.matchedLocation.startsWith('/assistant');
 
       log.ui(
         'Router Redirect Check',
@@ -91,16 +98,21 @@ class AppRouter {
           return '/teacher';
         } else if (userRole == UserRole.parent) {
           return '/parent';
+        } else if (userRole == UserRole.coordinator || userRole == UserRole.reception) {
+          return '/assistant';
         }
       }
 
       // Role-based route protection
       if (isAuthenticated && userRole != null) {
-        if (userRole == UserRole.teacher && isOnParentRoute) {
+        if (userRole == UserRole.teacher && (isOnParentRoute || isOnAssistantRoute)) {
           return '/teacher';
         }
-        if (userRole == UserRole.parent && isOnTeacherRoute) {
+        if (userRole == UserRole.parent && (isOnTeacherRoute || isOnAssistantRoute)) {
           return '/parent';
+        }
+        if ((userRole == UserRole.coordinator || userRole == UserRole.reception) && (isOnTeacherRoute || isOnParentRoute)) {
+          return '/assistant';
         }
       }
 
@@ -144,11 +156,13 @@ class AppRouter {
               GoRoute(
                 path: 'groups',
                 name: 'teacher-groups',
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (context, state) => const TeacherGroupsScreen(),
                 routes: [
                   GoRoute(
                     path: ':groupId',
                     name: 'teacher-group-details',
+                    parentNavigatorKey: _rootNavigatorKey,
                     builder: (context, state) {
                       final groupId = state.pathParameters['groupId']!;
                       return TeacherGroupDetailsScreen(groupId: groupId);
@@ -169,6 +183,7 @@ class AppRouter {
               GoRoute(
                 path: 'attendance/:groupId',
                 name: 'teacher-attendance-group',
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (context, state) {
                   final groupId = state.pathParameters['groupId']!;
                   return TeacherAttendanceScreen(groupId: groupId);
@@ -177,16 +192,19 @@ class AppRouter {
               GoRoute(
                 path: 'students',
                 name: 'teacher-students',
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (context, state) => const TeacherStudentsScreen(),
               ),
               GoRoute(
                 path: 'curriculum',
                 name: 'teacher-curriculum',
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (context, state) => const CurriculumManagementScreen(),
                 routes: [
                   GoRoute(
                     path: ':subjectId',
                     name: 'teacher-subject-details',
+                    parentNavigatorKey: _rootNavigatorKey,
                     builder: (context, state) {
                       final subjectId = state.pathParameters['subjectId']!;
                       final extra = state.extra as Map<String, dynamic>?;
@@ -201,28 +219,31 @@ class AppRouter {
               GoRoute(
                 path: 'assignments',
                 name: 'teacher-assignments',
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (context, state) => const TeacherAssignmentsScreen(),
               ),
               GoRoute(
                 path: 'materials',
                 name: 'teacher-materials',
-                // NOTE: Removed parentNavigatorKey to keep materials inside the shell
-                // so the bottom nav bar stays visible.
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (context, state) => const TeacherMaterialsScreen(),
               ),
               GoRoute(
                 path: 'reports',
                 name: 'teacher-reports',
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (context, state) => const TeacherReportsScreen(),
               ),
               GoRoute(
                 path: 'payments',
                 name: 'teacher-payments',
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (context, state) => const TeacherPaymentsScreen(),
               ),
               GoRoute(
                 path: 'ai-assistant',
                 name: 'teacher-ai-assistant',
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (context, state) => const AIAssistantScreen(),
               ),
               GoRoute(
@@ -233,6 +254,7 @@ class AppRouter {
               GoRoute(
                 path: 'notifications',
                 name: 'teacher-notifications',
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (context, state) => const TeacherNotificationsScreen(),
               ),
               GoRoute(
@@ -259,6 +281,7 @@ class AppRouter {
               GoRoute(
                 path: 'attendance',
                 name: 'parent-attendance',
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (context, state) => const ParentAttendanceScreen(),
               ),
               GoRoute(
@@ -269,11 +292,13 @@ class AppRouter {
               GoRoute(
                 path: 'payments',
                 name: 'parent-payments',
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (context, state) => const ParentPaymentsScreen(),
               ),
               GoRoute(
                 path: 'messages',
                 name: 'parent-messages',
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (context, state) => const ParentMessagesScreen(),
               ),
               GoRoute(
@@ -290,6 +315,32 @@ class AppRouter {
                 path: 'profile',
                 name: 'parent-profile',
                 builder: (context, state) => const ParentProfileScreen(),
+              ),
+            ],
+          ),
+        ],
+      ),
+
+      // Assistant Routes
+      ShellRoute(
+        builder: (context, state, child) {
+          return AssistantShellScreen(child: child);
+        },
+        routes: [
+          GoRoute(
+            path: '/assistant',
+            name: 'assistant-home',
+            builder: (context, state) => const AssistantCameraScanScreen(),
+            routes: [
+              GoRoute(
+                path: 'rooms',
+                name: 'assistant-rooms',
+                builder: (context, state) => const LiveCenterRoomsScreen(),
+              ),
+              GoRoute(
+                path: 'manual-lookup',
+                name: 'assistant-manual-lookup',
+                builder: (context, state) => const QuickManualLookupScreen(),
               ),
             ],
           ),
@@ -371,43 +422,30 @@ class _TeacherShellScreenState extends State<TeacherShellScreen> {
     ),
   ];
 
-  // NOTE: Bottom nav is shown on ALL teacher shell routes.
-  // Only sub-detail pages (like group details with deep paths) 
-  // where it would be distracting should be excluded.
-  // By keeping it always visible, we prevent the "disappearing nav" bug.
-
-  bool _isMainTab(String location) {
-    // Nav bar should ONLY be visible on these exact routes.
-    const mainTabs = [
-      '/teacher',
-      '/teacher/schedule',
-      '/teacher/attendance',
-      '/teacher/messages',
-      '/teacher/profile',
-    ];
-    // Exact match required so sub-routes don't show the nav bar
-    return mainTabs.contains(location);
-  }
-
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
-    final showNavBar = _isMainTab(location);
 
     return Scaffold(
       key: teacherScaffoldKey,
       drawer: const TeacherAppDrawer(),
       extendBody: true, // Content flows behind nav bar, smooth transition when hiding
-      body: widget.child,
-      bottomNavigationBar: showNavBar 
-          ? GeniusBottomNav(
-              items: _navItems
-                  .map((item) => NavItem(icon: item.icon, label: item.label))
-                  .toList(),
-              currentIndex: _calculateSelectedIndex(location),
-              onItemSelected: (index) => _onItemTapped(index, context),
-            )
-          : null,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            const TeacherParentUpdateBanner(),
+            Expanded(child: widget.child),
+          ],
+        ),
+      ),
+      bottomNavigationBar: GeniusBottomNav(
+        items: _navItems
+            .map((item) => NavItem(icon: item.icon, label: item.label))
+            .toList(),
+        currentIndex: _calculateSelectedIndex(location),
+        onItemSelected: (index) => _onItemTapped(index, context),
+      ),
     );
   }
 
@@ -485,36 +523,28 @@ class _ParentShellScreenState extends State<ParentShellScreen> {
     ),
   ];
 
-  bool _isMainTab(String location) {
-    const mainTabs = [
-      '/parent',
-      '/parent/schedule',
-      '/parent/grades',
-      '/parent/notifications',
-      '/parent/profile',
-    ];
-    return mainTabs.contains(location);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final location = GoRouterState.of(context).matchedLocation;
-    final showNavBar = _isMainTab(location);
-
     return Scaffold(
       key: parentScaffoldKey,
       drawer: const ParentAppDrawer(),
       extendBody: true,
-      body: widget.child,
-      bottomNavigationBar: showNavBar 
-          ? GeniusBottomNav(
-              items: _navItems
-                  .map((item) => NavItem(icon: item.icon, label: item.label))
-                  .toList(),
-              currentIndex: _calculateSelectedIndex(context),
-              onItemSelected: (index) => _onItemTapped(index, context),
-            )
-          : null,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            const TeacherParentUpdateBanner(),
+            Expanded(child: widget.child),
+          ],
+        ),
+      ),
+      bottomNavigationBar: GeniusBottomNav(
+        items: _navItems
+            .map((item) => NavItem(icon: item.icon, label: item.label))
+            .toList(),
+        currentIndex: _calculateSelectedIndex(context),
+        onItemSelected: (index) => _onItemTapped(index, context),
+      ),
     );
   }
 
@@ -544,4 +574,70 @@ class _NavItem {
     required this.label,
     required this.route,
   });
+}
+
+/// Assistant Shell Screen with Bottom Navigation
+// ─────────────────────────────────────────────────────────────────────────────
+class AssistantShellScreen extends StatefulWidget {
+  final Widget child;
+  const AssistantShellScreen({super.key, required this.child});
+  @override
+  State<AssistantShellScreen> createState() => _AssistantShellScreenState();
+}
+
+class _AssistantShellScreenState extends State<AssistantShellScreen> {
+  static const List<_NavItem> _navItems = [
+    _NavItem(
+      icon: Icons.qr_code_scanner_outlined,
+      activeIcon: Icons.qr_code_scanner_rounded,
+      label: 'المسح',
+      route: '/assistant',
+    ),
+    _NavItem(
+      icon: Icons.meeting_room_outlined,
+      activeIcon: Icons.meeting_room_rounded,
+      label: 'القاعات',
+      route: '/assistant/rooms',
+    ),
+    _NavItem(
+      icon: Icons.search_outlined,
+      activeIcon: Icons.search_rounded,
+      label: 'بحث يدوي',
+      route: '/assistant/manual-lookup',
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      extendBody: true,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            const TeacherParentUpdateBanner(),
+            Expanded(child: widget.child),
+          ],
+        ),
+      ),
+      bottomNavigationBar: GeniusBottomNav(
+        items: _navItems
+            .map((item) => NavItem(icon: item.icon, label: item.label))
+            .toList(),
+        currentIndex: _calculateSelectedIndex(context),
+        onItemSelected: (index) => _onItemTapped(index, context),
+      ),
+    );
+  }
+
+  int _calculateSelectedIndex(BuildContext context) {
+    final location = GoRouterState.of(context).matchedLocation;
+    if (location.startsWith('/assistant/rooms')) return 1;
+    if (location.startsWith('/assistant/manual-lookup')) return 2;
+    return 0;
+  }
+
+  void _onItemTapped(int index, BuildContext context) {
+    context.go(_navItems[index].route);
+  }
 }

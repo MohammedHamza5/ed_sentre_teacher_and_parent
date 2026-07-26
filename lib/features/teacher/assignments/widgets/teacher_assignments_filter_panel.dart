@@ -36,27 +36,27 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
 
   Widget _buildUrgentTasksPanel() {
     final pendingVal = stats['pending_grading'] ?? 0;
-    if (pendingVal == 0) return const SizedBox.shrink();
+    if (pendingVal == 0) return SizedBox.shrink();
 
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.errorRed.withValues(alpha: 0.15),
+        color: AppColors.danger.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.errorRed.withValues(alpha: 0.5)),
+        border: Border.all(color: AppColors.danger.withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: AppColors.errorRed.withValues(alpha: 0.2),
+              color: AppColors.danger.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.warning_amber_rounded,
-              color: AppColors.errorRed,
+              color: AppColors.danger,
               size: 24.sp,
             ),
           ),
@@ -68,7 +68,7 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
                 Text(
                   'المهام العاجلة: يحتاج للتصحيح!',
                   style: TextStyle(
-                    color: AppColors.errorRed,
+                    color: AppColors.danger,
                     fontWeight: FontWeight.bold,
                     fontSize: 14.sp,
                   ),
@@ -93,12 +93,12 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.accentVivid : AppColors.darkSurface,
+          color: isSelected ? AppColors.primary : AppColors.surface,
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: isSelected
-                ? AppColors.accentVivid
-                : AppColors.glassBorderHighlight,
+                ? AppColors.primary
+                : AppColors.divider,
           ),
         ),
         child: Text(
@@ -120,19 +120,19 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
       height: 48.h,
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 0.h),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.glassBorderHighlight),
+        border: Border.all(color: AppColors.divider),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: selectedGroupId,
           isExpanded: true,
-          dropdownColor: AppColors.darkSurface,
+          dropdownColor: AppColors.surface,
           style: TextStyle(color: Colors.white, fontSize: 13.sp),
           icon: Icon(Icons.arrow_drop_down_rounded, color: Colors.white54),
           items: [
-            const DropdownMenuItem(
+            DropdownMenuItem(
               value: 'all',
               child: Text('كافة المجاميع والمراحل'),
             ),
@@ -157,16 +157,16 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
         height: 48.h,
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: AppColors.darkSurface,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: AppColors.glassBorderHighlight),
+          border: Border.all(color: AppColors.divider),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               isNewest ? Icons.sort_rounded : Icons.sort_by_alpha_rounded,
-              color: AppColors.accentVivid,
+              color: AppColors.primary,
               size: 20.sp,
             ),
             SizedBox(width: 6.w),
@@ -194,24 +194,24 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
           margin: EdgeInsets.only(bottom: 12.h),
           padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
-            color: AppColors.darkSurface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(14.r),
-            border: Border.all(color: AppColors.glassBorderHighlight),
+            border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
           ),
           child: Column(
             children: [
               TextField(
                 controller: searchController,
                 onChanged: onSearchChanged,
-                style: TextStyle(color: AppColors.textDisplay, fontSize: 14.sp),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14.sp),
                 decoration: InputDecoration(
                   hintText: 'ابحث عن واجب أو مادة...',
                   hintStyle: TextStyle(
-                    color: AppColors.textDisplay.withValues(alpha: 0.3),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
                   ),
                   prefixIcon: Icon(
                     Icons.search_rounded,
-                    color: AppColors.textDisplay.withValues(alpha: 0.7),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                     size: 20.sp,
                   ),
                   suffixIcon: searchQuery.isNotEmpty
@@ -231,18 +231,18 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
                     borderSide: BorderSide(
-                      color: AppColors.glassBorderHighlight,
+                      color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
                     borderSide: BorderSide(
-                      color: AppColors.glassBorderHighlight,
+                      color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide(color: AppColors.accentVivid),
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
                   ),
                 ),
               ),
@@ -261,7 +261,7 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 12.h),
-              Divider(color: AppColors.glassBorderHighlight),
+              Divider(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
               SizedBox(height: 12.h),
               Row(
                 children: [

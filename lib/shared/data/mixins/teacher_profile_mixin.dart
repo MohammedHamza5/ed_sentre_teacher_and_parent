@@ -39,29 +39,31 @@ mixin TeacherProfileMixin on BaseRepository {
     String teacherUserId, {
     String? teacherTableId,
   }) async {
-    final idsToTry = <(String field, String value)>[
-      ('teacher_user_id', teacherUserId),
-      ('teacher_id', teacherUserId),
-      if (teacherTableId != null && teacherTableId != teacherUserId) ...[
-        ('teacher_id', teacherTableId),
-        ('teacher_user_id', teacherTableId),
-      ],
+    final conditions = <String>[
+      'teacher_user_id.eq.$teacherUserId',
+      'teacher_id.eq.$teacherUserId',
     ];
 
-    for (final (field, value) in idsToTry) {
-      final response = await client
-          .from('teacher_enrollments')
-          .select('centers!inner(*)')
-          .eq(field, value)
-          .eq('status', 'active');
+    if (teacherTableId != null && teacherTableId != teacherUserId) {
+      conditions.add('teacher_id.eq.$teacherTableId');
+      conditions.add('teacher_user_id.eq.$teacherTableId');
+    }
 
-      if ((response as List).isNotEmpty) {
-        debugPrint(
-          '✅ [TeacherRepo] Found centers via $field=$value '
-          '(${response.length} centers)',
-        );
-        return response.map((e) => CenterModel.fromJson(e['centers'])).toList();
+    final orFilter = conditions.join(',');
+
+    final response = await client
+        .from('teacher_enrollments')
+        .select('centers!inner(*)')
+        .or(orFilter)
+        .eq('status', 'active');
+
+    if ((response as List).isNotEmpty) {
+      final distinctCenters = <String, CenterModel>{};
+      for (var e in response) {
+        final center = CenterModel.fromJson(e['centers']);
+        distinctCenters[center.id] = center;
       }
+      return distinctCenters.values.toList();
     }
 
     debugPrint(
@@ -89,38 +91,30 @@ mixin TeacherProfileMixin on BaseRepository {
   Future<TeacherEnrollmentModel?> getTeacherEnrollment({
     required String centerId,
     required String teacherUserId,
+    String? teacherTableId,
   }) async {
+    final conditions = <String>[
+      'teacher_user_id.eq.$teacherUserId',
+      'teacher_id.eq.$teacherUserId',
+    ];
+
+    if (teacherTableId != null && teacherTableId != teacherUserId) {
+      conditions.add('teacher_id.eq.$teacherTableId');
+      conditions.add('teacher_user_id.eq.$teacherTableId');
+    }
+
+    final orFilter = conditions.join(',');
+
     final response = await client
         .from('teacher_enrollments')
         .select()
         .eq('center_id', centerId)
-        .eq('teacher_user_id', teacherUserId)
+        .or(orFilter)
         .eq('status', 'active')
+        .limit(1)
         .maybeSingle();
 
-    if (response == null) {
-      // Fallback: Check if we can find it via teacher_id using the teachers table
-      final teacherResponse = await client
-          .from('teachers')
-          .select('id')
-          .eq('user_id', teacherUserId)
-          .maybeSingle();
-
-      if (teacherResponse != null && teacherResponse['id'] != null) {
-        final fallbackResponse = await client
-            .from('teacher_enrollments')
-            .select()
-            .eq('center_id', centerId)
-            .eq('teacher_id', teacherResponse['id'])
-            .eq('status', 'active')
-            .maybeSingle();
-
-        if (fallbackResponse != null) {
-          return TeacherEnrollmentModel.fromJson(fallbackResponse);
-        }
-      }
-      return null;
-    }
+    if (response == null) return null;
     return TeacherEnrollmentModel.fromJson(response);
   }
 }

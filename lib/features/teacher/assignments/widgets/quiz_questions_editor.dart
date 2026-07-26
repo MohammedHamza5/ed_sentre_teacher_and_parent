@@ -61,7 +61,7 @@ class _QuizQuestionsEditorState extends State<QuizQuestionsEditor> {
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textDisplay,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const Spacer(),
@@ -82,7 +82,7 @@ class _QuizQuestionsEditorState extends State<QuizQuestionsEditor> {
           Container(
             padding: EdgeInsets.all(32.w),
             decoration: BoxDecoration(
-              color: AppColors.darkSurface,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
                 color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
@@ -100,7 +100,7 @@ class _QuizQuestionsEditorState extends State<QuizQuestionsEditor> {
                   'لا توجد أسئلة',
                   style: TextStyle(
                     fontSize: 16.sp,
-                    color: AppColors.textDisplay,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 SizedBox(height: 4.h),
@@ -139,7 +139,7 @@ class _QuizQuestionsEditorState extends State<QuizQuestionsEditor> {
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: widget.typeColor.withValues(alpha: 0.2)),
       ),
@@ -163,14 +163,14 @@ class _QuizQuestionsEditorState extends State<QuizQuestionsEditor> {
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textDisplay,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ),
               IconButton(
                 icon: Icon(
                   Icons.delete_outline,
-                  color: AppColors.errorRed,
+                  color: Theme.of(context).colorScheme.error,
                   size: 20.sp,
                 ),
                 onPressed: () => _removeQuestionAt(index),
@@ -249,10 +249,10 @@ class _QuestionDialogState extends State<QuestionDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppColors.darkSurface,
-      title: const Text(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      title: Text(
         'إضافة سؤال',
-        style: TextStyle(color: AppColors.textDisplay),
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
       ),
       content: SingleChildScrollView(
         child: Column(
@@ -264,7 +264,7 @@ class _QuestionDialogState extends State<QuestionDialog> {
               'نوع السؤال:',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: AppColors.textDisplay,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 13.sp,
               ),
             ),
@@ -287,7 +287,7 @@ class _QuestionDialogState extends State<QuestionDialog> {
               onChanged: (_) {
                 if (_errorText != null) setState(() => _errorText = null);
               },
-              style: const TextStyle(color: AppColors.textDisplay),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               decoration: InputDecoration(
                 labelText: 'نص السؤال',
                 labelStyle: TextStyle(
@@ -321,7 +321,7 @@ class _QuestionDialogState extends State<QuestionDialog> {
               SizedBox(height: 8.h),
               Text(
                 _errorText!,
-                style: TextStyle(color: AppColors.errorRed, fontSize: 12.sp),
+                style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12.sp),
               ),
             ],
           ],
@@ -340,7 +340,7 @@ class _QuestionDialogState extends State<QuestionDialog> {
         ElevatedButton(
           onPressed: _onSave,
           style: ElevatedButton.styleFrom(backgroundColor: widget.typeColor),
-          child: const Text('إضافة', style: TextStyle(color: Colors.white)),
+          child: Text('إضافة', style: TextStyle(color: Colors.white)),
         ),
       ],
     );
@@ -355,12 +355,12 @@ class _QuestionDialogState extends State<QuestionDialog> {
         decoration: BoxDecoration(
           color: isSelected
               ? widget.typeColor.withValues(alpha: 0.2)
-              : AppColors.darkSurface,
+              : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(8.r),
           border: Border.all(
             color: isSelected
                 ? widget.typeColor
-                : AppColors.glassBorderHighlight.withValues(alpha: 0.5),
+                : (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300).withValues(alpha: 0.5),
           ),
         ),
         child: Row(
@@ -394,11 +394,11 @@ class _QuestionDialogState extends State<QuestionDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'الخيارات:',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppColors.textDisplay,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         SizedBox(height: 8.h),
@@ -434,7 +434,7 @@ class _QuestionDialogState extends State<QuestionDialog> {
                             setState(() => _errorText = null);
                           }
                         },
-                        style: const TextStyle(color: AppColors.textDisplay),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                         decoration: InputDecoration(
                           hintText: 'الخيار ${i + 1}',
                           hintStyle: TextStyle(
@@ -462,11 +462,11 @@ class _QuestionDialogState extends State<QuestionDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'الإجابة الصحيحة:',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppColors.textDisplay,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         SizedBox(height: 8.h),
@@ -480,7 +480,7 @@ class _QuestionDialogState extends State<QuestionDialog> {
                   decoration: BoxDecoration(
                     color: _correctOption == 0
                         ? Colors.green.withValues(alpha: 0.15)
-                        : AppColors.darkSurface,
+                        : Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
                       color: _correctOption == 0
@@ -512,7 +512,7 @@ class _QuestionDialogState extends State<QuestionDialog> {
                   decoration: BoxDecoration(
                     color: _correctOption == 1
                         ? Colors.red.withValues(alpha: 0.15)
-                        : AppColors.darkSurface,
+                        : Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
                       color: _correctOption == 1
@@ -545,17 +545,17 @@ class _QuestionDialogState extends State<QuestionDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'الإجابة الصحيحة:',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppColors.textDisplay,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         SizedBox(height: 8.h),
         TextField(
           controller: _correctAnswerController,
-          style: const TextStyle(color: AppColors.textOnDark),
+          style: TextStyle(color: AppColors.textOnDark),
           decoration: InputDecoration(
             hintText: 'اكتب الإجابة الصحيحة للتصحيح التلقائي',
             hintStyle: TextStyle(

@@ -31,17 +31,17 @@ class AssignmentTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: AppColors.glassBorderHighlight.withValues(alpha: 0.5),
+          color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300).withValues(alpha: 0.5),
         ),
       ),
       child: TextFormField(
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboardType,
-        style: TextStyle(color: AppColors.textDisplay, fontSize: 14.sp),
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14.sp),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(
@@ -67,7 +67,7 @@ class AssignmentTextField extends StatelessWidget {
             borderSide: BorderSide.none,
           ),
           filled: true,
-          fillColor: AppColors.darkSurface,
+          fillColor: Theme.of(context).colorScheme.surface,
         ),
         validator: validator,
       ),

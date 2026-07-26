@@ -21,9 +21,9 @@ class _ParentPaymentsScreenState extends State<ParentPaymentsScreen> {
   List<PaymentModel> _payments = [];
 
   // Premium colors
-  static const _paidColor = AppColors.emeraldGreen;
+  static const _paidColor = Colors.green;
   static const _pendingColor = AppColors.warningAmber;
-  static const _overdueColor = AppColors.errorRed;
+  static const _overdueColor = AppColors.danger;
 
   @override
   void initState() {
@@ -57,10 +57,10 @@ class _ParentPaymentsScreenState extends State<ParentPaymentsScreen> {
         .fold<double>(0, (sum, p) => sum + p.amount);
 
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.accentVivid),
+          ? Center(
+              child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
             )
           : CustomScrollView(
               slivers: [
@@ -86,7 +86,7 @@ class _ParentPaymentsScreenState extends State<ParentPaymentsScreen> {
                               style: TextStyle(
                                 fontSize: 22.sp,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.textDisplay,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                             SizedBox(height: 24.h),
@@ -106,7 +106,7 @@ class _ParentPaymentsScreenState extends State<ParentPaymentsScreen> {
                                     children: [
                                       Icon(
                                         Icons.account_balance_wallet,
-                                        color: AppColors.textDisplay,
+                                        color: Theme.of(context).colorScheme.onSurface,
                                         size: 36.sp,
                                       ),
                                       SizedBox(height: 8.h),
@@ -115,14 +115,14 @@ class _ParentPaymentsScreenState extends State<ParentPaymentsScreen> {
                                         style: TextStyle(
                                           fontSize: 28.sp,
                                           fontWeight: FontWeight.bold,
-                                          color: AppColors.textDisplay,
+                                          color: Theme.of(context).colorScheme.onSurface,
                                         ),
                                       ),
                                       Text(
                                         'المستحقات المتبقية',
                                         style: TextStyle(
                                           fontSize: 12.sp,
-                                          color: AppColors.textDisplay.withValues(
+                                          color: Theme.of(context).colorScheme.onSurface.withValues(
                                             alpha: 0.9,
                                           ),
                                         ),
@@ -132,13 +132,13 @@ class _ParentPaymentsScreenState extends State<ParentPaymentsScreen> {
                                   Container(
                                     width: 1,
                                     height: 80.h,
-                                    color: AppColors.textDisplay.withValues(alpha: 0.3),
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
                                   ),
                                   Column(
                                     children: [
                                       Icon(
                                         Icons.check_circle_outline,
-                                        color: AppColors.textDisplay,
+                                        color: Theme.of(context).colorScheme.onSurface,
                                         size: 36.sp,
                                       ),
                                       SizedBox(height: 8.h),
@@ -147,14 +147,14 @@ class _ParentPaymentsScreenState extends State<ParentPaymentsScreen> {
                                         style: TextStyle(
                                           fontSize: 28.sp,
                                           fontWeight: FontWeight.bold,
-                                          color: AppColors.textDisplay,
+                                          color: Theme.of(context).colorScheme.onSurface,
                                         ),
                                       ),
                                       Text(
                                         'المدفوع',
                                         style: TextStyle(
                                           fontSize: 12.sp,
-                                          color: AppColors.textDisplay.withValues(
+                                          color: Theme.of(context).colorScheme.onSurface.withValues(
                                             alpha: 0.9,
                                           ),
                                         ),
@@ -180,7 +180,7 @@ class _ParentPaymentsScreenState extends State<ParentPaymentsScreen> {
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textDisplay,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -193,23 +193,23 @@ class _ParentPaymentsScreenState extends State<ParentPaymentsScreen> {
                       child: Container(
                         padding: EdgeInsets.all(32.w),
                         decoration: BoxDecoration(
-                          color: AppColors.darkSurface,
+                          color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(20.r),
-                          border: Border.all(color: AppColors.darkBorder),
+                          border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                         ),
                         child: Column(
                           children: [
                             Icon(
                               Icons.receipt_long_outlined,
                               size: 48.sp,
-                              color: AppColors.textMuted,
+                              color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                             ),
                             SizedBox(height: 12.h),
                             Text(
                               'لا توجد مدفوعات مسجلة لابنك',
                               style: TextStyle(
                                 fontSize: 16.sp,
-                                color: AppColors.textMuted,
+                                color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                               ),
                             ),
                           ],
@@ -266,9 +266,9 @@ class _ParentPaymentsScreenState extends State<ParentPaymentsScreen> {
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
         boxShadow: [
           BoxShadow(
             color: statusColor.withValues(alpha: 0.1),
@@ -300,7 +300,7 @@ class _ParentPaymentsScreenState extends State<ParentPaymentsScreen> {
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textDisplay,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 SizedBox(height: 4.h),
@@ -309,7 +309,7 @@ class _ParentPaymentsScreenState extends State<ParentPaymentsScreen> {
                     'تاريخ الدفع: ${DateFormat('dd/MM/yyyy').format(payment.paymentDate!)}',
                     style: TextStyle(
                       fontSize: 12.sp,
-                      color: AppColors.textMuted,
+                      color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                     ),
                   ),
               ],
@@ -325,7 +325,7 @@ class _ParentPaymentsScreenState extends State<ParentPaymentsScreen> {
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textDisplay,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               SizedBox(height: 4.h),

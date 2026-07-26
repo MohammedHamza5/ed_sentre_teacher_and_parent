@@ -82,7 +82,7 @@ class TeacherAssignmentCard extends StatelessWidget {
         typeName = 'كويز';
         break;
       default:
-        typeColor = AppColors.accentVivid;
+        typeColor = Theme.of(context).colorScheme.primary;
         typeIcon = Icons.assignment_outlined;
         typeName = 'واجب';
     }
@@ -122,7 +122,7 @@ class TeacherAssignmentCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         color: isEnded
                             ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)
-                            : AppColors.textDisplay,
+                            : Theme.of(context).colorScheme.onSurface,
                         fontFamily: 'Cairo',
                       ),
                     ),
@@ -152,7 +152,7 @@ class TeacherAssignmentCard extends StatelessWidget {
                     'مؤرشف',
                     style: TextStyle(
                       fontSize: 10.sp,
-                      color: AppColors.accentVivid,
+                      color: Theme.of(context).colorScheme.primary,
                       fontFamily: 'Cairo',
                     ),
                   ),
@@ -182,19 +182,19 @@ class TeacherAssignmentCard extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: AppColors.errorRed.withValues(alpha: 0.15),
+                    color: Theme.of(context).colorScheme.error.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20.r),
-                    border: Border.all(color: AppColors.errorRed.withValues(alpha: 0.5)),
+                    border: Border.all(color: Theme.of(context).colorScheme.error.withValues(alpha: 0.5)),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.assignment_late_rounded, color: AppColors.errorRed, size: 10.sp),
+                      Icon(Icons.assignment_late_rounded, color: Theme.of(context).colorScheme.error, size: 10.sp),
                       SizedBox(width: 4.w),
                       Text(
                         'للمراجعة',
                         style: TextStyle(
                           fontSize: 10.sp,
-                          color: AppColors.errorRed,
+                          color: Theme.of(context).colorScheme.error,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Cairo',
                         ),
@@ -221,26 +221,26 @@ class TeacherAssignmentCard extends StatelessWidget {
             ],
           ),
           SizedBox(height: 14.h),
-          Container(height: 1, color: AppColors.glassBorderHighlight),
+          Container(height: 1, color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
           SizedBox(height: 12.h),
           Row(
             children: [
               _buildIconText(
                 Icons.people_outline,
                 '$subCount تسليم',
-                AppColors.textDisplay.withValues(alpha: 0.7),
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
               ),
               const Spacer(),
               _buildIconText(
                 Icons.grade_outlined,
                 '$maxScore درجة',
-                AppColors.textDisplay.withValues(alpha: 0.7),
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
               ),
               const Spacer(),
               _buildIconText(
                 Icons.calendar_today_outlined,
                 _formatDate(dueDate),
-                isEnded ? AppColors.errorRed : Colors.green,
+                isEnded ? Theme.of(context).colorScheme.error : Colors.green,
               ),
             ],
           ),
@@ -253,7 +253,7 @@ class TeacherAssignmentCard extends StatelessWidget {
                   padding: EdgeInsets.symmetric(vertical: 8.h),
                   borderRadius: 10.r,
                   color: Colors.white.withValues(alpha: 0.05),
-                  borderColor: AppColors.glassBorderHighlight,
+                  borderColor: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
                   child: Center(
                     child: Text(
                       'التفاصيل / تعديل',

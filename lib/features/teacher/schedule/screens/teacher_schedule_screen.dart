@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/config/app_colors.dart';
 import '../../../auth/provider/auth_provider.dart';
 import '../../../../core/providers/center_provider.dart';
+import '../../provider/teacher_provider.dart';
 import '../../../../shared/data/supabase_repository.dart';
 import '../../../../shared/models/group_model.dart';
 import '../../../../shared/models/enums.dart';
@@ -62,8 +63,8 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
       final centerId = centerProvider.currentCenterId;
 
       if (teacherId != null && centerId != null) {
-        final groups = await repo.getTeacherGroups(teacherId, centerId);
-        _allGroups = groups;
+        final teacherProvider = Provider.of<TeacherProvider>(context, listen: false);
+        _allGroups = teacherProvider.groups;
       }
       _filterGroupsByDay();
     } catch (e) {
@@ -113,36 +114,36 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           'جدول الحصص',
           style: TextStyle(
-            color: AppColors.textDisplay,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 20.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: AppColors.forestDeep,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: AppColors.textDisplay),
         actions: [
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.refresh_rounded,
-              color: AppColors.accentVivid,
+              color: Theme.of(context).colorScheme.primary,
             ),
             onPressed: _loadSchedule,
           ),
-          const SizedBox.shrink(),
+          SizedBox.shrink(),
           SizedBox(width: 8.w),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: _loadSchedule,
-        backgroundColor: AppColors.accentVivid,
-        color: AppColors.darkSurface,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        color: Theme.of(context).colorScheme.surface,
         child: Column(
           children: [
             SizedBox(height: 20.h),
@@ -201,13 +202,13 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                       margin: EdgeInsets.symmetric(vertical: 4.h),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.accentVivid.withValues(alpha: 0.15)
-                            : AppColors.darkSurface.withValues(alpha: 0.5),
+                            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.15)
+                            : Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(20.r),
                         border: Border.all(
                           color: isSelected
-                              ? AppColors.accentVivid
-                              : AppColors.glassBorderHighlight,
+                              ? Theme.of(context).colorScheme.primary
+                              : (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
                           width: isSelected ? 2 : 1,
                         ),
                       ),
@@ -218,8 +219,8 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                             day.name,
                             style: TextStyle(
                               color: isSelected
-                                  ? AppColors.accentVivid
-                                  : AppColors.textDisplay,
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.onSurface,
                               fontSize: 14.sp,
                               fontWeight: isSelected
                                   ? FontWeight.bold
@@ -233,13 +234,13 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                                   height: 8.w,
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? AppColors.accentVivid
-                                        : AppColors.emeraldGreen,
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Colors.green,
                                     shape: BoxShape.circle,
                                     boxShadow: isSelected
                                         ? [
                                             BoxShadow(
-                                              color: AppColors.accentVivid
+                                              color: Theme.of(context).colorScheme.primary
                                                   .withValues(alpha: 0.5),
                                               blurRadius: 6,
                                               spreadRadius: 2,
@@ -279,7 +280,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
       child: GlassCard(
-        color: AppColors.darkSurface.withValues(alpha: 0.7),
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
         padding: EdgeInsets.zero,
         child: Row(
           children: [
@@ -287,12 +288,12 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
               decoration: BoxDecoration(
-                color: AppColors.accentVivid.withValues(alpha: 0.15),
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.horizontal(
                   right: Radius.circular(24.r),
                 ),
                 border: Border(
-                  left: BorderSide(color: AppColors.glassBorderHighlight),
+                  left: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                 ),
               ),
               child: Column(
@@ -300,7 +301,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                 children: [
                   Icon(
                     Icons.access_time_rounded,
-                    color: AppColors.accentVivid,
+                    color: Theme.of(context).colorScheme.primary,
                     size: 24.sp,
                   ),
                   SizedBox(height: 8.h),
@@ -309,7 +310,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.accentVivid,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   if (group.endTime != null && group.endTime!.isNotEmpty) ...[
@@ -318,7 +319,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                       group.endTime!.split(' ')[0],
                       style: TextStyle(
                         fontSize: 13.sp,
-                        color: AppColors.accentVivid.withValues(alpha: 0.7),
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -339,7 +340,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                       style: TextStyle(
                         fontSize: 17.sp,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textDisplay,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -370,20 +371,20 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: AppColors.forestPrimary,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: AppColors.glassBorderHighlight),
+        border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14.sp, color: AppColors.textMuted),
+          Icon(icon, size: 14.sp, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
           SizedBox(width: 6.w),
           Text(
             text,
             style: TextStyle(
               fontSize: 12.sp,
-              color: AppColors.textDisplay,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -407,13 +408,13 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
             child: Container(
               height: 100.h,
               decoration: BoxDecoration(
-                color: AppColors.darkSurface.withValues(alpha: 0.5),
+                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(24.r),
-                border: Border.all(color: AppColors.glassBorderHighlight),
+                border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
               ),
-              child: const Center(
+              child: Center(
                 child: CircularProgressIndicator(
-                  backgroundColor: AppColors.accentVivid,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ),
@@ -431,14 +432,14 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: AppColors.forestPrimary,
+              color: Theme.of(context).colorScheme.surface,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.glassBorderHighlight),
+              border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
             ),
             child: Icon(
               Icons.weekend_rounded,
               size: 64.sp,
-              color: AppColors.infoPurple,
+              color: Colors.purple,
             ),
           ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
           SizedBox(height: 24.h),
@@ -446,7 +447,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
             'لا توجد حصص في هذا اليوم',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              color: AppColors.textDisplay,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
           SizedBox(height: 12.h),
@@ -454,7 +455,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
             'استمتع بوقتك! ☕',
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+            ).textTheme.bodyMedium?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
             textAlign: TextAlign.center,
           ).animate().fadeIn(delay: 300.ms),
         ],

@@ -46,13 +46,13 @@ class _SubjectDetailManagementScreenState
   }
 
   Color _parseColor(String? colorStr) {
-    if (colorStr == null) return AppColors.accentVivid;
+    if (colorStr == null) return Theme.of(context).colorScheme.primary;
     try {
       String hexStr = colorStr;
       if (hexStr.startsWith('#')) hexStr = "FF${hexStr.substring(1)}";
       return Color(int.parse(hexStr, radix: 16));
     } catch (_) {
-      return AppColors.accentVivid;
+      return Theme.of(context).colorScheme.primary;
     }
   }
 
@@ -152,9 +152,9 @@ class _SubjectDetailManagementScreenState
               filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppColors.forestDeep.withValues(alpha: 0.85),
+                  color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
                   border: Border(
-                    top: BorderSide(color: AppColors.glassBorderHighlight),
+                    top: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                   ),
                 ),
                 padding: EdgeInsets.all(24.w),
@@ -167,7 +167,7 @@ class _SubjectDetailManagementScreenState
                         width: 40.w,
                         height: 4.h,
                         decoration: BoxDecoration(
-                          color: AppColors.textMuted.withValues(alpha: 0.5),
+                          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(2.r),
                         ),
                       ),
@@ -247,9 +247,9 @@ class _SubjectDetailManagementScreenState
               filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppColors.forestDeep.withValues(alpha: 0.85),
+                  color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
                   border: Border(
-                    top: BorderSide(color: AppColors.glassBorderHighlight),
+                    top: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                   ),
                 ),
                 padding: EdgeInsets.all(24.w),
@@ -262,7 +262,7 @@ class _SubjectDetailManagementScreenState
                         width: 40.w,
                         height: 4.h,
                         decoration: BoxDecoration(
-                          color: AppColors.textMuted.withValues(alpha: 0.5),
+                          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(2.r),
                         ),
                       ),
@@ -338,7 +338,7 @@ class _SubjectDetailManagementScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           _subject?['name'] ?? 'تفاصيل المادة',
@@ -360,7 +360,7 @@ class _SubjectDetailManagementScreenState
             color: Colors.white,
           ),
         ),
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
+        icon: Icon(Icons.add_rounded, color: Colors.white),
       ).animate().scale(delay: 400.ms, curve: Curves.easeOutBack),
       body: _isLoading
           ? __buildLoadingState()
@@ -369,7 +369,7 @@ class _SubjectDetailManagementScreenState
           : RefreshIndicator(
               onRefresh: _loadData,
               backgroundColor: _themeColor,
-              color: AppColors.forestPrimary,
+              color: Theme.of(context).colorScheme.surface,
               child: StaggeredListAnimator(
                 isList: true,
                 delayBase: 100.ms,
@@ -425,12 +425,12 @@ class _SubjectDetailManagementScreenState
           highlightColor: Colors.transparent,
         ),
         child: GlassCard(
-          color: AppColors.forestPrimary.withValues(alpha: 0.5),
+          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
           padding: EdgeInsets.zero,
           child: ExpansionTile(
             key: PageStorageKey('chapter_${chapter['id']}'),
             tilePadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-            collapsedIconColor: AppColors.textMuted,
+            collapsedIconColor: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
             iconColor: _themeColor,
             leading: Container(
               width: 44.w,
@@ -465,7 +465,7 @@ class _SubjectDetailManagementScreenState
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.darkSurface.withValues(alpha: 0.3),
+                  color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.vertical(
                     bottom: Radius.circular(24.r),
                   ),
@@ -482,7 +482,7 @@ class _SubjectDetailManagementScreenState
                         leading: Container(
                           padding: EdgeInsets.all(8.w),
                           decoration: BoxDecoration(
-                            color: AppColors.glassFrost,
+                            color: Colors.transparent,
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -499,7 +499,7 @@ class _SubjectDetailManagementScreenState
                             ? Text(
                                 '${lesson['duration_mins']} دقيقة',
                                 style: TextStyle(
-                                  color: AppColors.textMuted,
+                                  color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                                   fontSize: 12.sp,
                                 ),
                               )
@@ -507,7 +507,7 @@ class _SubjectDetailManagementScreenState
                         trailing: IconButton(
                           icon: Icon(
                             Icons.delete_outline_rounded,
-                            color: AppColors.errorRed.withValues(alpha: 0.8),
+                            color: Theme.of(context).colorScheme.error.withValues(alpha: 0.8),
                             size: 22.sp,
                           ),
                           onPressed: () {

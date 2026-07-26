@@ -226,16 +226,44 @@ mixin ParentRepositoryMixin on BaseRepository {
     debugPrint(
       '💰 [getStudentPayments] centerId: $centerId, studentUserId: $studentUserId, limit: $limit',
     );
-    final response = await client.rpc(
-      'get_student_payments',
-      params: {
-        'p_center_id': centerId,
-        'p_limit': limit,
-        'p_student_user_id': studentUserId,
-      },
-    );
+    
+    try {
+      // Resolve actual student table UUID
+      final studentData = await client
+          .from('students')
+          .select('id')
+          .eq('user_id', studentUserId)
+          .maybeSingle();
+          
+      final studentId = studentData != null ? studentData['id'] : studentUserId;
 
-    return (response as List).map((e) => PaymentModel.fromJson(e)).toList();
+      // Try RPC with p_student_id first (standard across the ecosystem)
+      try {
+        final response = await client.rpc(
+          'get_student_payments',
+          params: {
+            'p_center_id': centerId,
+            'p_limit': limit,
+            'p_student_id': studentId,
+          },
+        );
+        return (response as List).map((e) => PaymentModel.fromJson(e)).toList();
+      } catch (_) {
+        // Fallback to original RPC signature if the first one throws
+        final response = await client.rpc(
+          'get_student_payments',
+          params: {
+            'p_center_id': centerId,
+            'p_limit': limit,
+            'p_student_user_id': studentUserId,
+          },
+        );
+        return (response as List).map((e) => PaymentModel.fromJson(e)).toList();
+      }
+    } catch (e, stack) {
+      debugPrint('Error in getStudentPayments: $e');
+      return [];
+    }
   }
 
   /// Get student invoice summary

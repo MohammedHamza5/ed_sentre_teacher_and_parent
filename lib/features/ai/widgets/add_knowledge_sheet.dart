@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:ed_sentre_techer_and_parent/core/providers/center_provider.dart';
 import 'package:ed_sentre_techer_and_parent/features/ai/provider/ai_provider.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -15,17 +17,16 @@ class AddKnowledgeSheet extends StatefulWidget {
 
 class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
   final _titleController = TextEditingController();
-  final _contentController = TextEditingController();
   final _subjectController = TextEditingController();
   final _gradeController = TextEditingController();
 
   String _contentType = 'textbook';
   bool _isLoading = false;
+  File? _selectedFile;
 
   @override
   void dispose() {
     _titleController.dispose();
-    _contentController.dispose();
     _subjectController.dispose();
     _gradeController.dispose();
     super.dispose();
@@ -38,14 +39,14 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
       labelStyle: TextStyle(color: AppColors.textOnDarkSecondary),
       hintStyle: TextStyle(color: AppColors.textOnDarkHint),
       filled: true,
-      fillColor: AppColors.darkInput,
+      fillColor: Theme.of(context).colorScheme.surface,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12.r),
-        borderSide: BorderSide(color: AppColors.darkBorder),
+        borderSide: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12.r),
-        borderSide: BorderSide(color: AppColors.darkBorder),
+        borderSide: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12.r),
@@ -71,7 +72,7 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: AppColors.darkBorder,
+                  color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -138,44 +139,52 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
                 ),
               ],
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 16.h),
 
-            // Content
-            TextField(
-              controller: _contentController,
-              style: TextStyle(color: AppColors.textOnDark),
-              decoration: _inputDecoration(
-                'المحتوى النصي',
-                hint: 'الصق محتوى الكتاب أو الملزمة هنا...',
+            // PDF Upload
+            Text(
+              'ملف المحتوى (PDF)',
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textOnDark,
               ),
-              maxLines: 8,
             ),
             SizedBox(height: 8.h),
-            Container(
-              padding: EdgeInsets.all(10.w),
-              decoration: BoxDecoration(
-                color: Colors.amber.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(color: Colors.amber.withValues(alpha: 0.2)),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.lightbulb_outline,
-                    color: Colors.amber,
-                    size: 16.sp,
+            GestureDetector(
+              onTap: _pickPdf,
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: _selectedFile == null ? (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300) : const Color(0xFF8B5CF6),
+                    width: _selectedFile == null ? 1 : 2,
                   ),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: Text(
-                      'انسخ محتوى الفصل من ملف Word أو PDF والصقه هنا',
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        color: AppColors.textOnDarkSecondary,
+                ),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        _selectedFile == null ? Icons.upload_file : Icons.picture_as_pdf,
+                        color: _selectedFile == null ? AppColors.textOnDarkSecondary : const Color(0xFF8B5CF6),
+                        size: 32.sp,
                       ),
-                    ),
+                      SizedBox(height: 12.h),
+                      Text(
+                        _selectedFile == null
+                            ? 'اضغط لاختيار ملف PDF'
+                            : _selectedFile!.path.split(Platform.pathSeparator).last,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: _selectedFile == null ? AppColors.textOnDarkSecondary : AppColors.textOnDark,
+                          fontSize: 14.sp,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
             SizedBox(height: 20.h),
@@ -188,13 +197,13 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.textOnDarkSecondary,
-                      side: BorderSide(color: AppColors.darkBorder),
+                      side: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                       padding: EdgeInsets.symmetric(vertical: 14.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
-                    child: const Text('إلغاء'),
+                    child: Text('إلغاء'),
                   ),
                 ),
                 SizedBox(width: 12.w),
@@ -221,12 +230,12 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
                           ? SizedBox(
                               width: 20.w,
                               height: 20.w,
-                              child: const CircularProgressIndicator(
+                              child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 backgroundColor: Colors.white,
                               ),
                             )
-                          : const Text('حفظ'),
+                          : Text('حفظ'),
                     ),
                   ),
                 ),
@@ -252,10 +261,10 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
                   colors: [Color(0xFF8B5CF6), Color(0xFF6C3CE1)],
                 )
               : null,
-          color: isSelected ? null : AppColors.darkCard,
+          color: isSelected ? null : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
-            color: isSelected ? Colors.transparent : AppColors.darkBorder,
+            color: isSelected ? Colors.transparent : (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
           ),
         ),
         child: Row(
@@ -284,10 +293,10 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
   }
 
   Future<void> _save() async {
-    if (_titleController.text.isEmpty || _contentController.text.isEmpty) {
+    if (_titleController.text.isEmpty || _selectedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('أدخل العنوان والمحتوى'),
+          content: Text('أدخل العنوان واختر ملف PDF'),
           backgroundColor: AppColors.darkElevated,
         ),
       );
@@ -300,20 +309,28 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
       final aiProvider = context.read<AIProvider>();
       final centerProvider = context.read<CenterProvider>();
 
+      // Upload file to Supabase storage
+      final fileUrl = await aiProvider.uploadDocumentToStorage(_selectedFile!);
+      if (fileUrl == null) {
+        throw Exception('فشل في رفع الملف');
+      }
+
       await aiProvider.addToKnowledgeBase(
         centerId: centerProvider.currentCenterId!,
         title: _titleController.text,
         contentType: _contentType,
-        extractedText: _contentController.text,
+        extractedText: '', // No longer extracting text
         subjectName: _subjectController.text,
         gradeLevel: _gradeController.text,
+        fileUrl: fileUrl,
+        fileName: _selectedFile!.path.split(Platform.pathSeparator).last,
       );
 
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('تم إضافة المحتوى بنجاح ✅'),
+            content: Text('تم إضافة المحتوى بنجاح ✅'),
             backgroundColor: AppColors.success,
           ),
         );
@@ -328,4 +345,33 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
+
+  Future<void> _pickPdf() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        setState(() {
+          _selectedFile = File(result.files.single.path!);
+          // If title is empty, use the file name
+          if (_titleController.text.isEmpty) {
+            _titleController.text = result.files.single.name.replaceAll('.pdf', '');
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('فشل في اختيار الملف: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
 }
+

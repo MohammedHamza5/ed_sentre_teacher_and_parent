@@ -1,0 +1,8 @@
+<svg viewBox="0 0 180 130" xmlns="http://www.w3.org/2000/svg">
+            <rect x="65" y="10" width="22" height="22" rx="6" fill="rgba(255,255,255,0.9)"/>
+            <rect x="93" y="10" width="22" height="22" rx="6" fill="rgba(255,255,255,0.5)"/>
+            <rect x="65" y="38" width="22" height="22" rx="6" fill="rgba(255,255,255,0.3)"/>
+            <rect x="93" y="38" width="22" height="22" rx="6" fill="rgba(5,14,31,0.6)"/>
+            <circle cx="90" cy="35" r="5" fill="white"/>
+            <text x="90" y="112" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="30" font-weight="700"><tspan fill="#050E1F">Ed</tspan><tspan fill="#FFFFFF">Sentre</tspan></text>
+          </svg>

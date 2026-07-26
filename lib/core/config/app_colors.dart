@@ -1,334 +1,234 @@
 import 'package:flutter/material.dart';
 
-/// EdSentre Premium Color Palette
-/// Dark Mode First - Professional Colors for Teachers & Parents
-///
-/// 🎨 Design Philosophy:
-/// - Deep, calming backgrounds for long reading sessions
-/// - Professional yet warm accent colors
-/// - High contrast for accessibility
-/// - Subtle gradients for premium feel
+/// EdSentre Modern Academic Brand Colors
+/// 180-degree overhaul to professional Indigo & Teal card design.
 class AppColors {
   // ═══════════════════════════════════════════════════════════════════════════
-  // FOREST DARK AESTHETIC ALIASES (Glassmorphism 2.0)
+  // BRAND COLORS (Indigo & Teal)
   // ═══════════════════════════════════════════════════════════════════════════
-  static const Color forestDeep = Color(0xFF0B1410);
-  static const Color forestPrimary = Color(0xFF13201A);
-  static const Color accentVivid = Color(0xFF2DD4BF);
-  static const Color textDisplay = Color(0xFFF8FAFC);
-  static const Color textMuted = Color(0xFF94A3B8);
-  static const Color errorRed = Color(0xFFEF4444);
-  static const Color warmAmber = Color(0xFFF59E0B);
-  static const Color infoPurple = Color(0xFF8B5CF6);
-  static const Color emeraldGreen = Color(0xFF10B981);
-  static Color get glassBorderHighlight =>
-      const Color(0xFFFFFFFF).withValues(alpha: 0.1);
+  static const Color navy = Color(0xFF0F172A); // Slate-900 (Dark background)
+  static const Color navyMid = Color(0xFF1E293B); // Slate-800 (Dark surface)
+  static const Color navyLight = Color(0xFF334155); // Slate-700 (Dark border/outline)
+  static const Color navyCard = navyMid; // Dark card surface
 
-  // Backward Compatibility Aliases for components & other phases
-  static const Color accentMid = infoPurple;
-  static const Color glassFrost = Color(0x0AFFFFFF);
-  static const Color textDisabled = Color(0xFF475569);
-  static const Color heroGlow = Color(0x332DD4BF);
-  static const Color alertCoral = errorRed;
-  static const Color textBody = textMuted;
-  static const LinearGradient glassWash = glassGradient;
-  static List<BoxShadow> get glassShadow => softGlow;
-  static const Color ambientGlow = Color(0x1A2DD4BF);
-  static const Color textMain = textDisplay;
-  static const Color warningAmber = warmAmber;
+  static const Color teal = Color(0xFF0D9488); // Teal-600
+  static const Color tealDeep = Color(0xFF0F766E); // Teal-700
+
+  static const Color electric = Color(0xFF2563EB); // Royal Blue-600 (Primary Brand Accent)
+  static const Color electricGlow = Color(0xFF60A5FA); // Blue-400
+
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color whiteSoft = Color(0xFFF8FAFC); // Slate-50 (Light background)
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // DARK MODE FOUNDATION (Primary Theme)
+  // GRAYS
   // ═══════════════════════════════════════════════════════════════════════════
-
-  /// Deep Space - Main Background
-  static const Color darkBackground = Color(0xFF0A0A0F);
-
-  /// Elevated Surface - Cards & Containers
-  static const Color darkSurface = Color(0xFF12121A);
-
-  /// Card Background - Slightly elevated
-  static const Color darkCard = Color(0xFF1A1A25);
-
-  /// Elevated Elements - Modals, Drawers
-  static const Color darkElevated = Color(0xFF222230);
-
-  /// Subtle Border
-  static const Color darkBorder = Color(0xFF2A2A3A);
-
-  /// Input Field Background
-  static const Color darkInput = Color(0xFF16161F);
+  static const Color gray100 = Color(0xFFE2E8F0); // Slate-200 (Light border)
+  static const Color gray300 = Color(0xFFCBD5E1); // Slate-300
+  static const Color gray500 = Color(0xFF64748B); // Slate-500
+  static const Color gray700 = Color(0xFF475569); // Slate-600
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // PRIMARY COLORS - Teacher Blue (Professional & Trustworthy)
+  // STATUS & ALERTS
   // ═══════════════════════════════════════════════════════════════════════════
-
-  /// Primary Blue - Authority & Trust
-  static const Color primary = Color(0xFF3B82F6);
-
-  /// Primary Light - Hover states
-  static const Color primaryLight = Color(0xFF60A5FA);
-
-  /// Primary Dark - Pressed states
-  static const Color primaryDark = Color(0xFF2563EB);
-
-  /// Primary Soft - Backgrounds
-  static const Color primarySoft = Color(0xFF1E3A5F);
-
-  /// Primary Glow - Effects
-  static Color primaryGlow = const Color(0xFF3B82F6).withValues(alpha: 0.4);
-
-  /// Primary Gradient - Premium buttons & headers
-  static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  /// Primary Vertical Gradient
-  static const LinearGradient primaryVerticalGradient = LinearGradient(
-    colors: [Color(0xFF3B82F6), Color(0xFF6366F1)],
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-  );
+  static const Color success = Color(0xFF10B981); // Emerald-500
+  static const Color warning = Color(0xFFF59E0B); // Amber-500
+  static const Color danger = Color(0xFFEF4444); // Red-500
+  static const Color gold = Color(0xFFF59E0B);
+  static const Color statusSuccess = Color(0xFF10B981);
+  static const Color statusInfo = Color(0xFF3B82F6);
+  static const Color accentOrange = Color(0xFFF97316);
+  static const Color indigoLight = Color(0xFF818CF8);
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // SECONDARY COLORS - Emerald (Growth & Success)
+  // BACKWARD COMPATIBILITY & ALIASES
   // ═══════════════════════════════════════════════════════════════════════════
+  static const Color primary = electric; // Now Royal Blue is primary
+  static const Color primaryLight = electricGlow;
+  static const Color primaryDark = navyMid;
+  static const Color primarySoft = navyLight;
+  static const Color secondary = teal;
+  static const Color secondaryLight = teal;
+  static const Color secondarySoft = navyLight;
+  static const Color accent = teal;
+  static const Color accentLight = tealDeep;
+  static const Color accentSoft = navyLight;
+  
+  static const Color background = whiteSoft;
+  static const Color surface = white;
+  static const Color surfaceVariant = gray100;
+  static const Color textPrimary = navy;
+  static const Color textSecondary = gray700;
+  static const Color textHint = gray500;
+  static const Color textOnPrimary = white;
 
-  /// Secondary Emerald - Growth & Achievement
-  static const Color secondary = Color(0xFF10B981);
-
-  /// Secondary Light
-  static const Color secondaryLight = Color(0xFF34D399);
-
-  /// Secondary Soft
-  static const Color secondarySoft = Color(0xFF064E3B);
-
-  /// Secondary Gradient
-  static const LinearGradient secondaryGradient = LinearGradient(
-    colors: [Color(0xFF10B981), Color(0xFF14B8A6)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // ACCENT COLORS - Warm Coral (Engagement & Energy)
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  /// Accent Coral - Energy & Warmth
-  static const Color accent = Color(0xFFF472B6);
-
-  /// Accent Light
-  static const Color accentLight = Color(0xFFF9A8D4);
-
-  /// Accent Soft
-  static const Color accentSoft = Color(0xFF5B2341);
-
-  /// Accent Gradient
-  static const LinearGradient accentGradient = LinearGradient(
-    colors: [Color(0xFFF472B6), Color(0xFFFB7185)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // GLASS & BLUR EFFECTS
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  /// Glass Effect - White overlay
-  static Color glassWhite = Colors.white.withValues(alpha: 0.08);
-
-  /// Glass Effect - Dark overlay
-  static Color glassBlack = Colors.black.withValues(alpha: 0.3);
-
-  /// Glass Border
-  static Color glassBorder = Colors.white.withValues(alpha: 0.12);
-
-  /// Glass Highlight
-  static Color glassHighlight = Colors.white.withValues(alpha: 0.05);
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // LIGHT MODE COLORS (Secondary Theme)
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  /// Light Background
-  static const Color background = Color(0xFFF8FAFC);
-
-  /// Light Surface
-  static const Color surface = Color(0xFFFFFFFF);
-
-  /// Light Surface Variant
-  static const Color surfaceVariant = Color(0xFFF1F5F9);
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TEXT COLORS
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  // Dark Theme Text
-  static const Color textOnDark = Color(0xFFF8FAFC);
-  static const Color textOnDarkSecondary = Color(0xFF94A3B8);
-  static const Color textOnDarkHint = Color(0xFF64748B);
-
-  // Light Theme Text
-  static const Color textPrimary = Color(0xFF1E293B);
-  static const Color textSecondary = Color(0xFF64748B);
-  static const Color textHint = Color(0xFF94A3B8);
-  static const Color textOnPrimary = Colors.white;
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // STATUS COLORS
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  /// Success Green
-  static const Color success = Color(0xFF10B981);
-  static const Color successSoft = Color(0xFF064E3B);
-
-  /// Warning Amber
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color warningSoft = Color(0xFF78350F);
-
-  /// Error Red
-  static const Color error = Color(0xFFEF4444);
+  static const Color error = danger;
   static const Color errorSoft = Color(0xFF7F1D1D);
+  static const Color info = electric;
+  static const Color infoSoft = navyLight;
+  
+  static const Color darkBackground = navy;
+  static const Color darkSurface = navyMid;
+  static const Color darkCard = navyMid;
+  static const Color darkElevated = navyMid;
+  static const Color darkBorder = navyLight;
+  static const Color darkInput = navy;
+  
+  static const Color textOnDark = white;
+  static const Color textOnDarkSecondary = gray300;
+  static const Color textOnDarkHint = gray500;
 
-  /// Info Blue
-  static const Color info = Color(0xFF3B82F6);
-  static const Color infoSoft = Color(0xFF1E3A5F);
+  static const Color accentVivid = electric;
+  static const Color accentMid = electricGlow;
+  static const Color forestDeep = navy;
+  static const Color forestPrimary = navyMid;
+  static const Color alertCoral = danger;
+  static const Color textBody = gray700;
+  static const Color textDisplay = navy;
+  static const Color textMuted = gray500;
+  
+  static const Color glassBorderHighlight = Color(0x11334155);
+  static const Color glassFrost = Color(0x05334155);
+  static const Color textDisabled = gray300;
+  static const Color heroGlow = Color(0x1A2563EB);
+  static const Color ambientGlow = Color(0x0A2563EB);
+  static const Color warningAmber = warning;
+  static const Color textMain = textPrimary;
+  static const Color emeraldGreen = success;
+  static const Color warmAmber = warning;
+  static const Color infoPurple = teal;
+  static const Color errorRed = danger;
+  
+  static Color glassWhite = Colors.white.withValues(alpha: 0.05);
+  static Color glassBlack = Colors.black.withValues(alpha: 0.1);
+  static Color glassBorder = gray100.withValues(alpha: 0.2);
+  static Color glassHighlight = Colors.white.withValues(alpha: 0.02);
+  
+  static Color primaryGlow = electric.withValues(alpha: 0.1);
+  static Color darkShadow = Colors.black.withValues(alpha: 0.05);
+  static const Color shadow = Color(0x0A0F172A);
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // ATTENDANCE STATUS COLORS
-  // ═══════════════════════════════════════════════════════════════════════════
+  static const Color divider = gray100;
+  static const Color darkDivider = navyLight;
 
-  static const Color present = Color(0xFF10B981);
-  static const Color absent = Color(0xFFEF4444);
-  static const Color late = Color(0xFFF59E0B);
-  static const Color excused = Color(0xFF3B82F6);
+  static const Color present = success;
+  static const Color absent = danger;
+  static const Color late = warning;
+  static const Color excused = electric;
+  
+  static const Color gray50 = whiteSoft;
+  static const Color gray200 = gray100;
+  static const Color gray400 = gray300;
+  static const Color gray600 = gray500;
+  static const Color gray800 = navyLight;
+  static const Color gray900 = navy;
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // GRAY SCALE (Refined for Dark Mode)
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  static const Color gray50 = Color(0xFFF8FAFC);
-  static const Color gray100 = Color(0xFFF1F5F9);
-  static const Color gray200 = Color(0xFFE2E8F0);
-  static const Color gray300 = Color(0xFFCBD5E1);
-  static const Color gray400 = Color(0xFF94A3B8);
-  static const Color gray500 = Color(0xFF64748B);
-  static const Color gray600 = Color(0xFF475569);
-  static const Color gray700 = Color(0xFF334155);
-  static const Color gray800 = Color(0xFF1E293B);
-  static const Color gray900 = Color(0xFF0F172A);
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SPECIAL GRADIENTS
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  /// Premium Sunset - For highlights
+  // Gradients
+  static const LinearGradient tealGradient = LinearGradient(
+    colors: [tealDeep, teal],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
+  static const LinearGradient tealToElectric = LinearGradient(
+    colors: [electric, electricGlow],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
+  static const LinearGradient primaryGradient = tealToElectric;
+  static const LinearGradient primaryVerticalGradient = tealToElectric;
+  static const LinearGradient secondaryGradient = tealGradient;
+  static const LinearGradient accentGradient = tealGradient;
+  static const LinearGradient glassWash = glassGradient;
   static const LinearGradient premiumSunset = LinearGradient(
-    colors: [Color(0xFFFF6B6B), Color(0xFFFFA726), Color(0xFFFFE082)],
+    colors: [warning, danger],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
-
-  /// Premium Ocean - For professional elements
-  static const LinearGradient premiumOcean = LinearGradient(
-    colors: [Color(0xFF3B82F6), Color(0xFF06B6D4), Color(0xFF0EA5E9)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  /// Premium Royal - For premium features
-  static const LinearGradient premiumRoyal = LinearGradient(
-    colors: [Color(0xFF8B5CF6), Color(0xFFA855F7), Color(0xFFD946EF)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  /// Premium Emerald - For success states
-  static const LinearGradient premiumEmerald = LinearGradient(
-    colors: [Color(0xFF10B981), Color(0xFF14B8A6), Color(0xFF0D9488)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  /// Glass Gradient - For modern glass effects
+  static const LinearGradient premiumOcean = tealToElectric;
+  static const LinearGradient premiumRoyal = tealToElectric;
+  static const LinearGradient premiumEmerald = tealGradient;
   static const LinearGradient glassGradient = LinearGradient(
     colors: [
-      Color.fromARGB(40, 255, 255, 255),
-      Color.fromARGB(20, 255, 255, 255),
-      Color.fromARGB(10, 255, 255, 255),
+      Color(0x08FFFFFF),
+      Color(0x03FFFFFF),
     ],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
-
-  /// Neon Glow Effect
-  static const List<BoxShadow> neonGlow = [
-    BoxShadow(
-      color: Color(0xFF3B82F6),
-      blurRadius: 20,
-      spreadRadius: 2,
-      offset: Offset(0, 0),
-    ),
-    BoxShadow(
-      color: Color(0xFF8B5CF6),
-      blurRadius: 40,
-      spreadRadius: 5,
-      offset: Offset(0, 0),
-    ),
-  ];
-
-  /// Soft Glow Effect
+  static const LinearGradient sunsetGradient = premiumSunset;
+  static const LinearGradient oceanGradient = premiumOcean;
+  static const LinearGradient successGradient = premiumEmerald;
+  static const LinearGradient cardGradient = LinearGradient(
+    colors: [white, whiteSoft],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
+  static const List<BoxShadow> glassShadow = softGlow;
+  static const List<BoxShadow> neonGlow = softGlow;
   static const List<BoxShadow> softGlow = [
     BoxShadow(
-      color: Color.fromARGB(40, 59, 130, 246),
-      blurRadius: 15,
-      spreadRadius: 1,
+      color: Color(0x080F172A),
+      blurRadius: 10,
+      spreadRadius: 0,
       offset: Offset(0, 4),
     ),
   ];
-  static const LinearGradient sunsetGradient = LinearGradient(
-    colors: [Color(0xFFF472B6), Color(0xFFFB923C)],
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ROLE-BASED PSYCHOLOGICAL PALETTES (Teacher vs Parent)
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Teacher (Power Operator: Efficiency, High Contrast, Focus)
+  static const Color teacherPrimary = electric; // Royal Indigo #2563EB
+  static const Color teacherAccent = teal; // Electric Teal #0D9488
+  static const LinearGradient teacherGradient = LinearGradient(
+    colors: [Color(0xFF2563EB), Color(0xFF0D9488)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  /// Ocean Deep - For calm sections
-  static const LinearGradient oceanGradient = LinearGradient(
-    colors: [Color(0xFF0EA5E9), Color(0xFF8B5CF6)],
+  // Parent (Encouraging Guardian: Reassurance, Calm, Clarity)
+  static const Color parentPrimary = success; // Emerald Mint #10B981
+  static const Color parentAccent = Color(0xFF0284C7); // Serene Sky Blue #0284C7
+  static const Color parentWarm = warning; // Soft Amber #F59E0B
+  static const LinearGradient parentGradient = LinearGradient(
+    colors: [Color(0xFF0F766E), Color(0xFF10B981)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
-
-  /// Success Gradient
-  static const LinearGradient successGradient = LinearGradient(
-    colors: [Color(0xFF10B981), Color(0xFF14B8A6)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  /// Card Gradient (Subtle)
-  static const LinearGradient cardGradient = LinearGradient(
-    colors: [Color(0xFF1A1A25), Color(0xFF12121A)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SHADOWS
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  /// Light theme shadow
-  static const Color shadow = Color(0x1A1E293B);
-
-  /// Dark theme shadow (using primary glow)
-  static Color darkShadow = const Color(0xFF3B82F6).withValues(alpha: 0.15);
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // DIVIDERS
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  static const Color divider = Color(0xFFE2E8F0);
-  static const Color darkDivider = Color(0xFF2A2A3A);
 }
+
+/// ═════════════════════════════════════════════════════════════════════════════
+/// DYNAMIC THEME COLOR EXTENSIONS (Zero Dark/Light Mode Collision)
+/// Implements automatic contrast switching without hardcoded values.
+/// ═════════════════════════════════════════════════════════════════════════════
+extension AppColorsContextExtension on BuildContext {
+  /// True if current ThemeMode is Dark Mode
+  bool get isDarkMode => Theme.of(this).brightness == Brightness.dark;
+
+  // ── Universal Adaptive Surfaces & Backgrounds ──────────────────────────
+  Color get themeBackground => isDarkMode ? AppColors.navy : AppColors.whiteSoft;
+  Color get themeSurface => isDarkMode ? AppColors.navyMid : AppColors.white;
+  Color get themeCard => isDarkMode ? AppColors.navyMid : AppColors.white;
+  Color get themeBorder => isDarkMode ? AppColors.navyLight : AppColors.gray100;
+  Color get themeDivider => isDarkMode ? AppColors.navyLight : AppColors.gray100;
+
+  // ── Universal Adaptive Text Colors ──────────────────────────────────────
+  Color get themeTextPrimary => isDarkMode ? AppColors.white : AppColors.navy;
+  Color get themeTextSecondary => isDarkMode ? AppColors.gray300 : AppColors.gray700;
+  Color get themeTextHint => isDarkMode ? AppColors.gray500 : AppColors.gray500;
+
+  // ── Adaptive Shadows & Highlights ───────────────────────────────────────
+  List<BoxShadow> get themeShadow => isDarkMode 
+      ? [const BoxShadow(color: Color(0x33000000), blurRadius: 12, offset: Offset(0, 4))]
+      : [const BoxShadow(color: Color(0x0A0F172A), blurRadius: 10, offset: Offset(0, 4))];
+
+  // ── Role-Specific Adaptive Primary Color ────────────────────────────────
+  Color rolePrimary({required bool isParent}) => isParent ? AppColors.parentPrimary : AppColors.teacherPrimary;
+  LinearGradient roleGradient({required bool isParent}) => isParent ? AppColors.parentGradient : AppColors.teacherGradient;
+  Color get teacherAccent => AppColors.teacherAccent;
+  Color get themeError => AppColors.danger;
+}
+

@@ -83,11 +83,11 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
   void _showMonitorWindowHint() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text(
+        content: Text(
           'المراقبة متاحة قبل الحصة بـ 30 دقيقة وحتى بعدها بـ 30 دقيقة فقط',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: AppColors.errorRed,
+        backgroundColor: Theme.of(context).colorScheme.error,
       ),
     );
   }
@@ -98,17 +98,17 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
     final groups = provider.groups;
 
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           'المجموعات الذكية',
           style: TextStyle(
-            color: AppColors.textDisplay,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 20.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: AppColors.forestDeep,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: AppColors.textDisplay),
@@ -144,14 +144,14 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: AppColors.forestPrimary,
+              color: Theme.of(context).colorScheme.surface,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.glassBorderHighlight),
+              border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
             ),
             child: Icon(
               Icons.groups_rounded,
               size: 64.sp,
-              color: AppColors.accentVivid,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
           SizedBox(height: 24.h),
@@ -159,7 +159,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
             'لا توجد مجموعات',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              color: AppColors.textDisplay,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
           SizedBox(height: 12.h),
@@ -167,7 +167,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
             'سيظهر هنا تحليل ذكي لمجموعاتك فور إضافتها.',
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+            ).textTheme.bodyMedium?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
             textAlign: TextAlign.center,
           ).animate().fadeIn(delay: 300.ms),
         ],
@@ -184,7 +184,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
     final totalGroups = provider.groups.length;
 
     return GlassCard(
-      color: AppColors.forestPrimary,
+      color: Theme.of(context).colorScheme.surface,
       padding: EdgeInsets.all(24.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -198,7 +198,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                   Text(
                     'نظرة عامة (شهرية)',
                     style: TextStyle(
-                      color: AppColors.textMuted,
+                      color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                       fontSize: 14.sp,
                     ),
                   ),
@@ -209,7 +209,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                       decimalDigits: 0,
                     ).format(totalIncome),
                     style: TextStyle(
-                      color: AppColors.emeraldGreen,
+                      color: Colors.green,
                       fontSize: 28.sp,
                       fontWeight: FontWeight.bold,
                     ),
@@ -219,15 +219,15 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: AppColors.accentVivid.withValues(alpha: 0.15),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppColors.accentVivid.withValues(alpha: 0.3),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Icon(
                   Icons.analytics_rounded,
-                  color: AppColors.accentVivid,
+                  color: Theme.of(context).colorScheme.primary,
                   size: 30.sp,
                 ),
               ),
@@ -240,7 +240,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                 child: _buildSummaryStat(
                   Icons.people_rounded,
                   '$totalStudents طالب',
-                  AppColors.infoPurple,
+                  Colors.purple,
                 ),
               ),
               SizedBox(width: 12.w),
@@ -248,7 +248,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                 child: _buildSummaryStat(
                   Icons.class_rounded,
                   '$totalGroups مجموعات',
-                  AppColors.warmAmber,
+                  Colors.orange,
                 ),
               ),
             ],
@@ -262,9 +262,9 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface.withValues(alpha: 0.5),
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.glassBorderHighlight),
+        border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -274,7 +274,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
           Text(
             label,
             style: TextStyle(
-              color: AppColors.textDisplay,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.bold,
               fontSize: 13.sp,
             ),
@@ -298,7 +298,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
       child: GestureDetector(
         onTap: () => context.push('/teacher/groups/${group.id}'),
         child: GlassCard(
-          color: AppColors.darkSurface.withValues(alpha: 0.7),
+          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
           padding: EdgeInsets.zero,
           child: Column(
             children: [
@@ -311,17 +311,17 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                       height: 52.w,
                       width: 52.w,
                       decoration: BoxDecoration(
-                        color: AppColors.forestPrimary,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(16.r),
                         border: Border.all(
-                          color: AppColors.glassBorderHighlight,
+                          color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
                         ),
                       ),
                       child: Center(
                         child: Text(
                           group.groupName.isNotEmpty ? group.groupName[0] : 'م',
                           style: TextStyle(
-                            color: AppColors.accentVivid,
+                            color: Theme.of(context).colorScheme.primary,
                             fontSize: 22.sp,
                             fontWeight: FontWeight.bold,
                           ),
@@ -336,7 +336,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                           Text(
                             group.groupName,
                             style: TextStyle(
-                              color: AppColors.textDisplay,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: 17.sp,
                               fontWeight: FontWeight.bold,
                             ),
@@ -345,7 +345,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                           Text(
                             '${group.courseName ?? 'مادة'} • ${group.currentStudents} طالب',
                             style: TextStyle(
-                              color: AppColors.textMuted,
+                              color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                               fontSize: 13.sp,
                             ),
                           ),
@@ -357,7 +357,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                 ),
               ),
 
-              Divider(color: AppColors.glassBorderHighlight, height: 1),
+              Divider(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300), height: 1),
 
               // 2. Schedule Section
               if (schedules.isNotEmpty)
@@ -370,14 +370,14 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                         children: [
                           Icon(
                             Icons.schedule_rounded,
-                            color: AppColors.accentVivid,
+                            color: Theme.of(context).colorScheme.primary,
                             size: 16.sp,
                           ),
                           SizedBox(width: 6.w),
                           Text(
                             'مواعيد الحصص',
                             style: TextStyle(
-                              color: AppColors.textDisplay,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: 13.sp,
                               fontWeight: FontWeight.bold,
                             ),
@@ -395,10 +395,10 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                               vertical: 8.h,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.forestPrimary,
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(12.r),
                               border: Border.all(
-                                color: AppColors.glassBorderHighlight,
+                                color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
                               ),
                             ),
                             child: Row(
@@ -406,14 +406,14 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                               children: [
                                 Icon(
                                   Icons.access_time_rounded,
-                                  color: AppColors.infoPurple,
+                                  color: Colors.purple,
                                   size: 14.sp,
                                 ),
                                 SizedBox(width: 6.w),
                                 Text(
                                   '${schedule.dayOfWeek} ${schedule.startTime}',
                                   style: TextStyle(
-                                    color: AppColors.textDisplay,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                     fontSize: 12.sp,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -433,14 +433,14 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                     children: [
                       Icon(
                         Icons.calendar_today_rounded,
-                        color: AppColors.textMuted,
+                        color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                         size: 16.sp,
                       ),
                       SizedBox(width: 8.w),
                       Text(
                         'لم يتم تحديد مواعيد بعد',
                         style: TextStyle(
-                          color: AppColors.textMuted,
+                          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                           fontSize: 13.sp,
                           fontStyle: FontStyle.italic,
                         ),
@@ -461,7 +461,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                         Text(
                           'الأداء المالي',
                           style: TextStyle(
-                            color: AppColors.textMuted,
+                            color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                             fontSize: 12.sp,
                             fontWeight: FontWeight.bold,
                           ),
@@ -472,7 +472,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                             decimalDigits: 0,
                           ).format(financials['teacher_share']),
                           style: TextStyle(
-                            color: AppColors.emeraldGreen,
+                            color: Colors.green,
                             fontSize: 15.sp,
                             fontWeight: FontWeight.bold,
                           ),
@@ -488,9 +488,9 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                             (financials['total_income'] == 0
                                 ? 1
                                 : financials['total_income']!),
-                        backgroundColor: AppColors.forestPrimary,
+                        backgroundColor: Theme.of(context).colorScheme.surface,
                         valueColor: const AlwaysStoppedAnimation<Color>(
-                          AppColors.emeraldGreen,
+                          Colors.green,
                         ),
                         minHeight: 6.h,
                       ),
@@ -499,7 +499,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                     Text(
                       'نسبتك من اجمالي الدخل (${intl.NumberFormat.currency(symbol: 'ج.م', decimalDigits: 0).format(financials['total_income'])})',
                       style: TextStyle(
-                        color: AppColors.textMuted,
+                        color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                         fontSize: 11.sp,
                       ),
                     ),
@@ -550,19 +550,19 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: isFull
-            ? AppColors.errorRed.withValues(alpha: 0.15)
-            : AppColors.emeraldGreen.withValues(alpha: 0.15),
+            ? Theme.of(context).colorScheme.error.withValues(alpha: 0.15)
+            : Colors.green.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(10.r),
         border: Border.all(
           color: isFull
-              ? AppColors.errorRed.withValues(alpha: 0.4)
-              : AppColors.emeraldGreen.withValues(alpha: 0.4),
+              ? Theme.of(context).colorScheme.error.withValues(alpha: 0.4)
+              : Colors.green.withValues(alpha: 0.4),
         ),
       ),
       child: Text(
         isFull ? 'مكتمل' : 'نشط',
         style: TextStyle(
-          color: isFull ? AppColors.errorRed : AppColors.emeraldGreen,
+          color: isFull ? Theme.of(context).colorScheme.error : Colors.green,
           fontSize: 11.sp,
           fontWeight: FontWeight.bold,
         ),

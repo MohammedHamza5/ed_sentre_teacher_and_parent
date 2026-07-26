@@ -28,12 +28,12 @@ class AssignmentFileAttachment extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: attachmentName != null
               ? typeColor
-              : AppColors.glassBorderHighlight.withValues(alpha: 0.5),
+              : (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300).withValues(alpha: 0.5),
           width: attachmentName != null ? 2 : 1,
         ),
       ),
@@ -49,7 +49,7 @@ class AssignmentFileAttachment extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textDisplay,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -71,7 +71,7 @@ class AssignmentFileAttachment extends StatelessWidget {
                       attachmentName!,
                       style: TextStyle(
                         fontSize: 13.sp,
-                        color: AppColors.textDisplay,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -79,7 +79,7 @@ class AssignmentFileAttachment extends StatelessWidget {
                   IconButton(
                     icon: Icon(
                       Icons.close,
-                      color: AppColors.errorRed,
+                      color: Theme.of(context).colorScheme.error,
                     ),
                     onPressed: onRemoveFile,
                   ),

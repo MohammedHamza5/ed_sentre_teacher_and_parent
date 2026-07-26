@@ -6,7 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../../../core/providers/center_provider.dart';
-import '../../../auth/provider/auth_provider.dart';
+import '../../provider/teacher_provider.dart';
 import '../../../../shared/data/supabase_repository.dart';
 import '../../../../core/constants/educational_consts.dart';
 import '../../../../core/widgets/genius/glass_card.dart';
@@ -43,7 +43,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     final centerProvider = context.watch<CenterProvider>();
 
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Column(
         children: [
           _buildHeader(),
@@ -65,7 +65,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                       icon: Icons.person_add_rounded,
                     ),
                     GlassCard(
-                      color: AppColors.darkSurface.withValues(alpha: 0.7),
+                      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
                       padding: EdgeInsets.all(16.w),
                       child: Column(
                         children: [
@@ -94,7 +94,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                       icon: Icons.auto_awesome_rounded,
                     ),
                     GlassCard(
-                      color: AppColors.darkSurface.withValues(alpha: 0.7),
+                      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
                       padding: EdgeInsets.all(16.w),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -124,38 +124,19 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                           SizedBox(height: 16.h),
 
                           // Course Dropdown
-                          FutureBuilder<List<Map<String, dynamic>>>(
-                            future: context
-                                .read<SupabaseRepository>()
-                                .getTeacherGroups(
-                                  context
-                                      .read<AuthProvider>()
-                                      .teacherProfile!
-                                      .id,
-                                  centerProvider.currentCenterId!,
-                                )
-                                .then((groups) {
-                                  final seen = <String>{};
-                                  final courses = <Map<String, dynamic>>[];
-                                  for (var g in groups) {
-                                    final cName = g.courseName ?? 'Unknown';
-                                    final cId = g.courseId;
-                                    if (!seen.contains(cName)) {
-                                      seen.add(cName);
-                                      courses.add({'id': cId, 'name': cName});
-                                    }
-                                  }
-                                  return courses;
-                                }),
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData) {
-                                return const Center(
-                                  child: CircularProgressIndicator(
-                                    backgroundColor: AppColors.accentVivid,
-                                  ),
-                                );
+                          Builder(
+                            builder: (context) {
+                              final groups = Provider.of<TeacherProvider>(context).groups;
+                              final seen = <String>{};
+                              final courses = <Map<String, dynamic>>[];
+                              for (var g in groups) {
+                                final cName = g.courseName ?? 'Unknown';
+                                final cId = g.courseId;
+                                if (!seen.contains(cName)) {
+                                  seen.add(cName);
+                                  courses.add({'id': cId, 'name': cName});
+                                }
                               }
-                              final courses = snapshot.data!;
                               return _buildDropdownField<String>(
                                 hint: 'المادة الدراسية',
                                 icon: Icons.book_rounded,
@@ -186,14 +167,14 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                               child: Center(
                                 child: Column(
                                   children: [
-                                    const CircularProgressIndicator(
-                                      backgroundColor: AppColors.infoPurple,
+                                    CircularProgressIndicator(
+                                      backgroundColor: Colors.purple,
                                     ),
                                     SizedBox(height: 12.h),
                                     Text(
                                       'جاري تحليل الجداول والحمل...',
                                       style: TextStyle(
-                                        color: AppColors.textMuted,
+                                        color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                                       ),
                                     ),
                                   ],
@@ -207,7 +188,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                               children: [
                                 Icon(
                                   Icons.stars_rounded,
-                                  color: AppColors.accentVivid,
+                                  color: Theme.of(context).colorScheme.primary,
                                   size: 20.sp,
                                 ),
                                 SizedBox(width: 8.w),
@@ -215,7 +196,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                                   'المجموعات المقترحة (الأفضل للطالب):',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: AppColors.accentVivid,
+                                    color: Theme.of(context).colorScheme.primary,
                                   ),
                                 ),
                               ],
@@ -259,7 +240,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         bottom: 24.h,
       ),
       decoration: BoxDecoration(
-        color: AppColors.forestPrimary,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(32.r)),
       ),
       child: Row(
@@ -269,14 +250,14 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
             child: Container(
               padding: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
-                color: AppColors.darkSurface,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: AppColors.glassBorderHighlight),
+                border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
               ),
               child: Icon(
                 Icons.arrow_back_ios_rounded,
                 size: 18.sp,
-                color: AppColors.textDisplay,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
@@ -286,7 +267,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
               'طالب جديد',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.textDisplay,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
@@ -300,12 +281,12 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
       padding: EdgeInsets.only(bottom: 12.h, right: 4.w),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.textMuted, size: 20.sp),
+          Icon(icon, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey), size: 20.sp),
           SizedBox(width: 8.w),
           Text(
             title,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: AppColors.textMuted,
+              color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -323,16 +304,16 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.forestPrimary,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.glassBorderHighlight),
+        border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
       ),
       child: DropdownButtonFormField<T>(
         value: value,
         decoration: InputDecoration(
           labelText: hint,
-          labelStyle: TextStyle(color: AppColors.textMuted),
-          prefixIcon: Icon(icon, color: AppColors.accentVivid),
+          labelStyle: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
+          prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.primary),
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
             horizontal: 16.w,
@@ -340,8 +321,8 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
           ),
         ),
         dropdownColor: AppColors.darkElevated,
-        style: TextStyle(color: AppColors.textDisplay, fontSize: 14.sp),
-        icon: Icon(Icons.arrow_drop_down_rounded, color: AppColors.textMuted),
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14.sp),
+        icon: Icon(Icons.arrow_drop_down_rounded, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
         items: items,
         onChanged: onChanged,
       ),
@@ -357,12 +338,12 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.accentVivid.withValues(alpha: 0.15)
-              : AppColors.forestPrimary,
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.15)
+              : Theme.of(context).colorScheme.surface,
           border: Border.all(
             color: isSelected
-                ? AppColors.accentVivid
-                : AppColors.glassBorderHighlight,
+                ? Theme.of(context).colorScheme.primary
+                : (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(16.r),
@@ -373,13 +354,13 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: AppColors.emeraldGreen.withValues(alpha: 0.15),
+                  color: Colors.green.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
                   '${group['score']}% Match',
                   style: TextStyle(
-                    color: AppColors.emeraldGreen,
+                    color: Colors.green,
                     fontSize: 11.sp,
                     fontWeight: FontWeight.bold,
                   ),
@@ -394,7 +375,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                     group['group_name'] ?? 'Group',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textDisplay,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 15.sp,
                     ),
                   ),
@@ -403,7 +384,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                     group['reason'] ?? 'مقترح بناء على الجدول',
                     style: TextStyle(
                       fontSize: 12.sp,
-                      color: AppColors.textMuted,
+                      color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                     ),
                   ),
                 ],
@@ -411,7 +392,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
             ),
             Icon(
               isSelected ? Icons.check_circle_rounded : Icons.circle_outlined,
-              color: isSelected ? AppColors.accentVivid : AppColors.textMuted,
+              color: isSelected ? Theme.of(context).colorScheme.primary : (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
               size: 28.sp,
             ),
           ],
@@ -454,7 +435,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
             'يرجى اختيار مجموعة للطالب',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          backgroundColor: AppColors.errorRed,
+          backgroundColor: AppColors.danger,
         ),
       );
       return;
@@ -480,10 +461,10 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
               'تم تسجيل الطالب بنجاح ✅',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: AppColors.forestDeep,
+                color: AppColors.background,
               ),
             ),
-            backgroundColor: AppColors.emeraldGreen,
+            backgroundColor: Colors.green,
           ),
         );
         context.pop();
@@ -494,9 +475,9 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
           SnackBar(
             content: Text(
               'حدث خطأ: $e',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            backgroundColor: AppColors.errorRed,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }

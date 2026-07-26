@@ -139,9 +139,9 @@ class _SubmissionsScreenState extends State<SubmissionsScreen>
       backgroundColor: const Color(0xFF0F172A), // Premium Dark
       extendBodyBehindAppBar: true,
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(
-                backgroundColor: AppColors.accentVivid,
+                backgroundColor: Theme.of(context).colorScheme.primary,
               ),
             )
           : _error != null
@@ -157,7 +157,7 @@ class _SubmissionsScreenState extends State<SubmissionsScreen>
                     height: 300.w,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.accentVivid.withValues(alpha: 0.15),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                     ),
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
@@ -216,7 +216,7 @@ class _SubmissionsScreenState extends State<SubmissionsScreen>
                             ),
                             child: TabBar(
                               controller: _tabController,
-                              indicatorColor: AppColors.accentVivid,
+                              indicatorColor: Theme.of(context).colorScheme.primary,
                               labelColor: Colors.white,
                               unselectedLabelColor: Colors.white54,
                               indicatorWeight: 3,
@@ -245,8 +245,8 @@ class _SubmissionsScreenState extends State<SubmissionsScreen>
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _loadData,
-        backgroundColor: AppColors.accentVivid,
-        child: const Icon(Icons.refresh, color: Colors.white),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        child: Icon(Icons.refresh, color: Colors.white),
       ),
     );
   }
@@ -411,13 +411,13 @@ class _SubmissionsScreenState extends State<SubmissionsScreen>
             SizedBox(height: 32.h),
             ElevatedButton.icon(
               onPressed: _loadData,
-              icon: const Icon(Icons.refresh, color: Colors.white),
-              label: const Text(
+              icon: Icon(Icons.refresh, color: Colors.white),
+              label: Text(
                 'إعادة المحاولة',
                 style: TextStyle(color: Colors.white, fontFamily: 'Cairo', fontWeight: FontWeight.bold),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accentVivid,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),

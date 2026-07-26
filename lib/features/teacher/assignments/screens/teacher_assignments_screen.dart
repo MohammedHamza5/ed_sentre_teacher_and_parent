@@ -1,18 +1,14 @@
+import 'package:ed_sentre_techer_and_parent/core/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-
-import '../../../../core/providers/center_provider.dart';
-import '../../../auth/provider/auth_provider.dart';
 import '../../../../shared/data/supabase_repository.dart';
 import '../../../../shared/models/models.dart';
 import '../../../../core/config/app_colors.dart';
 import '../../../../core/widgets/genius/genius_button.dart';
-
 import 'create_assignment_screen.dart';
 import 'submissions_screen.dart';
-
 // Extracted Widgets
 import '../widgets/teacher_assignments_header.dart';
 import '../widgets/teacher_assignments_skeleton.dart';
@@ -29,54 +25,83 @@ class TeacherAssignmentsScreen extends StatefulWidget {
       _TeacherAssignmentsScreenState();
 }
 
+class _TabData {
+  List<Map<String, dynamic>> items = [];
+  bool isLoading = true;
+  bool isFetchingMore = false;
+  bool hasMore = true;
+  int offset = 0;
+  String? error;
+  final ScrollController scrollController = ScrollController();
+}
+
 class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final String _selectedCourseId = 'all';
-  bool _isLoading = true;
   String? _error;
 
-  List<Map<String, dynamic>> _assignments = [];
   Map<String, dynamic> _stats = {};
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _statusFilter = 'all';
   final int _pageSize = 20;
-  int _currentPage = 0;
-  bool _hasMore = true;
-  bool _isLoadingMore = false;
   List<GroupModel> _groups = [];
   bool _isLoadingGroups = true;
 
   String _sortOrder = 'newest';
   String _selectedGroupId = 'all';
 
+  late final _TabData _allData = _TabData();
+  late final _TabData _assignmentsData = _TabData();
+  late final _TabData _examsData = _TabData();
+  late final _TabData _archivedData = _TabData();
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    _loadData(reset: true);
+
+    _setupScrollController(_allData, null, false);
+    _setupScrollController(_assignmentsData, 'assignment', false);
+    _setupScrollController(_examsData, 'exam', false);
+    _setupScrollController(_archivedData, null, true);
+
+    _triggerRefresh();
     _loadGroups();
+  }
+
+  void _setupScrollController(
+    _TabData data,
+    String? typeFilter,
+    bool archivedOnly,
+  ) {
+    data.scrollController.addListener(() {
+      if (data.scrollController.position.pixels >=
+          data.scrollController.position.maxScrollExtent - 200) {
+        if (!data.isLoading && !data.isFetchingMore && data.hasMore) {
+          _fetchPage(data, typeFilter, archivedOnly, fetchMore: true);
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
+    _allData.scrollController.dispose();
+    _assignmentsData.scrollController.dispose();
+    _examsData.scrollController.dispose();
+    _archivedData.scrollController.dispose();
     super.dispose();
   }
 
   Future<void> _loadGroups() async {
     setState(() => _isLoadingGroups = true);
     try {
-      final auth = context.read<AuthProvider>();
-      final centerProvider = context.read<CenterProvider>();
-      final repository = context.read<SupabaseRepository>();
-      final teacherId = auth.teacherProfile?.id;
-      final centerId = centerProvider.currentCenterId;
-      if (teacherId != null && centerId != null) {
-        _groups = await repository.getTeacherGroups(teacherId, centerId);
-      }
+      final teacherProvider = context.read<TeacherProvider>();
+      _groups = teacherProvider.groups;
     } catch (e) {
       debugPrint('Error loading groups: $e');
     } finally {
@@ -84,68 +109,96 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
     }
   }
 
-  Future<void> _loadMore() async {
-    if (_isLoadingMore || !_hasMore || _isLoading) return;
-    setState(() => _isLoadingMore = true);
-    await _loadData();
+  Future<void> _loadStats() async {
+    try {
+      final repository = context.read<SupabaseRepository>();
+      final centerId = context.read<CenterProvider>().currentCenterId;
+      if (centerId != null) {
+        final stats = await repository.getTeacherAssignmentStats(centerId);
+        if (mounted) setState(() => _stats = stats);
+      }
+    } catch (_) {}
   }
 
-  Future<void> _loadData({bool reset = false}) async {
-    setState(() {
-      if (reset) {
-        _isLoading = true;
-        _currentPage = 0;
-        _hasMore = true;
-        _assignments = [];
-      }
-      _error = null;
-    });
+  void _triggerRefresh() {
+    _loadStats();
+    _resetData(_allData);
+    _resetData(_assignmentsData);
+    _resetData(_examsData);
+    _resetData(_archivedData);
+
+    _fetchPage(_allData, null, false);
+    _fetchPage(_assignmentsData, 'assignment', false);
+    _fetchPage(_examsData, 'exam', false);
+    _fetchPage(_archivedData, null, true);
+  }
+
+  void _resetData(_TabData data) {
+    data.items.clear();
+    data.isLoading = true;
+    data.isFetchingMore = false;
+    data.hasMore = true;
+    data.offset = 0;
+    data.error = null;
+  }
+
+  Future<void> _fetchPage(
+    _TabData data,
+    String? typeFilter,
+    bool archivedOnly, {
+    bool fetchMore = false,
+  }) async {
+    if (!mounted) return;
+
+    if (fetchMore) {
+      setState(() => data.isFetchingMore = true);
+    } else {
+      setState(() {
+        data.isLoading = true;
+        data.error = null;
+      });
+    }
 
     try {
       final repository = context.read<SupabaseRepository>();
-      final centerProvider = context.read<CenterProvider>();
-      final centerId = centerProvider.currentCenterId;
+      final centerId = context.read<CenterProvider>().currentCenterId;
 
       if (centerId == null) {
-        setState(() {
-          _error = 'لم يتم تحديد السنتر';
-          _isLoading = false;
-        });
+        if (mounted) setState(() => data.isLoading = false);
         return;
       }
 
-      final assignments = await repository.getTeacherAssignments(
+      final newItems = await repository.getTeacherAssignments(
         centerId: centerId,
         courseId: _selectedCourseId == 'all' ? null : _selectedCourseId,
+        groupId: _selectedGroupId == 'all' ? null : _selectedGroupId,
+        typeFilter: typeFilter,
+        archivedOnly: archivedOnly,
+        searchQuery: _searchQuery,
+        statusFilter: _statusFilter,
         limit: _pageSize,
-        offset: _currentPage * _pageSize,
+        offset: data.offset,
       );
 
-      final stats = reset
-          ? await repository.getTeacherAssignmentStats(centerId)
-          : _stats;
-
       if (mounted) {
         setState(() {
-          if (reset) {
-            _assignments = assignments;
+          if (fetchMore) {
+            data.items.addAll(newItems);
+            data.isFetchingMore = false;
           } else {
-            _assignments.addAll(assignments);
+            data.items = newItems;
+            data.isLoading = false;
           }
-          _stats = stats;
-          _currentPage += 1;
-          _hasMore = assignments.length == _pageSize;
-          _isLoading = false;
-          _isLoadingMore = false;
+          data.hasMore = newItems.length == _pageSize;
+          data.offset += newItems.length;
         });
       }
-    } catch (e, stack) {
-      debugPrint('Error loading assignments: $e\n$stack');
+    } catch (error) {
       if (mounted) {
         setState(() {
-          _error = e.toString();
-          _isLoading = false;
-          _isLoadingMore = false;
+          data.error = error.toString();
+          data.isLoading = false;
+          data.isFetchingMore = false;
         });
       }
     }
@@ -154,7 +207,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: DefaultTabController(
         length: 4,
         child: NestedScrollView(
@@ -164,13 +217,13 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                 expandedHeight: 180.h,
                 floating: false,
                 pinned: true,
-                backgroundColor: AppColors.forestPrimary,
+                backgroundColor: Theme.of(context).colorScheme.surface,
                 flexibleSpace: FlexibleSpaceBar(
                   background: TeacherAssignmentsHeader(stats: _stats),
                 ),
                 bottom: TabBar(
                   controller: _tabController,
-                  indicatorColor: AppColors.accentVivid,
+                  indicatorColor: Theme.of(context).colorScheme.primary,
                   indicatorWeight: 3,
                   labelColor: Colors.white,
                   unselectedLabelColor: Colors.white.withValues(alpha: 0.5),
@@ -187,30 +240,28 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                 ),
                 actions: [
                   IconButton(
-                    icon: const Icon(Icons.refresh, color: Colors.white),
-                    onPressed: () => _loadData(reset: true),
+                    icon: Icon(Icons.refresh, color: Colors.white),
+                    onPressed: _triggerRefresh,
                   ),
                   Padding(
                     padding: EdgeInsets.only(left: 8.w),
-                    child: const SizedBox.shrink(),
+                    child: SizedBox.shrink(),
                   ),
                 ],
               ),
             ];
           },
-          body: _isLoading
-              ? const TeacherAssignmentsSkeleton()
-              : _error != null
-                  ? _buildErrorWidget()
-                  : TabBarView(
-                      controller: _tabController,
-                      children: [
-                        _buildAssignmentsList(null),
-                        _buildAssignmentsList('assignment'),
-                        _buildAssignmentsList('exam'),
-                        _buildAssignmentsList(null, archivedOnly: true),
-                      ],
-                    ),
+          body: _error != null
+              ? _buildErrorWidget()
+              : TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildAssignmentsList(_allData),
+                    _buildAssignmentsList(_assignmentsData),
+                    _buildAssignmentsList(_examsData),
+                    _buildAssignmentsList(_archivedData),
+                  ],
+                ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -218,14 +269,14 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
           context: context,
           onNavigateToCreate: _navigateToCreate,
         ),
-        backgroundColor: AppColors.accentVivid,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        icon: const Icon(Icons.add, color: AppColors.forestDeep),
-        label: const Text(
+        icon: Icon(Icons.add, color: Theme.of(context).scaffoldBackgroundColor),
+        label: Text(
           'إنشاء جديد',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppColors.forestDeep,
+            color: Theme.of(context).scaffoldBackgroundColor,
           ),
         ),
       ).animate().scale(delay: 300.ms),
@@ -240,27 +291,27 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
           Container(
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
-              color: AppColors.errorRed.withValues(alpha: 0.1),
+              color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.error_outline,
               size: 40.sp,
-              color: AppColors.errorRed,
+              color: Theme.of(context).colorScheme.error,
             ),
           ),
           SizedBox(height: 12.h),
           Text(
             _error ?? 'حدث خطأ',
             style: TextStyle(
-              color: AppColors.textDisplay.withValues(alpha: 0.7),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
           SizedBox(height: 12.h),
           GeniusButton(
             label: 'إعادة المحاولة',
             icon: Icons.refresh,
-            onPressed: _loadData,
+            onPressed: _triggerRefresh,
           ),
         ],
       ),
@@ -275,21 +326,21 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: AppColors.darkSurface,
+              color: Theme.of(context).colorScheme.surface,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.glassBorderHighlight),
+              border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
             ),
             child: Icon(
               Icons.assignment_outlined,
               size: 52.sp,
-              color: AppColors.textDisplay.withValues(alpha: 0.3),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
             ),
           ),
           SizedBox(height: 16.h),
           Text(
             'لا توجد بيانات',
             style: TextStyle(
-              color: AppColors.textDisplay,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.bold,
               fontSize: 16.sp,
             ),
@@ -298,7 +349,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
           Text(
             'اضغط على "إنشاء جديد" للبدء',
             style: TextStyle(
-              color: AppColors.textDisplay.withValues(alpha: 0.3),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
               fontSize: 12.sp,
             ),
           ),
@@ -307,74 +358,14 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
     ).animate().fadeIn().scale(begin: const Offset(0.9, 0.9));
   }
 
-  Widget _buildAssignmentsList(
-    String? typeFilter, {
-    bool archivedOnly = false,
-  }) {
-    final filtered = _assignments.where((a) {
-      final archived = AssignmentHelper.isArchived(a);
-      if (archivedOnly && !archived) return false;
-      if (!archivedOnly && archived) return false;
-      if (typeFilter == null) return true;
-      if (typeFilter == 'exam') {
-        return a['type'] == 'exam' || a['type'] == 'quiz';
-      }
-      return a['type'] == typeFilter;
-    }).toList();
-
-    // NOTE: Search filter only — sorting is handled in filteredFinal below
-    final filteredWithSearch = filtered.where((a) {
-      if (_searchQuery.isEmpty) return true;
-      final title = (a['title'] ?? '').toString().toLowerCase();
-      final course = (a['course_name'] ?? '').toString().toLowerCase();
-      return title.contains(_searchQuery) || course.contains(_searchQuery);
-    }).toList();
-
-    final filteredFinal = filteredWithSearch.where((a) {
-      if (_statusFilter == 'all') return true;
-      final dueDate = DateTime.tryParse(a['due_date'] ?? '');
-      final ended = dueDate != null && DateTime.now().isAfter(dueDate);
-      if (_statusFilter == 'active') return !ended;
-      if (_statusFilter == 'ended') return ended;
-      return true;
-    }).where((a) {
-      if (_selectedGroupId == 'all') return true;
-      return a['course_id'] == _selectedGroupId ||
-             a['group_id'] == _selectedGroupId;
-    }).toList()..sort((a, b) {
-        final aDue = DateTime.tryParse(a['due_date'] ?? '');
-        final bDue = DateTime.tryParse(b['due_date'] ?? '');
-        if (aDue != null && bDue != null) {
-          return _sortOrder == 'newest'
-              ? bDue.compareTo(aDue)
-              : aDue.compareTo(bDue);
-        }
-        return 0; // fallback if no dates
-      });
-
-    if (filteredFinal.isEmpty) return _buildEmptyState();
-
-    if (filteredFinal.length < 6 &&
-        _hasMore &&
-        !_isLoadingMore &&
-        !_isLoading) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _loadMore());
-    }
-
-    return NotificationListener<ScrollNotification>(
-      onNotification: (notification) {
-        if (notification.metrics.pixels >=
-            notification.metrics.maxScrollExtent - 200) {
-          _loadMore();
-        }
-        return false;
-      },
-      child: ListView.builder(
-        padding: EdgeInsets.all(16.w),
-        itemCount: filteredFinal.length + 2 + (_isLoadingMore ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return TeacherAssignmentsFilterPanel(
+  Widget _buildAssignmentsList(_TabData data) {
+    return CustomScrollView(
+      controller: data.scrollController,
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 0),
+            child: TeacherAssignmentsFilterPanel(
               stats: _stats,
               searchController: _searchController,
               searchQuery: _searchQuery,
@@ -382,63 +373,116 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
               groups: _groups,
               selectedGroupId: _selectedGroupId,
               sortOrder: _sortOrder,
-              onSearchChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
+              onSearchChanged: (v) {
+                _searchQuery = v.toLowerCase();
+                _triggerRefresh();
+              },
               onSearchCleared: () {
                 _searchController.clear();
-                setState(() => _searchQuery = '');
+                _searchQuery = '';
+                _triggerRefresh();
               },
-              onStatusChanged: (v) => setState(() => _statusFilter = v),
-              onGroupChanged: (v) => setState(() => _selectedGroupId = v),
+              onStatusChanged: (v) {
+                setState(() => _statusFilter = v);
+                _triggerRefresh();
+              },
+              onGroupChanged: (v) {
+                setState(() => _selectedGroupId = v);
+                _triggerRefresh();
+              },
               onSortToggle: () {
-                setState(() => _sortOrder = _sortOrder == 'newest' ? 'oldest' : 'newest');
-              },
-            );
-          }
-
-          if (_isLoadingMore && index == filteredFinal.length + 1) {
-            return Padding(
-              padding: EdgeInsets.symmetric(vertical: 12.h),
-              child: Center(
-                child: CircularProgressIndicator(
-                  backgroundColor: AppColors.accentVivid,
-                ),
-              ),
-            );
-          }
-          if (index == filteredFinal.length + 1 + (_isLoadingMore ? 1 : 0)) {
-            return SizedBox(height: 60.h);
-          }
-          final itemIndex = index - 1;
-          final assignment = filteredFinal[itemIndex];
-          return Padding(
-            padding: EdgeInsets.only(bottom: 10.h),
-            child: TeacherAssignmentCard(
-              assignment: assignment,
-              onViewSubmissions: () => _viewSubmissions(assignment),
-              onOpenDetails: () {
-                TeacherAssignmentsModals.showMoreOptions(
-                  context: context,
-                  assignment: assignment,
-                  onOpenAddToGroups: () => _openAddToGroups(assignment),
-                  onEditPublishAt: () => _editPublishAt(assignment),
-                  onToggleArchive: (archived) => _toggleArchive(assignment, archived),
-                  onDeleteAssignment: () => _deleteAssignment(assignment),
-                );
-              },
-              onShowMoreOptions: () {
-                TeacherAssignmentsModals.showMoreOptions(
-                  context: context,
-                  assignment: assignment,
-                  onOpenAddToGroups: () => _openAddToGroups(assignment),
-                  onEditPublishAt: () => _editPublishAt(assignment),
-                  onToggleArchive: (archived) => _toggleArchive(assignment, archived),
-                  onDeleteAssignment: () => _deleteAssignment(assignment),
-                );
+                setState(() {
+                  _sortOrder = _sortOrder == 'newest' ? 'oldest' : 'newest';
+                });
+                _triggerRefresh();
               },
             ),
-          );
-        },
-      ),
+          ),
+        ),
+        if (data.isLoading)
+          const SliverFillRemaining(
+            child: Center(child: TeacherAssignmentsSkeleton()),
+          )
+        else if (data.error != null)
+          SliverFillRemaining(
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 50.sp,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  SizedBox(height: 12.h),
+                  Text(
+                    'حدث خطأ في تحميل البيانات\n${data.error}',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                  SizedBox(height: 16.h),
+                  GeniusButton(
+                    label: 'إعادة المحاولة',
+                    onPressed: _triggerRefresh,
+                  ),
+                ],
+              ),
+            ),
+          )
+        else if (data.items.isEmpty)
+          SliverFillRemaining(child: _buildEmptyState())
+        else ...[
+          SliverPadding(
+            padding: EdgeInsets.all(16.w),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final assignment = data.items[index];
+                return Padding(
+                  padding: EdgeInsets.only(bottom: 10.h),
+                  child: TeacherAssignmentCard(
+                    assignment: assignment,
+                    onViewSubmissions: () => _viewSubmissions(assignment),
+                    onOpenDetails: () {
+                      TeacherAssignmentsModals.showMoreOptions(
+                        context: context,
+                        assignment: assignment,
+                        onOpenAddToGroups: () => _openAddToGroups(assignment),
+                        onEditPublishAt: () => _editPublishAt(assignment),
+                        onToggleArchive: (archived) =>
+                            _toggleArchive(assignment, archived),
+                        onDeleteAssignment: () => _deleteAssignment(assignment),
+                      );
+                    },
+                    onShowMoreOptions: () {
+                      TeacherAssignmentsModals.showMoreOptions(
+                        context: context,
+                        assignment: assignment,
+                        onOpenAddToGroups: () => _openAddToGroups(assignment),
+                        onEditPublishAt: () => _editPublishAt(assignment),
+                        onToggleArchive: (archived) =>
+                            _toggleArchive(assignment, archived),
+                        onDeleteAssignment: () => _deleteAssignment(assignment),
+                      );
+                    },
+                  ),
+                );
+              }, childCount: data.items.length),
+            ),
+          ),
+          if (data.isFetchingMore)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(16.w),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+            ),
+        ],
+        SliverToBoxAdapter(child: SizedBox(height: 60.h)),
+      ],
     );
   }
 
@@ -448,7 +492,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
       MaterialPageRoute(builder: (_) => CreateAssignmentScreen(type: type)),
     );
 
-    if (result == true) _loadData();
+    if (result == true) _triggerRefresh();
   }
 
   void _viewSubmissions(Map<String, dynamic> assignment) {
@@ -457,7 +501,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
       MaterialPageRoute(
         builder: (_) => SubmissionsScreen(assignment: assignment),
       ),
-    ).then((_) => _loadData(reset: true));
+    ).then((_) => _triggerRefresh());
   }
 
   Future<void> _toggleArchive(
@@ -481,8 +525,8 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
             ),
           ),
         );
-        _loadData(reset: true);
       }
+      _triggerRefresh();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -493,7 +537,8 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
   }
 
   Future<void> _editPublishAt(Map<String, dynamic> assignment) async {
-    final currentPublish = AssignmentHelper.getPublishDate(assignment) ?? DateTime.now();
+    final currentPublish =
+        AssignmentHelper.getPublishDate(assignment) ?? DateTime.now();
     final pickedDate = await showDatePicker(
       context: context,
       initialDate: currentPublish,
@@ -538,7 +583,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('تم تحديث موعد الظهور')));
-        _loadData(reset: true);
+        _triggerRefresh();
       }
     } catch (e) {
       if (mounted) {
@@ -556,7 +601,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
       groups: _groups,
       isLoadingGroups: _isLoadingGroups,
     );
-    
+
     if (selectedIds != null && selectedIds.isNotEmpty) {
       await _duplicateAssignmentToGroups(assignment, selectedIds);
     }
@@ -569,7 +614,8 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
     try {
       final repository = context.read<SupabaseRepository>();
       final centerProvider = context.read<CenterProvider>();
-      final centerId = assignment['center_id'] as String? ?? centerProvider.currentCenterId;
+      final centerId =
+          assignment['center_id'] as String? ?? centerProvider.currentCenterId;
       if (centerId == null) {
         ScaffoldMessenger.of(
           context,
@@ -607,7 +653,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('تمت الإضافة للمجموعات بنجاح')),
         );
-        _loadData(reset: true);
+        _triggerRefresh();
       }
     } catch (e) {
       if (mounted) {
@@ -622,14 +668,14 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkSurface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: Text(
           'حذف الواجب',
-          style: TextStyle(color: AppColors.textDisplay),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
         content: Text(
           'هل أنت متأكد من حذف "${assignment['title']}"؟',
-          style: TextStyle(color: AppColors.textDisplay.withValues(alpha: 0.7)),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
         ),
         actions: [
           TextButton(
@@ -637,14 +683,14 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
             child: Text(
               'إلغاء',
               style: TextStyle(
-                color: AppColors.textDisplay.withValues(alpha: 0.7),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.errorRed),
-            child: const Text('حذف'),
+            style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+            child: Text('حذف'),
           ),
         ],
       ),
@@ -663,18 +709,13 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
         }
         await repository.deleteAssignment(assignmentId);
         if (mounted) {
-          setState(() {
-            _assignments.removeWhere(
-              (item) => item['id']?.toString() == assignmentId,
-            );
-          });
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('تم حذف الواجب'),
               backgroundColor: Colors.green,
             ),
           );
-          _loadData(reset: true);
+          _triggerRefresh();
         }
       } catch (e) {
         if (mounted) {

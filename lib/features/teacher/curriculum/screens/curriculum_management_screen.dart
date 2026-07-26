@@ -92,9 +92,9 @@ class _CurriculumManagementScreenState
               filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppColors.forestDeep.withValues(alpha: 0.85),
+                  color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
                   border: Border(
-                    top: BorderSide(color: AppColors.glassBorderHighlight),
+                    top: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                   ),
                 ),
                 padding: EdgeInsets.all(24.w),
@@ -107,7 +107,7 @@ class _CurriculumManagementScreenState
                         width: 40.w,
                         height: 4.h,
                         decoration: BoxDecoration(
-                          color: AppColors.textMuted.withValues(alpha: 0.5),
+                          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(2.r),
                         ),
                       ),
@@ -118,14 +118,14 @@ class _CurriculumManagementScreenState
                         Container(
                           padding: EdgeInsets.all(10.w),
                           decoration: BoxDecoration(
-                            color: AppColors.accentVivid.withValues(
+                            color: Theme.of(context).colorScheme.primary.withValues(
                               alpha: 0.15,
                             ),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             Icons.menu_book_rounded,
-                            color: AppColors.accentVivid,
+                            color: Theme.of(context).colorScheme.primary,
                             size: 24.sp,
                           ),
                         ),
@@ -231,7 +231,7 @@ class _CurriculumManagementScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           'المناهج التعليمية',
@@ -244,16 +244,16 @@ class _CurriculumManagementScreenState
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddSubjectSheet,
-        backgroundColor: AppColors.accentVivid,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 8,
         label: Text(
           'مادة جديدة',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.bold,
-            color: AppColors.forestDeep,
+            color: Theme.of(context).scaffoldBackgroundColor,
           ),
         ),
-        icon: const Icon(Icons.add_rounded, color: AppColors.forestDeep),
+        icon: Icon(Icons.add_rounded, color: Theme.of(context).scaffoldBackgroundColor),
       ).animate().scale(delay: 400.ms, curve: Curves.easeOutBack),
       body: _isLoading
           ? __buildLoadingState()
@@ -261,8 +261,8 @@ class _CurriculumManagementScreenState
           ? _buildEmptyState()
           : RefreshIndicator(
               onRefresh: _loadSubjects,
-              backgroundColor: AppColors.accentVivid,
-              color: AppColors.forestPrimary,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.surface,
               child: StaggeredListAnimator(
                 isList: true,
                 delayBase: 100.ms,
@@ -302,7 +302,7 @@ class _CurriculumManagementScreenState
   }
 
   Widget _buildSubjectCard(Map<String, dynamic> subject) {
-    Color cardAccent = AppColors.accentVivid;
+    Color cardAccent = Theme.of(context).colorScheme.primary;
     try {
       String hexString = subject['color'] ?? '#10B981';
       if (hexString.startsWith('#')) hexString = "FF${hexString.substring(1)}";
@@ -314,7 +314,7 @@ class _CurriculumManagementScreenState
       child: GlassCard(
         onTap: () =>
             context.go('/teacher/curriculum/${subject['id']}', extra: subject),
-        color: AppColors.forestPrimary.withValues(alpha: 0.5),
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
         padding: EdgeInsets.all(16.w),
         child: Row(
           children: [
@@ -353,7 +353,7 @@ class _CurriculumManagementScreenState
                       _buildChip(
                         'الترم ${subject['semester'] ?? '-'}',
                         Icons.auto_awesome_motion_rounded,
-                        AppColors.infoPurple,
+                        Colors.purple,
                       ),
                     ],
                   ),
@@ -363,13 +363,13 @@ class _CurriculumManagementScreenState
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: AppColors.darkSurface.withValues(alpha: 0.5),
+                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 14.sp,
-                color: AppColors.textMuted,
+                color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
               ),
             ),
           ],

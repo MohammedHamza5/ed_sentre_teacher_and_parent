@@ -13,11 +13,11 @@ class AIAssistantHeader extends StatelessWidget {
       expandedHeight: 130.h,
       floating: false,
       pinned: true,
-      backgroundColor: AppColors.darkSurface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       automaticallyImplyLeading: false,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
                 Color(0xFF6C3CE1),

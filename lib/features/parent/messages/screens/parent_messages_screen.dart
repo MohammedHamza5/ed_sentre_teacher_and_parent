@@ -66,34 +66,34 @@ class _ParentMessagesScreenState extends State<ParentMessagesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('الرسائل'),
-        backgroundColor: AppColors.forestPrimary,
-        foregroundColor: AppColors.textDisplay,
+        title: Text('الرسائل'),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh),
             onPressed: _loadConversations,
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.accentVivid))
+          ? Center(
+              child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))
           : _error != null
           ? _buildErrorState()
           : _conversations.isEmpty
           ? _buildEmptyState()
           : RefreshIndicator(
               onRefresh: _loadConversations,
-              color: AppColors.accentVivid,
-              backgroundColor: AppColors.darkSurface,
+              color: Theme.of(context).colorScheme.primary,
+              backgroundColor: Theme.of(context).colorScheme.surface,
               child: ListView.separated(
                 padding: EdgeInsets.symmetric(vertical: 8.h),
                 itemCount: _conversations.length,
                 separatorBuilder: (context, index) =>
-                    Divider(height: 1, color: AppColors.darkBorder),
+                    Divider(height: 1, color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                 itemBuilder: (context, index) {
                   return _buildConversationTile(_conversations[index]);
                 },
@@ -128,9 +128,9 @@ class _ParentMessagesScreenState extends State<ParentMessagesScreen> {
               child: Container(
                 padding: EdgeInsets.all(4.w),
                 decoration: BoxDecoration(
-                  color: AppColors.errorRed,
+                  color: Theme.of(context).colorScheme.error,
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.darkSurface, width: 2),
+                  border: Border.all(color: Theme.of(context).colorScheme.surface, width: 2),
                 ),
                 child: Text(
                   '${conversation.unreadCountStudent}',
@@ -149,7 +149,7 @@ class _ParentMessagesScreenState extends State<ParentMessagesScreen> {
         style: TextStyle(
           fontWeight: hasUnread ? FontWeight.bold : FontWeight.w600,
           fontSize: 16.sp,
-          color: AppColors.textDisplay,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
       subtitle: Column(
@@ -162,8 +162,8 @@ class _ParentMessagesScreenState extends State<ParentMessagesScreen> {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: hasUnread
-                  ? AppColors.textDisplay
-                  : AppColors.textMuted,
+                  ? Theme.of(context).colorScheme.onSurface
+                  : (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
               fontWeight: hasUnread ? FontWeight.w500 : FontWeight.normal,
               fontSize: 14.sp,
             ),
@@ -179,12 +179,12 @@ class _ParentMessagesScreenState extends State<ParentMessagesScreen> {
               _formatDate(conversation.lastMessageAt!),
               style: TextStyle(
                 fontSize: 12.sp,
-                color: hasUnread ? AppColors.accentVivid : AppColors.textMuted.withValues(alpha: 0.5),
+                color: hasUnread ? Theme.of(context).colorScheme.primary : (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
                 fontWeight: hasUnread ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           SizedBox(height: 4.h),
-          Icon(Icons.chevron_left, color: AppColors.textMuted.withValues(alpha: 0.5), size: 20.sp),
+          Icon(Icons.chevron_left, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5), size: 20.sp),
         ],
       ),
     );
@@ -213,7 +213,7 @@ class _ParentMessagesScreenState extends State<ParentMessagesScreen> {
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
-              color: AppColors.textDisplay,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           SizedBox(height: 8.h),
@@ -222,7 +222,7 @@ class _ParentMessagesScreenState extends State<ParentMessagesScreen> {
             child: Text(
               'ستظهر المحادثات مع المعلمين هنا عند بدئها',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14.sp, color: AppColors.textMuted),
+              style: TextStyle(fontSize: 14.sp, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
             ),
           ),
         ],
@@ -235,14 +235,14 @@ class _ParentMessagesScreenState extends State<ParentMessagesScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 64.sp, color: AppColors.errorRed),
+          Icon(Icons.error_outline, size: 64.sp, color: Theme.of(context).colorScheme.error),
           SizedBox(height: 16.h),
           Text(
             'حدث خطأ',
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
-              color: AppColors.textDisplay,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           SizedBox(height: 8.h),
@@ -251,14 +251,14 @@ class _ParentMessagesScreenState extends State<ParentMessagesScreen> {
             child: Text(
               _error ?? 'خطأ غير معروف',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14.sp, color: AppColors.textMuted),
+              style: TextStyle(fontSize: 14.sp, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
             ),
           ),
           SizedBox(height: 24.h),
           ElevatedButton.icon(
             onPressed: _loadConversations,
-            icon: const Icon(Icons.refresh),
-            label: const Text('إعادة المحاولة'),
+            icon: Icon(Icons.refresh),
+            label: Text('إعادة المحاولة'),
           ),
         ],
       ),

@@ -22,18 +22,18 @@ class ParentProfileScreen extends StatelessWidget {
     final user = authProvider.currentUser;
 
     if (user == null) {
-      return const Scaffold(
-        backgroundColor: AppColors.forestDeep,
+      return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Center(
           child: CircularProgressIndicator(
-            backgroundColor: AppColors.accentVivid,
+            backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -52,14 +52,14 @@ class ParentProfileScreen extends StatelessWidget {
                   _buildMenuSection(context, [
                     _MenuItem(
                       icon: Icons.person_outline_rounded,
-                      iconColor: AppColors.accentVivid,
+                      iconColor: Theme.of(context).colorScheme.primary,
                       title: 'تعديل الملف الشخصي',
                       onTap: () => _showComingSoon(context),
                     ),
                     _buildDivider(),
                     _MenuItem(
                       icon: Icons.lock_outline_rounded,
-                      iconColor: AppColors.infoPurple,
+                      iconColor: Colors.purple,
                       title: 'تغيير كلمة المرور',
                       onTap: () => _showComingSoon(context),
                     ),
@@ -78,7 +78,7 @@ class ParentProfileScreen extends StatelessWidget {
                     _buildDivider(),
                     _MenuItem(
                       icon: Icons.dark_mode_rounded,
-                      iconColor: AppColors.textDisplay,
+                      iconColor: Theme.of(context).colorScheme.onSurface,
                       title: 'الوضع الليلي',
                       trailing: 'مفعّل',
                       onTap: () {},
@@ -86,7 +86,7 @@ class ParentProfileScreen extends StatelessWidget {
                     _buildDivider(),
                     _MenuItem(
                       icon: Icons.language_rounded,
-                      iconColor: AppColors.emeraldGreen,
+                      iconColor: Colors.green,
                       title: 'اللغة',
                       trailing: 'العربية',
                       onTap: () {},
@@ -99,21 +99,21 @@ class ParentProfileScreen extends StatelessWidget {
                   _buildMenuSection(context, [
                     _MenuItem(
                       icon: Icons.support_agent_rounded,
-                      iconColor: AppColors.accentVivid,
+                      iconColor: Theme.of(context).colorScheme.primary,
                       title: 'التواصل مع الدعم',
                       onTap: () => _showComingSoon(context),
                     ),
                     _buildDivider(),
                     _MenuItem(
                       icon: Icons.help_outline_rounded,
-                      iconColor: AppColors.emeraldGreen,
+                      iconColor: Colors.green,
                       title: 'الأسئلة الشائعة',
                       onTap: () => _showComingSoon(context),
                     ),
                     _buildDivider(),
                     _MenuItem(
                       icon: Icons.info_outline_rounded,
-                      iconColor: AppColors.textDisplay,
+                      iconColor: Theme.of(context).colorScheme.onSurface,
                       title: 'عن التطبيق',
                       trailing: 'v1.0.0',
                       onTap: () => _showAboutDialog(context),
@@ -152,8 +152,8 @@ class ParentProfileScreen extends StatelessWidget {
   ) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: AppColors.forestPrimary,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(32),
           bottomRight: Radius.circular(32),
@@ -169,7 +169,7 @@ class ParentProfileScreen extends StatelessWidget {
                 'حسابي',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textDisplay,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               SizedBox(height: 24.h),
@@ -179,13 +179,13 @@ class ParentProfileScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppColors.accentVivid.withValues(alpha: 0.5),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                     width: 3,
                   ),
                 ),
                 child: CircleAvatar(
                   radius: 50.r,
-                  backgroundColor: AppColors.darkSurface,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
                   child: user?.avatarUrl != null
                       ? ClipOval(
                           child: CachedNetworkImage(
@@ -196,7 +196,7 @@ class ParentProfileScreen extends StatelessWidget {
                             errorWidget: (_, __, ___) => Icon(
                               Icons.person_rounded,
                               size: 48.sp,
-                              color: AppColors.textMuted,
+                              color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                             ),
                           ),
                         )
@@ -206,7 +206,7 @@ class ParentProfileScreen extends StatelessWidget {
                               : 'أ',
                           style: TextStyle(
                             fontSize: 36.sp,
-                            color: AppColors.textDisplay,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -226,24 +226,24 @@ class ParentProfileScreen extends StatelessWidget {
                 'كود الدعوة: ${user?.email?.replaceAll('@edsentre.com', '') ?? ''}',
                 style: Theme.of(
                   context,
-                ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+                ).textTheme.bodyMedium?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
               ).animate().fadeIn(delay: 100.ms),
               SizedBox(height: 4.h),
               Text(
                 'الهاتف: ${user?.phone ?? "غير محدد"}',
                 style: Theme.of(
                   context,
-                ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
+                ).textTheme.bodySmall?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
               ).animate().fadeIn(delay: 150.ms),
               SizedBox(height: 16.h),
 
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                 decoration: BoxDecoration(
-                  color: AppColors.emeraldGreen.withValues(alpha: 0.15),
+                  color: Colors.green.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(24.r),
                   border: Border.all(
-                    color: AppColors.emeraldGreen.withValues(alpha: 0.3),
+                    color: Colors.green.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -252,14 +252,14 @@ class ParentProfileScreen extends StatelessWidget {
                     Icon(
                       Icons.family_restroom_rounded,
                       size: 20.sp,
-                      color: AppColors.emeraldGreen,
+                      color: Colors.green,
                     ),
                     SizedBox(width: 8.w),
                     Text(
                       '${parentProvider.children.length} أبناء مسجلين',
                       style: TextStyle(
                         fontSize: 14.sp,
-                        color: AppColors.emeraldGreen,
+                        color: Colors.green,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -279,7 +279,7 @@ class ParentProfileScreen extends StatelessWidget {
       child: Text(
         title,
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: AppColors.textMuted,
+          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -290,13 +290,13 @@ class ParentProfileScreen extends StatelessWidget {
     return Divider(
       height: 1,
       indent: 60.w,
-      color: AppColors.glassBorderHighlight,
+      color: AppColors.divider,
     );
   }
 
   Widget _buildMenuSection(BuildContext context, List<Widget> children) {
     return GlassCard(
-      color: AppColors.forestPrimary.withValues(alpha: 0.4),
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
       padding: EdgeInsets.zero,
       child: Column(children: children),
     );
@@ -305,14 +305,14 @@ class ParentProfileScreen extends StatelessWidget {
   void _showComingSoon(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text(
+        content: Text(
           'قريباً إن شاء الله 🚀',
           style: TextStyle(
-            color: AppColors.forestDeep,
+            color: Theme.of(context).scaffoldBackgroundColor,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: AppColors.accentVivid,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -325,7 +325,7 @@ class ParentProfileScreen extends StatelessWidget {
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
         child: GlassCard(
-          color: AppColors.darkSurface.withValues(alpha: 0.9),
+          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
           padding: EdgeInsets.all(24.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -336,12 +336,12 @@ class ParentProfileScreen extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      color: AppColors.accentVivid.withValues(alpha: 0.15),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Icon(
                       Icons.school_rounded,
-                      color: AppColors.accentVivid,
+                      color: Theme.of(context).colorScheme.primary,
                       size: 24.sp,
                     ),
                   ),
@@ -364,14 +364,14 @@ class ParentProfileScreen extends StatelessWidget {
                 'الإصدار: 1.0.0',
                 style: Theme.of(
                   context,
-                ).textTheme.labelSmall?.copyWith(color: AppColors.textMuted),
+                ).textTheme.labelSmall?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
               ),
               SizedBox(height: 16.h),
               Text(
                 'متابعة أبنائك في المراكز التعليمية بسهولة وتصميم عصري يعزز التجربة المميزة.',
                 style: Theme.of(
                   context,
-                ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+                ).textTheme.bodyMedium?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
               ),
               SizedBox(height: 24.h),
               SizedBox(
@@ -399,7 +399,7 @@ class ParentProfileScreen extends StatelessWidget {
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
         child: GlassCard(
-          color: AppColors.darkSurface.withValues(alpha: 0.9),
+          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
           padding: EdgeInsets.all(24.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -407,12 +407,12 @@ class ParentProfileScreen extends StatelessWidget {
               Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: AppColors.errorRed.withValues(alpha: 0.1),
+                  color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.logout_rounded,
-                  color: AppColors.errorRed,
+                  color: Theme.of(context).colorScheme.error,
                   size: 32.sp,
                 ),
               ),
@@ -428,7 +428,7 @@ class ParentProfileScreen extends StatelessWidget {
                 'هل أنت متأكد من تسجيل الخروج؟',
                 style: Theme.of(
                   context,
-                ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+                ).textTheme.bodyMedium?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
               ),
               SizedBox(height: 28.h),
               Row(
@@ -438,7 +438,7 @@ class ParentProfileScreen extends StatelessWidget {
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 14.h),
-                        side: BorderSide(color: AppColors.glassBorderHighlight),
+                        side: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14.r),
                         ),
@@ -446,7 +446,7 @@ class ParentProfileScreen extends StatelessWidget {
                       child: Text(
                         'إلغاء',
                         style: TextStyle(
-                          color: AppColors.textDisplay,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 16.sp,
                         ),
                       ),
@@ -462,7 +462,7 @@ class ParentProfileScreen extends StatelessWidget {
                         if (context.mounted) context.go('/login');
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.errorRed,
+                        backgroundColor: Theme.of(context).colorScheme.error,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14.r),
@@ -525,12 +525,12 @@ class _MenuItem extends StatelessWidget {
               trailing!,
               style: Theme.of(
                 context,
-              ).textTheme.labelSmall?.copyWith(color: AppColors.textMuted),
+              ).textTheme.labelSmall?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
             ),
           SizedBox(width: 8.w),
           Icon(
             Icons.chevron_left_rounded,
-            color: AppColors.textMuted,
+            color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
             size: 20.sp,
           ),
         ],

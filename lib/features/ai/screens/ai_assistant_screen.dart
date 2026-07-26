@@ -69,7 +69,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
       body: RefreshIndicator(
         onRefresh: _loadData,
         backgroundColor: AppColors.primary,
-        color: AppColors.darkCard,
+        color: Theme.of(context).colorScheme.surface,
         child: CustomScrollView(
           physics: const ClampingScrollPhysics(
             parent: AlwaysScrollableScrollPhysics(),
@@ -140,7 +140,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
           if (onAdd != null)
             IconButton(
               onPressed: onAdd,
-              icon: const Icon(Icons.add_circle_outline_rounded),
+              icon: Icon(Icons.add_circle_outline_rounded),
               color: const Color(0xFF8B5CF6),
               tooltip: 'إضافة محتوى',
             ),
@@ -228,7 +228,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
       if (actuallyDisabled) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('لقد استنفدت حدك اليومي. حاول غداً.'),
+            content: Text('لقد استنفدت حدك اليومي. حاول غداً.'),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -257,7 +257,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
       return Center(
         child: Padding(
           padding: EdgeInsets.all(20.w),
-          child: const CircularProgressIndicator(color: Color(0xFF8B5CF6)),
+          child: CircularProgressIndicator(color: Color(0xFF8B5CF6)),
         ),
       );
     }
@@ -268,9 +268,9 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
         child: Container(
           padding: EdgeInsets.all(20.w),
           decoration: BoxDecoration(
-            color: AppColors.darkCard,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: AppColors.darkBorder),
+            border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
           ),
           child: Row(
             children: [
@@ -336,7 +336,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkSurface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: Text(
           'حذف المحتوى',
           style: TextStyle(color: AppColors.textOnDark, fontSize: 18.sp),
@@ -355,7 +355,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('حذف', style: TextStyle(color: AppColors.error)),
+            child: Text('حذف', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -373,7 +373,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('تم حذف المحتوى بنجاح'),
+            content: Text('تم حذف المحتوى بنجاح'),
             backgroundColor: AppColors.success,
           ),
         );
@@ -394,7 +394,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.darkSurface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
@@ -403,22 +403,6 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
   }
 
   void _openGenerateExam(String type) {
-    if (context.read<AIProvider>().knowledgeBase.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'يرجى إضافة محتوى إلى قاعدة المعرفة أولاً لتتمكن من إنشاء الامتحانات.',
-          ),
-          backgroundColor: AppColors.warning,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-        ),
-      );
-      return;
-    }
-
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => AIGenerateExamScreen(examType: type)),

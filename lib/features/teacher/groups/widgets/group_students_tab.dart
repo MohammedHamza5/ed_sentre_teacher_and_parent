@@ -22,13 +22,13 @@ class GroupStudentsTab extends StatelessWidget {
             Icon(
               Icons.people_outline_rounded,
               size: 64.sp,
-              color: AppColors.textMuted.withValues(alpha: 0.5),
+              color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
             ),
             SizedBox(height: 16.h),
             Text(
               'لا يوجد طلاب',
               style: TextStyle(
-                color: AppColors.textDisplay,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
               ),
@@ -36,7 +36,7 @@ class GroupStudentsTab extends StatelessWidget {
             SizedBox(height: 8.h),
             Text(
               'لم ينضم أي طالب لهذه المجموعة بعد',
-              style: TextStyle(color: AppColors.textMuted),
+              style: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
             ),
           ],
         ),
@@ -55,7 +55,7 @@ class GroupStudentsTab extends StatelessWidget {
         return Padding(
           padding: EdgeInsets.only(bottom: 14.h),
           child: GlassCard(
-            color: AppColors.darkSurface.withValues(alpha: 0.7),
+            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
             padding: EdgeInsets.all(16.w),
             child: Row(
               children: [
@@ -64,12 +64,12 @@ class GroupStudentsTab extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppColors.glassBorderHighlight,
+                      color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
                     ),
                   ),
                   child: CircleAvatar(
                     radius: 24.r,
-                    backgroundColor: AppColors.forestPrimary,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
                     child: avatar != null
                         ? ClipOval(
                             child: CachedNetworkImage(
@@ -79,14 +79,14 @@ class GroupStudentsTab extends StatelessWidget {
                               fit: BoxFit.cover,
                               errorWidget: (_, __, ___) => Icon(
                                 Icons.person_rounded,
-                                color: AppColors.textMuted,
+                                color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                               ),
                             ),
                           )
                         : Text(
                             name.isNotEmpty ? name[0] : 'ط',
                             style: TextStyle(
-                              color: AppColors.textDisplay,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
                             ),
@@ -103,7 +103,7 @@ class GroupStudentsTab extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: AppColors.textDisplay,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontWeight: FontWeight.bold,
                           fontSize: 16.sp,
                         ),
@@ -112,7 +112,7 @@ class GroupStudentsTab extends StatelessWidget {
                       Text(
                         phone.isNotEmpty ? phone : '—',
                         style: TextStyle(
-                          color: AppColors.textMuted,
+                          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -122,7 +122,7 @@ class GroupStudentsTab extends StatelessWidget {
                         Text(
                           'كود: $code',
                           style: TextStyle(
-                            color: AppColors.textMuted.withValues(alpha: 0.7),
+                            color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.7),
                             fontSize: 12.sp,
                           ),
                         ),
@@ -136,16 +136,16 @@ class GroupStudentsTab extends StatelessWidget {
                     vertical: 6.h,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.emeraldGreen.withValues(alpha: 0.15),
+                    color: Colors.green.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
-                      color: AppColors.emeraldGreen.withValues(alpha: 0.3),
+                      color: Colors.green.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Text(
                     'نشط',
                     style: TextStyle(
-                      color: AppColors.emeraldGreen,
+                      color: Colors.green,
                       fontSize: 12.sp,
                       fontWeight: FontWeight.bold,
                     ),

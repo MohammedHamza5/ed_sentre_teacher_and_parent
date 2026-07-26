@@ -107,7 +107,7 @@ class QuickStatCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                     height: 1.2,
                   ),
                 ),
@@ -116,7 +116,7 @@ class QuickStatCard extends StatelessWidget {
                   label,
                   style: TextStyle(
                     fontSize: 11.sp,
-                    color: AppColors.textSecondary,
+                    color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
                     fontWeight: FontWeight.w500,
                   ),
                   maxLines: 1,
@@ -213,7 +213,7 @@ class DashboardActionButton extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -245,7 +245,7 @@ class SectionHeader extends StatelessWidget {
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           if (onViewAll != null)

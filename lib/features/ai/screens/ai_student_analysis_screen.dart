@@ -70,7 +70,7 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
           'تحليل أداء الطلاب 📊',
           style: TextStyle(color: AppColors.textOnDark),
         ),
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         foregroundColor: AppColors.textOnDark,
         elevation: 0,
       ),
@@ -111,9 +111,9 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
       margin: EdgeInsets.all(16.w),
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
       ),
       child: DropdownButtonFormField<String>(
         value: _selectedGroupId,
@@ -158,7 +158,7 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.info_outline, color: Colors.orange),
+            Icon(Icons.info_outline, color: Colors.orange),
             SizedBox(width: 8.w),
             Text(
               'لا يوجد طلاب في هذه المجموعة',
@@ -173,9 +173,9 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
       ),
       child: DropdownButtonFormField<String>(
         value: _selectedStudentId,
@@ -213,9 +213,9 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
             Container(
               padding: EdgeInsets.all(24.w),
               decoration: BoxDecoration(
-                color: AppColors.darkCard,
+                color: Theme.of(context).colorScheme.surface,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.darkBorder),
+                border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
               ),
               child: Icon(
                 Icons.analytics,
@@ -266,7 +266,7 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
             ),
             child: CircleAvatar(
               radius: 50.r,
-              backgroundColor: AppColors.darkCard,
+              backgroundColor: Theme.of(context).colorScheme.surface,
               child: Icon(Icons.person, size: 50.sp, color: AppColors.primary),
             ),
           ),
@@ -305,15 +305,15 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
                   ? SizedBox(
                       width: 20.w,
                       height: 20.w,
-                      child: const CircularProgressIndicator(
+                      child: CircularProgressIndicator(
                         backgroundColor: Colors.white,
                         strokeWidth: 2,
                       ),
                     )
-                  : const Icon(Icons.auto_awesome, color: Colors.white),
+                  : Icon(Icons.auto_awesome, color: Colors.white),
               label: Text(
                 _isAnalyzing ? 'جاري التحليل...' : 'تحليل الأداء',
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.white),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
@@ -497,9 +497,9 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

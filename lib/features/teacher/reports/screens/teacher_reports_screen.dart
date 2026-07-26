@@ -96,7 +96,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
@@ -104,7 +104,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
           style: Theme.of(context).textTheme.headlineMedium,
         ),
         centerTitle: true,
-        backgroundColor: AppColors.forestDeep.withValues(alpha: 0.8),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
         elevation: 0,
         iconTheme: const IconThemeData(color: AppColors.textDisplay),
         flexibleSpace: ClipRRect(
@@ -115,12 +115,12 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh_rounded, color: AppColors.accentVivid),
+            icon: Icon(Icons.refresh_rounded, color: Theme.of(context).colorScheme.primary),
             onPressed: _loadData,
           ),
           Padding(
             padding: EdgeInsets.only(left: 8.w),
-            child: const SizedBox.shrink(),
+            child: SizedBox.shrink(),
           ),
         ],
       ),
@@ -132,8 +132,8 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
             ? _buildErrorState()
             : RefreshIndicator(
                 onRefresh: _loadData,
-                backgroundColor: AppColors.accentVivid,
-                color: AppColors.forestPrimary,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.surface,
                 child: StaggeredListAnimator(
                   isList: true,
                   padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 100.h),
@@ -189,31 +189,31 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
           Icon(
             Icons.error_outline_rounded,
             size: 64.sp,
-            color: AppColors.errorRed,
+            color: Theme.of(context).colorScheme.error,
           ),
           SizedBox(height: 16.h),
           Text(
             _error ?? 'حدث خطأ غير معروف',
             style: Theme.of(
               context,
-            ).textTheme.titleMedium?.copyWith(color: AppColors.textMuted),
+            ).textTheme.titleMedium?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
           ),
           SizedBox(height: 24.h),
           ElevatedButton.icon(
             onPressed: _loadData,
-            icon: const Icon(
+            icon: Icon(
               Icons.refresh_rounded,
-              color: AppColors.forestDeep,
+              color: Theme.of(context).scaffoldBackgroundColor,
             ),
-            label: const Text(
+            label: Text(
               'إعادة المحاولة',
               style: TextStyle(
-                color: AppColors.forestDeep,
+                color: Theme.of(context).scaffoldBackgroundColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accentVivid,
+              backgroundColor: Theme.of(context).colorScheme.primary,
             ),
           ),
         ],
@@ -228,7 +228,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
           width: 4.w,
           height: 20.h,
           decoration: BoxDecoration(
-            color: AppColors.accentVivid,
+            color: Theme.of(context).colorScheme.primary,
             borderRadius: BorderRadius.circular(2.r),
           ),
         ),
@@ -256,7 +256,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
             'الطلاب',
             '$totalStudents',
             Icons.people_rounded,
-            AppColors.infoPurple,
+            Colors.purple,
           ),
         ),
         SizedBox(width: 12.w),
@@ -265,7 +265,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
             'الحضور',
             '$attendanceRate%',
             Icons.check_circle_rounded,
-            AppColors.emeraldGreen,
+            Colors.green,
           ),
         ),
         SizedBox(width: 12.w),
@@ -274,7 +274,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
             'الواجبات',
             '$totalAssignments',
             Icons.assignment_rounded,
-            AppColors.accentVivid,
+            Theme.of(context).colorScheme.primary,
           ),
         ),
       ],
@@ -288,7 +288,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
     Color color,
   ) {
     return GlassCard(
-      color: AppColors.forestPrimary.withValues(alpha: 0.4),
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
       padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 8.w),
       child: Column(
         children: [
@@ -313,7 +313,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
             title,
             style: Theme.of(
               context,
-            ).textTheme.labelSmall?.copyWith(color: AppColors.textMuted),
+            ).textTheme.labelSmall?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
           ),
         ],
       ),
@@ -336,7 +336,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
     return SizedBox(
       height: 220.h,
       child: GlassCard(
-        color: AppColors.forestPrimary.withValues(alpha: 0.4),
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
         padding: EdgeInsets.all(16.w),
         child: LineChart(
           LineChartData(
@@ -345,7 +345,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
               drawVerticalLine: false,
               horizontalInterval: 25,
               getDrawingHorizontalLine: (value) =>
-                  FlLine(color: AppColors.glassBorderHighlight, strokeWidth: 1),
+                  FlLine(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300), strokeWidth: 1),
             ),
             titlesData: FlTitlesData(
               leftTitles: AxisTitles(
@@ -356,7 +356,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
                   getTitlesWidget: (value, meta) => Text(
                     '${value.toInt()}%',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.textMuted,
+                      color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                     ),
                   ),
                 ),
@@ -376,15 +376,15 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
               LineChartBarData(
                 spots: spots,
                 isCurved: true,
-                color: AppColors.emeraldGreen,
+                color: Colors.green,
                 barWidth: 4,
                 dotData: const FlDotData(show: false),
                 belowBarData: BarAreaData(
                   show: true,
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.emeraldGreen.withValues(alpha: 0.3),
-                      AppColors.emeraldGreen.withValues(alpha: 0.0),
+                      Colors.green.withValues(alpha: 0.3),
+                      Colors.green.withValues(alpha: 0.0),
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -406,7 +406,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
     return SizedBox(
       height: 220.h,
       child: GlassCard(
-        color: AppColors.forestPrimary.withValues(alpha: 0.4),
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
         padding: EdgeInsets.all(16.w),
         child: BarChart(
           BarChartData(
@@ -415,7 +415,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
               drawVerticalLine: false,
               horizontalInterval: 1,
               getDrawingHorizontalLine: (value) =>
-                  FlLine(color: AppColors.glassBorderHighlight, strokeWidth: 1),
+                  FlLine(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300), strokeWidth: 1),
             ),
             titlesData: FlTitlesData(
               leftTitles: AxisTitles(
@@ -426,7 +426,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
                   getTitlesWidget: (value, meta) => Text(
                     '${value.toInt()}',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.textMuted,
+                      color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                     ),
                   ),
                 ),
@@ -449,7 +449,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
                   BarChartRodData(
                     toY: (e.value['count'] as int).toDouble(),
                     gradient: LinearGradient(
-                      colors: [AppColors.accentVivid, AppColors.infoPurple],
+                      colors: [Theme.of(context).colorScheme.primary, Colors.purple],
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                     ),
@@ -467,7 +467,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
 
   Widget _buildNoDataCard() {
     return GlassCard(
-      color: AppColors.darkSurface.withValues(alpha: 0.4),
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
       padding: EdgeInsets.symmetric(vertical: 40.h),
       child: Center(
         child: Column(
@@ -475,14 +475,14 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
             Icon(
               Icons.bar_chart_rounded,
               size: 48.sp,
-              color: AppColors.textMuted.withValues(alpha: 0.5),
+              color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
             ),
             SizedBox(height: 12.h),
             Text(
               'لا توجد بيانات كافية',
               style: Theme.of(
                 context,
-              ).textTheme.titleMedium?.copyWith(color: AppColors.textMuted),
+              ).textTheme.titleMedium?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
             ),
           ],
         ),
@@ -498,8 +498,8 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
       const Color(0xFFFFD700), // Gold
       const Color(0xFFC0C0C0), // Silver
       const Color(0xFFCD7F32), // Bronze
-      AppColors.infoPurple,
-      AppColors.infoPurple,
+      Colors.purple,
+      Colors.purple,
     ];
 
     return Column(
@@ -509,7 +509,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
         return Padding(
           padding: EdgeInsets.only(bottom: 12.h),
           child: GlassCard(
-            color: AppColors.forestPrimary.withValues(alpha: 0.4),
+            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
             padding: EdgeInsets.all(16.w),
             child: Row(
               children: [
@@ -546,7 +546,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
                       Text(
                         'حضور: ${student['attendance']}% • واجبات: ${student['assignments']}%',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.textMuted,
+                          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                         ),
                       ),
                     ],
@@ -558,16 +558,16 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
                     vertical: 6.h,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.emeraldGreen.withValues(alpha: 0.15),
+                    color: Colors.green.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20.r),
                     border: Border.all(
-                      color: AppColors.emeraldGreen.withValues(alpha: 0.3),
+                      color: Colors.green.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Text(
                     '${student['overall']}%',
                     style: TextStyle(
-                      color: AppColors.emeraldGreen,
+                      color: Colors.green,
                       fontWeight: FontWeight.bold,
                       fontSize: 14.sp,
                     ),

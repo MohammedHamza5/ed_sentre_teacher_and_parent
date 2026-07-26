@@ -14,12 +14,14 @@ class AIGenerateExamScreen extends StatefulWidget {
   final String? knowledgeBaseId;
   final String? knowledgeTitle;
   final String? examType;
+  final String? fileUrl;
 
   const AIGenerateExamScreen({
     super.key,
     this.knowledgeBaseId,
     this.knowledgeTitle,
     this.examType,
+    this.fileUrl,
   });
 
   @override
@@ -60,14 +62,14 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
     final provider = context.read<AiExamProvider>();
     final count = int.tryParse(_questionCountController.text) ?? 10;
 
-    if (widget.knowledgeBaseId != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'التوليد من قاعدة المعرفة النصية قيد التطوير حالياً. يرجى استخدام ملف PDF.',
-          ),
-        ),
+    if (widget.fileUrl != null) {
+      final result = await provider.generateFromKnowledgeBasePdf(
+        fileUrl: widget.fileUrl!,
+        questionCount: count,
+        difficulty: _selectedDifficulty,
+        examType: _selectedType,
       );
+      _handleGenerationResult(result, provider);
       return;
     }
 
@@ -85,6 +87,10 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
       examType: _selectedType,
     );
 
+    _handleGenerationResult(result, provider);
+  }
+
+  void _handleGenerationResult(Map<String, dynamic>? result, AiExamProvider provider) async {
     if (result != null && mounted) {
       // NOTE: بدلاً من إظهار dialog بسيط، ننتقل لشاشة المعاينة الكاملة
       final published = await Navigator.push<bool>(
@@ -105,12 +111,11 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
       _showErrorDialog(provider.error ?? 'فشل التوليد لأسباب تقنية');
     }
   }
-
   void _showErrorDialog(String error) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
         ),
@@ -254,7 +259,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
           child: Container(
             padding: EdgeInsets.all(32.r),
             decoration: BoxDecoration(
-              color: AppColors.darkSurface.withValues(alpha: 0.95),
+              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
               borderRadius: BorderRadius.circular(32.r),
               border: Border.all(
                 color: const Color(0xFF8B5CF6).withValues(alpha: 0.5),
@@ -378,7 +383,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
   }
 
   Widget _buildSmartProgressIndicators(AiExamProvider provider) {
-    if (provider.progress == 0) return const SizedBox.shrink();
+    if (provider.progress == 0) return SizedBox.shrink();
 
     return Column(
       children: [
@@ -461,18 +466,49 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
   }
 
   Widget _buildUploadCard() {
+    if (widget.fileUrl != null) {
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 40.h, horizontal: 20.w),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(
+            color: const Color(0xFF8B5CF6),
+            width: 2,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(Icons.picture_as_pdf, size: 48.sp, color: const Color(0xFF8B5CF6)),
+            SizedBox(height: 12.h),
+            Text(
+              'ملف من قاعدة المعرفة',
+              style: TextStyle(color: AppColors.textOnDarkHint, fontSize: 12.sp),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              widget.knowledgeTitle ?? 'ملف PDF',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.textOnDark, fontSize: 16.sp, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      );
+    }
+
     return GestureDetector(
       onTap: _pickFile,
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.symmetric(vertical: 40.h),
         decoration: BoxDecoration(
-          color: AppColors.darkCard,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: _selectedFile != null
                 ? const Color(0xFF8B5CF6)
-                : AppColors.darkBorder,
+                : (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
             width: 2,
           ),
         ),
@@ -583,7 +619,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
       label: Text(label),
       selected: isSelected,
       onSelected: (val) => setState(() => _selectedDifficulty = value),
-      backgroundColor: AppColors.darkCard,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       selectedColor: const Color(0xFF8B5CF6),
       labelStyle: TextStyle(
         color: isSelected ? Colors.white : AppColors.textOnDarkSecondary,
@@ -598,7 +634,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
       label: Text(label),
       selected: isSelected,
       onSelected: (val) => setState(() => _selectedType = value),
-      backgroundColor: AppColors.darkCard,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       selectedColor: const Color(0xFF8B5CF6).withValues(alpha: 0.6),
       labelStyle: TextStyle(
         color: isSelected ? Colors.white : AppColors.textOnDarkSecondary,
@@ -622,7 +658,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
         labelStyle: TextStyle(color: AppColors.textOnDarkHint),
         prefixIcon: Icon(icon, color: const Color(0xFF8B5CF6)),
         filled: true,
-        fillColor: AppColors.darkCard,
+        fillColor: Theme.of(context).colorScheme.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide.none,
@@ -647,7 +683,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.auto_awesome, color: Colors.white),
+            Icon(Icons.auto_awesome, color: Colors.white),
             SizedBox(width: 10.w),
             Text(
               'ابدأ التوليد السحري',

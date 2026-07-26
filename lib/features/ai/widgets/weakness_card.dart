@@ -62,7 +62,7 @@ class WeaknessCard extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 13.sp,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -76,7 +76,7 @@ class WeaknessCard extends StatelessWidget {
             insight.message,
             style: TextStyle(
               fontSize: 12.sp,
-              color: AppColors.textSecondary,
+              color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
               fontWeight: FontWeight.w500,
             ),
             maxLines: 2,

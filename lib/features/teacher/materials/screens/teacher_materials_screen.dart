@@ -125,13 +125,13 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: _error != null && !_isLoading
           ? _buildErrorWidget()
           : RefreshIndicator(
               onRefresh: () => _loadData(reset: true),
-              backgroundColor: AppColors.accentVivid,
-              color: AppColors.darkSurface,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.surface,
               child: CustomScrollView(
                 controller: _scrollController,
                 physics: const BouncingScrollPhysics(),
@@ -152,17 +152,17 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showUploadOptions(context),
-        backgroundColor: AppColors.accentVivid,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
-        icon: const Icon(
+        icon: Icon(
           Icons.cloud_upload_rounded,
-          color: AppColors.forestDeep,
+          color: Theme.of(context).scaffoldBackgroundColor,
         ),
-        label: const Text(
+        label: Text(
           'رفع جديد',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppColors.forestDeep,
+            color: Theme.of(context).scaffoldBackgroundColor,
           ),
         ),
       ).animate().scale(delay: 300.ms),
@@ -174,12 +174,12 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
       expandedHeight: 200.h,
       floating: false,
       pinned: true,
-      backgroundColor: AppColors.forestPrimary,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       iconTheme: const IconThemeData(color: AppColors.textDisplay),
       title: Text(
         'المكتبة الرقمية',
         style: TextStyle(
-          color: AppColors.textDisplay,
+          color: Theme.of(context).colorScheme.onSurface,
           fontSize: 20.sp,
           fontWeight: FontWeight.bold,
         ),
@@ -195,7 +195,7 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                 width: 200.w,
                 height: 200.w,
                 decoration: BoxDecoration(
-                  color: AppColors.accentVivid.withValues(alpha: 0.05),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -207,7 +207,7 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                 width: 150.w,
                 height: 150.w,
                 decoration: BoxDecoration(
-                  color: AppColors.infoPurple.withValues(alpha: 0.05),
+                  color: Colors.purple.withValues(alpha: 0.05),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -226,19 +226,19 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                         Container(
                           padding: EdgeInsets.all(12.w),
                           decoration: BoxDecoration(
-                            color: AppColors.accentVivid.withValues(
+                            color: Theme.of(context).colorScheme.primary.withValues(
                               alpha: 0.15,
                             ),
                             borderRadius: BorderRadius.circular(16.r),
                             border: Border.all(
-                              color: AppColors.accentVivid.withValues(
+                              color: Theme.of(context).colorScheme.primary.withValues(
                                 alpha: 0.3,
                               ),
                             ),
                           ),
                           child: Icon(
                             Icons.video_library_rounded,
-                            color: AppColors.accentVivid,
+                            color: Theme.of(context).colorScheme.primary,
                             size: 28.sp,
                           ),
                         ),
@@ -250,7 +250,7 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                               Text(
                                 'محتواك التعليمي',
                                 style: TextStyle(
-                                  color: AppColors.textDisplay,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                   fontSize: 24.sp,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -259,7 +259,7 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                               Text(
                                 'إدارة الملفات والمرفقات',
                                 style: TextStyle(
-                                  color: AppColors.textMuted,
+                                  color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                                   fontSize: 13.sp,
                                 ),
                               ),
@@ -277,12 +277,12 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.search_rounded, color: AppColors.textDisplay),
+          icon: Icon(Icons.search_rounded, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () {},
         ),
         Padding(
           padding: EdgeInsets.only(left: 8.w),
-          child: const SizedBox.shrink(),
+          child: SizedBox.shrink(),
         ),
       ],
     );
@@ -296,14 +296,14 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: AppColors.forestPrimary,
+              color: Theme.of(context).colorScheme.surface,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.glassBorderHighlight),
+              border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
             ),
             child: Icon(
               Icons.error_outline_rounded,
               size: 56.sp,
-              color: AppColors.errorRed,
+              color: Theme.of(context).colorScheme.error,
             ),
           ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
           SizedBox(height: 24.h),
@@ -311,7 +311,7 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
             'عذراً، حدث خطأ ما',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              color: AppColors.textDisplay,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
           SizedBox(height: 12.h),
@@ -321,21 +321,21 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
               _error ?? '',
               style: Theme.of(
                 context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+              ).textTheme.bodyMedium?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
               textAlign: TextAlign.center,
             ).animate().fadeIn(delay: 300.ms),
           ),
           SizedBox(height: 32.h),
           ElevatedButton.icon(
             onPressed: () => _loadData(reset: true),
-            icon: const Icon(Icons.refresh_rounded),
-            label: const Text(
+            icon: Icon(Icons.refresh_rounded),
+            label: Text(
               'إعادة المحاولة',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accentVivid,
-              foregroundColor: AppColors.forestDeep,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).scaffoldBackgroundColor,
               padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16.r),
@@ -356,22 +356,22 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
         children: [
           Expanded(
             child: GlassCard(
-              color: AppColors.forestPrimary,
+              color: Theme.of(context).colorScheme.surface,
               padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 16.w),
               child: Column(
                 children: [
                   Container(
                     padding: EdgeInsets.all(12.w),
                     decoration: BoxDecoration(
-                      color: AppColors.infoPurple.withValues(alpha: 0.15),
+                      color: Colors.purple.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: AppColors.infoPurple.withValues(alpha: 0.3),
+                        color: Colors.purple.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Icon(
                       Icons.library_books_rounded,
-                      color: AppColors.infoPurple,
+                      color: Colors.purple,
                       size: 24.sp,
                     ),
                   ),
@@ -381,14 +381,14 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                     style: TextStyle(
                       fontSize: 24.sp,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textDisplay,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   SizedBox(height: 4.h),
                   Text(
                     'المواد التعليمية',
                     style: TextStyle(
-                      color: AppColors.textMuted,
+                      color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                       fontSize: 12.sp,
                     ),
                   ),
@@ -399,22 +399,22 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
           SizedBox(width: 16.w),
           Expanded(
             child: GlassCard(
-              color: AppColors.forestPrimary,
+              color: Theme.of(context).colorScheme.surface,
               padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 16.w),
               child: Column(
                 children: [
                   Container(
                     padding: EdgeInsets.all(12.w),
                     decoration: BoxDecoration(
-                      color: AppColors.warmAmber.withValues(alpha: 0.15),
+                      color: Colors.orange.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: AppColors.warmAmber.withValues(alpha: 0.3),
+                        color: Colors.orange.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Icon(
                       Icons.cloud_download_rounded,
-                      color: AppColors.warmAmber,
+                      color: Colors.orange,
                       size: 24.sp,
                     ),
                   ),
@@ -424,14 +424,14 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                     style: TextStyle(
                       fontSize: 24.sp,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textDisplay,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   SizedBox(height: 4.h),
                   Text(
                     'إجمالي التحميلات',
                     style: TextStyle(
-                      color: AppColors.textMuted,
+                      color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                       fontSize: 12.sp,
                     ),
                   ),
@@ -472,13 +472,13 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.accentVivid.withValues(alpha: 0.15)
-                    : AppColors.darkSurface.withValues(alpha: 0.5),
+                    ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.15)
+                    : Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(20.r),
                 border: Border.all(
                   color: isSelected
-                      ? AppColors.accentVivid
-                      : AppColors.glassBorderHighlight,
+                      ? Theme.of(context).colorScheme.primary
+                      : (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
                   width: isSelected ? 2 : 1,
                 ),
               ),
@@ -489,16 +489,16 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                     t['icon'] as IconData,
                     size: 18.sp,
                     color: isSelected
-                        ? AppColors.accentVivid
-                        : AppColors.textMuted,
+                        ? Theme.of(context).colorScheme.primary
+                        : (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                   ),
                   SizedBox(width: 6.w),
                   Text(
                     t['label']! as String,
                     style: TextStyle(
                       color: isSelected
-                          ? AppColors.accentVivid
-                          : AppColors.textDisplay,
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.onSurface,
                       fontWeight: isSelected
                           ? FontWeight.bold
                           : FontWeight.w600,
@@ -522,13 +522,13 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(
-                backgroundColor: AppColors.accentVivid,
+              CircularProgressIndicator(
+                backgroundColor: Theme.of(context).colorScheme.primary,
               ),
               SizedBox(height: 16.h),
               Text(
                 'جاري التحميل...',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 14.sp),
+                style: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey), fontSize: 14.sp),
               ),
             ],
           ),
@@ -545,14 +545,14 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
               Container(
                 padding: EdgeInsets.all(28.w),
                 decoration: BoxDecoration(
-                  color: AppColors.forestPrimary,
+                  color: Theme.of(context).colorScheme.surface,
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.glassBorderHighlight),
+                  border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                 ),
                 child: Icon(
                   Icons.folder_open_rounded,
                   size: 56.sp,
-                  color: AppColors.infoPurple,
+                  color: Colors.purple,
                 ),
               ),
               SizedBox(height: 20.h),
@@ -561,13 +561,13 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textDisplay,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               SizedBox(height: 8.h),
               Text(
                 'ابدأ برفع المحتوى التعليمي لطلابك',
-                style: TextStyle(fontSize: 14.sp, color: AppColors.textMuted),
+                style: TextStyle(fontSize: 14.sp, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
               ),
             ],
           ),
@@ -601,7 +601,7 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
       padding: EdgeInsets.symmetric(vertical: 16.h),
       child: Center(
         child: CircularProgressIndicator(
-          backgroundColor: AppColors.accentVivid,
+          backgroundColor: Theme.of(context).colorScheme.primary,
         ),
       ),
     );
@@ -648,7 +648,7 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
               'تم رفع المحتوى بنجاح',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            backgroundColor: AppColors.emeraldGreen,
+            backgroundColor: Colors.green,
           ),
         );
         _loadData(reset: true);
@@ -660,9 +660,9 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
           SnackBar(
             content: Text(
               'فشل الرفع: $e',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            backgroundColor: AppColors.errorRed,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
         setState(() => _isLoading = false);
@@ -690,30 +690,30 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.forestPrimary,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.r),
         ),
         title: Text(
           'حذف المحتوى',
           style: TextStyle(
-            color: AppColors.textDisplay,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
           ),
         ),
         content: Text(
           'هل أنت متأكد من حذف "${material['title']}"؟',
-          style: TextStyle(color: AppColors.textMuted),
+          style: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('إلغاء', style: TextStyle(color: AppColors.textMuted)),
+            child: Text('إلغاء', style: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey))),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.errorRed),
-            child: const Text(
+            style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+            child: Text(
               'حذف',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
@@ -733,7 +733,7 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('فشل الحذف: $e'),
-              backgroundColor: AppColors.errorRed,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }

@@ -20,10 +20,10 @@ class AssignmentArchiveSelector extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: AppColors.glassBorderHighlight.withValues(alpha: 0.5),
+          color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300).withValues(alpha: 0.5),
         ),
       ),
       child: SwitchListTile(
@@ -33,7 +33,7 @@ class AssignmentArchiveSelector extends StatelessWidget {
         title: Text(
           '\u0623\u0631\u0634\u0641\u0629 \u0639\u0646\u062f \u0627\u0644\u0625\u0646\u0634\u0627\u0621',
           style: TextStyle(
-            color: AppColors.textDisplay,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
             fontSize: 14.sp,
           ),

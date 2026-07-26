@@ -38,11 +38,11 @@ class AIToolCard extends StatelessWidget {
           child: Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: AppColors.darkCard,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(18.r),
               border: Border.all(
                 color: isDisabled
-                    ? AppColors.darkBorder
+                    ? (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)
                     : gradient.colors.first.withValues(alpha: 0.2),
                 width: 1,
               ),
@@ -54,7 +54,7 @@ class AIToolCard extends StatelessWidget {
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
                     gradient: isDisabled ? null : gradient,
-                    color: isDisabled ? AppColors.darkBorder : null,
+                    color: isDisabled ? (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300) : null,
                     borderRadius: BorderRadius.circular(14.r),
                     boxShadow: isDisabled
                         ? null
@@ -113,7 +113,7 @@ class AIToolCard extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: isDisabled
-                        ? AppColors.darkBorder.withValues(alpha: 0.5)
+                        ? (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300).withValues(alpha: 0.5)
                         : gradient.colors.first.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8.r),
                   ),

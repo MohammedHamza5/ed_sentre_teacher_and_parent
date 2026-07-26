@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:ui' as ui;
 
 import '../../../../core/config/app_colors.dart';
+import '../../../../core/widgets/genius/shimmer_skeleton.dart';
 
 class SmartEnrollmentScreen extends StatefulWidget {
   const SmartEnrollmentScreen({super.key});
@@ -50,21 +51,21 @@ class _SmartEnrollmentScreenState extends State<SmartEnrollmentScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkSurface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.r),
-          side: const BorderSide(color: AppColors.darkBorder),
+          side: const BorderSide(color: AppColors.divider),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               padding: EdgeInsets.all(16.w),
-              decoration: const BoxDecoration(
-                color: AppColors.emeraldGreen,
+              decoration: BoxDecoration(
+                color: Colors.green,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check, color: Colors.white, size: 32),
+              child: Icon(Icons.check, color: Colors.white, size: 32),
             ).animate().scale(duration: 400.ms, curve: Curves.elasticOut),
             SizedBox(height: 16.h),
             Text(
@@ -72,14 +73,14 @@ class _SmartEnrollmentScreenState extends State<SmartEnrollmentScreen>
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textDisplay,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             SizedBox(height: 8.h),
             Text(
               'تمت إضافة المركز الجديد إلى قائمة أبنائك.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textMuted, fontSize: 14.sp),
+              style: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey), fontSize: 14.sp),
             ),
             SizedBox(height: 24.h),
             ElevatedButton(
@@ -88,13 +89,13 @@ class _SmartEnrollmentScreenState extends State<SmartEnrollmentScreen>
                 Navigator.pop(context); // Close Screen
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accentVivid,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 minimumSize: Size(double.infinity, 44.h),
               ),
-              child: const Text('حسناً', style: TextStyle(color: AppColors.forestDeep, fontWeight: FontWeight.bold)),
+              child: Text('حسناً', style: TextStyle(color: Theme.of(context).scaffoldBackgroundColor, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -105,21 +106,22 @@ class _SmartEnrollmentScreenState extends State<SmartEnrollmentScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.forestPrimary, // Using Forest Primary for a deeper background
+      resizeToAvoidBottomInset: true,
+      backgroundColor: Theme.of(context).colorScheme.surface, // Using Forest Primary for a deeper background
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'تسجيل ذكي',
-          style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDisplay),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
         ),
         centerTitle: true,
-        backgroundColor: AppColors.forestDeep,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         iconTheme: const IconThemeData(color: AppColors.textDisplay),
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppColors.accentVivid,
-          unselectedLabelColor: AppColors.textMuted,
-          indicatorColor: AppColors.accentVivid,
+          labelColor: Theme.of(context).colorScheme.primary,
+          unselectedLabelColor: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
+          indicatorColor: Theme.of(context).colorScheme.primary,
           indicatorWeight: 3,
           tabs: const [
             Tab(text: 'مسح QR'),
@@ -179,12 +181,12 @@ class _SmartEnrollmentScreenState extends State<SmartEnrollmentScreen>
             .animate(onPlay: (c) => c.repeat(reverse: true))
             .boxShadow(
               begin: BoxShadow(
-                color: AppColors.accentVivid.withValues(alpha: 0.2),
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                 blurRadius: 5,
                 spreadRadius: 1,
               ),
               end: BoxShadow(
-                color: AppColors.accentVivid.withValues(alpha: 0.6),
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.6),
                 blurRadius: 20,
                 spreadRadius: 5,
               ),
@@ -199,14 +201,14 @@ class _SmartEnrollmentScreenState extends State<SmartEnrollmentScreen>
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                 decoration: BoxDecoration(
-                  color: AppColors.darkSurface.withValues(alpha: 0.8),
+                  color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(30.r),
-                  border: Border.all(color: AppColors.glassBorderHighlight),
+                  border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                 ),
-                child: const Text(
+                child: Text(
                   'وجه الكاميرا نحو رمز QR للمركز',
                   style: TextStyle(
-                    color: AppColors.textDisplay,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -216,9 +218,10 @@ class _SmartEnrollmentScreenState extends State<SmartEnrollmentScreen>
         ),
         if (_isLoading)
           Container(
-            color: AppColors.forestDeep.withValues(alpha: 0.8),
+            color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
+            padding: EdgeInsets.symmetric(horizontal: 28.w),
             child: const Center(
-              child: CircularProgressIndicator(color: AppColors.accentVivid),
+              child: CardShimmerSkeleton(itemCount: 1),
             ),
           ),
       ],
@@ -229,10 +232,10 @@ class _SmartEnrollmentScreenState extends State<SmartEnrollmentScreen>
     return Container(
       width: 40.w,
       height: 40.w,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: AppColors.accentVivid, width: 6),
-          left: BorderSide(color: AppColors.accentVivid, width: 6),
+          top: BorderSide(color: Theme.of(context).colorScheme.primary, width: 6),
+          left: BorderSide(color: Theme.of(context).colorScheme.primary, width: 6),
         ),
       ),
     );
@@ -248,7 +251,7 @@ class _SmartEnrollmentScreenState extends State<SmartEnrollmentScreen>
           Icon(
             Icons.keyboard_alt_outlined,
             size: 80.sp,
-            color: AppColors.accentVivid.withValues(alpha: 0.5),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
           ),
           SizedBox(height: 24.h),
           Text(
@@ -256,13 +259,13 @@ class _SmartEnrollmentScreenState extends State<SmartEnrollmentScreen>
             style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,
-              color: AppColors.textDisplay,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           SizedBox(height: 8.h),
           Text(
             'اطلب الرمز من إدارة المركز التعليمي',
-            style: TextStyle(fontSize: 14.sp, color: AppColors.textMuted),
+            style: TextStyle(fontSize: 14.sp, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
           ),
           SizedBox(height: 32.h),
           TextField(
@@ -272,24 +275,24 @@ class _SmartEnrollmentScreenState extends State<SmartEnrollmentScreen>
               fontSize: 24.sp,
               letterSpacing: 4,
               fontWeight: FontWeight.bold,
-              color: AppColors.textDisplay,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
             decoration: InputDecoration(
               hintText: 'ABCD-1234',
-              hintStyle: TextStyle(color: AppColors.textMuted.withValues(alpha: 0.5)),
-              fillColor: AppColors.darkSurface,
+              hintStyle: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5)),
+              fillColor: Theme.of(context).colorScheme.surface,
               filled: true,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16.r),
-                borderSide: const BorderSide(color: AppColors.darkBorder),
+                borderSide: const BorderSide(color: AppColors.divider),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16.r),
-                borderSide: const BorderSide(color: AppColors.darkBorder),
+                borderSide: const BorderSide(color: AppColors.divider),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16.r),
-                borderSide: const BorderSide(color: AppColors.accentVivid),
+                borderSide: const BorderSide(color: AppColors.primary),
               ),
               contentPadding: EdgeInsets.symmetric(vertical: 20.h),
             ),
@@ -303,27 +306,34 @@ class _SmartEnrollmentScreenState extends State<SmartEnrollmentScreen>
                   ? null
                   : () => _handleCodeSubmission(_codeController.text),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accentVivid,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16.r),
                 ),
                 elevation: 0,
               ),
               child: _isLoading
-                  ? SizedBox(
-                      width: 24.w,
-                      height: 24.w,
-                      child: const CircularProgressIndicator(
-                        color: AppColors.forestDeep,
-                        strokeWidth: 3,
-                      ),
-                    )
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.sync_rounded, color: Theme.of(context).scaffoldBackgroundColor, size: 22.sp),
+                        SizedBox(width: 10.w),
+                        Text(
+                          'جاري التحقق وإضافة المركز...',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                          ),
+                        ),
+                      ],
+                    ).animate(onPlay: (c) => c.repeat(reverse: true)).fade(duration: 600.ms)
                   : Text(
                       'انضمام',
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.forestDeep,
+                        color: Theme.of(context).scaffoldBackgroundColor,
                       ),
                     ),
             ),

@@ -18,10 +18,10 @@ class ExamReviewScoreboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = percentage >= 80
-        ? AppColors.emeraldGreen
+        ? Colors.green
         : percentage >= 50
-        ? AppColors.warmAmber
-        : AppColors.errorRed;
+        ? Colors.orange
+        : Theme.of(context).colorScheme.error;
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),

@@ -7,11 +7,13 @@ import '../../../../core/config/app_colors.dart';
 class KnowledgeCard extends StatelessWidget {
   final Map<String, dynamic> item;
   final VoidCallback onDelete;
+  final VoidCallback? onGenerate;
 
   const KnowledgeCard({
     super.key,
     required this.item,
     required this.onDelete,
+    this.onGenerate,
   });
 
   @override
@@ -41,9 +43,9 @@ class KnowledgeCard extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.darkBorder),
+        border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
       ),
       child: Row(
         children: [
@@ -84,8 +86,8 @@ class KnowledgeCard extends StatelessWidget {
                         margin: EdgeInsets.symmetric(horizontal: 6.w),
                         width: 4,
                         height: 4,
-                        decoration: const BoxDecoration(
-                          color: AppColors.darkBorder,
+                        decoration: BoxDecoration(
+                          color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -102,10 +104,21 @@ class KnowledgeCard extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline, color: AppColors.error),
-            onPressed: onDelete,
-            tooltip: 'حذف من القاعدة',
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (item['original_file_url'] != null)
+                TextButton.icon(
+                  onPressed: onGenerate,
+                  icon: Icon(Icons.auto_awesome, color: Color(0xFF8B5CF6), size: 18),
+                  label: Text('توليد امتحان', style: TextStyle(color: Color(0xFF8B5CF6))),
+                ),
+              IconButton(
+                icon: Icon(Icons.delete_outline, color: AppColors.error),
+                onPressed: onDelete,
+                tooltip: 'حذف من القاعدة',
+              ),
+            ],
           ),
         ],
       ),

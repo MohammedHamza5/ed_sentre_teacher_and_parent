@@ -8,11 +8,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../provider/teacher_provider.dart';
-import '../../../../shared/data/supabase_repository.dart';
 import '../../../../core/widgets/genius/glass_card.dart';
 import '../../../../core/widgets/genius/genius_text_field.dart';
 import '../../../../core/widgets/genius/shimmer_skeleton.dart';
-import '../../../../core/widgets/genius/staggered_list_animator.dart';
 
 /// 🎨 Teacher Students Screen - Forest Dark Edition
 class TeacherStudentsScreen extends StatefulWidget {
@@ -24,117 +22,35 @@ class TeacherStudentsScreen extends StatefulWidget {
 
 class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
   final _searchController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
-  List<Map<String, dynamic>> _allStudents = [];
   List<Map<String, dynamic>> _filteredStudents = [];
-  bool _isLoading = true;
-  final int _pageSize = 20;
-  int _currentPage = 0;
-  bool _hasMore = true;
-  bool _isLoadingMore = false;
   String? _lastLoadedCenterId;
-  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _loadStudents(reset: true),
-    );
     _searchController.addListener(_filterStudents);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _filterStudents();
+    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
-  void _onScroll() {
-    if (!_scrollController.hasClients) return;
-    final position = _scrollController.position;
-    if (position.pixels >= position.maxScrollExtent - 200) {
-      _loadMore();
-    }
-  }
-
-  Future<void> _loadMore() async {
-    if (_isLoadingMore || !_hasMore || _isLoading) return;
-    setState(() => _isLoadingMore = true);
-    await _loadStudents();
-  }
-
-  Future<void> _loadStudents({bool reset = false}) async {
-    final teacherProvider = context.read<TeacherProvider>();
-    final teacherId = teacherProvider.teacherId;
-    final centerId = teacherProvider.selectedCenterId;
-
-    if (teacherProvider.isLoading) return;
-    if (teacherId == null || centerId == null) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage =
-              teacherProvider.error ??
-              'لم يتم تحميل بيانات المعلم. يرجى العودة للرئيسية والمحاولة مرة أخرى.';
-        });
-      }
-      return;
-    }
-
-    if (reset) {
-      setState(() {
-        _isLoading = true;
-        _currentPage = 0;
-        _hasMore = true;
-        _allStudents = [];
-        _filteredStudents = [];
-      });
-    }
-
-    try {
-      final repo = context.read<SupabaseRepository>();
-      final students = await repo.getTeacherStudents(
-        teacherId: teacherId,
-        centerId: centerId,
-        limit: _pageSize,
-        offset: _currentPage * _pageSize,
-      );
-      if (mounted) {
-        setState(() {
-          if (reset) {
-            _allStudents = students;
-          } else {
-            _allStudents.addAll(students);
-          }
-          _currentPage += 1;
-          _hasMore = students.length == _pageSize;
-          _isLoading = false;
-          _isLoadingMore = false;
-        });
-        _filterStudents();
-      }
-    } catch (e) {
-      debugPrint('❌ [StudentsScreen] _loadStudents Error: $e');
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _isLoadingMore = false;
-          _errorMessage = 'حدث خطأ أثناء تحميل الطلاب: $e';
-        });
-      }
-    }
-  }
-
   void _filterStudents() {
+    if (!mounted) return;
     final query = _searchController.text.toLowerCase();
+    final teacherProvider = context.read<TeacherProvider>();
+    final allStudents = teacherProvider.students;
+
     if (query.isEmpty) {
-      setState(() => _filteredStudents = _allStudents);
+      setState(() => _filteredStudents = allStudents);
     } else {
       setState(() {
-        _filteredStudents = _allStudents.where((s) {
+        _filteredStudents = allStudents.where((s) {
           final name = (s['student_name'] ?? '').toString().toLowerCase();
           final code = (s['student_code'] ?? '').toString().toLowerCase();
           final group = (s['group_name'] ?? '').toString().toLowerCase();
@@ -144,6 +60,12 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
         }).toList();
       });
     }
+  }
+
+  Future<void> _refreshStudents() async {
+    final teacherProvider = context.read<TeacherProvider>();
+    await teacherProvider.refreshData(forceRefresh: true);
+    _filterStudents();
   }
 
   Future<void> _makePhoneCall(String phoneNumber) async {
@@ -158,53 +80,54 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
     final teacherProvider = context.watch<TeacherProvider>();
     final currentCenterId = teacherProvider.selectedCenterId;
 
+    // React to center change by updating local filter instantly
     if (!teacherProvider.isLoading &&
         currentCenterId != null &&
-        currentCenterId != _lastLoadedCenterId &&
-        !_isLoadingMore) {
+        currentCenterId != _lastLoadedCenterId) {
       _lastLoadedCenterId = currentCenterId;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _loadStudents(reset: true);
+        if (mounted) _filterStudents();
       });
     }
 
+    final bool isLoading = teacherProvider.isLoading;
+
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Column(
         children: [
           _buildHeader(),
           Expanded(
-            child: _isLoading
+            child: isLoading
                 ? _buildLoadingState()
                 : _filteredStudents.isEmpty
                 ? _buildEmptyState()
                 : RefreshIndicator(
-                    onRefresh: () => _loadStudents(reset: true),
-                    backgroundColor: AppColors.accentVivid,
-                    color: AppColors.darkSurface,
-                    child: StaggeredListAnimator(
-                      controller: _scrollController,
+                    onRefresh: _refreshStudents,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.surface,
+                    child: ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
                       padding: EdgeInsets.symmetric(
                         horizontal: 20.w,
                         vertical: 12.h,
                       ).copyWith(bottom: 100.h),
-                      children: List.generate(
-                        _filteredStudents.length + (_isLoadingMore ? 1 : 0),
-                        (index) {
-                          if (_isLoadingMore &&
-                              index == _filteredStudents.length) {
-                            return Padding(
-                              padding: EdgeInsets.symmetric(vertical: 24.h),
-                              child: const Center(
-                                child: CircularProgressIndicator(
-                                  backgroundColor: AppColors.accentVivid,
-                                ),
-                              ),
+                      itemCount: _filteredStudents.length,
+                      itemBuilder: (context, index) {
+                        return _buildStudentCard(_filteredStudents[index])
+                            .animate(
+                              delay: Duration(milliseconds: (index % 15) * 50),
+                            )
+                            .fadeIn(duration: 300.ms)
+                            .slideY(
+                              begin: 0.1,
+                              end: 0,
+                              duration: 300.ms,
+                              curve: Curves.easeOut,
                             );
-                          }
-                          return _buildStudentCard(_filteredStudents[index]);
-                        },
-                      ),
+                      },
                     ),
                   ),
           ),
@@ -226,7 +149,7 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
         bottom: 24.h,
       ),
       decoration: BoxDecoration(
-        color: AppColors.forestPrimary,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(32.r)),
       ),
       child: Column(
@@ -238,14 +161,14 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
                 child: Container(
                   padding: EdgeInsets.all(10.w),
                   decoration: BoxDecoration(
-                    color: AppColors.darkSurface,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: AppColors.glassBorderHighlight),
+                    border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                   ),
                   child: Icon(
                     Icons.arrow_back_ios_rounded,
                     size: 18.sp,
-                    color: AppColors.textDisplay,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ),
@@ -256,7 +179,7 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
                   'طلابي',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textDisplay,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ),
@@ -264,10 +187,10 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: AppColors.accentVivid.withValues(alpha: 0.15),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20.r),
                   border: Border.all(
-                    color: AppColors.accentVivid.withValues(alpha: 0.3),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Text(
@@ -275,14 +198,14 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.accentVivid,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ),
 
               SizedBox(width: 12.w),
 
-              const SizedBox.shrink(),
+              SizedBox.shrink(),
             ],
           ),
           SizedBox(height: 24.h),
@@ -307,7 +230,7 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
     return Padding(
       padding: EdgeInsets.only(bottom: 14.h),
       child: GlassCard(
-        color: AppColors.darkSurface.withValues(alpha: 0.7),
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
         padding: EdgeInsets.all(16.w),
         child: Row(
           children: [
@@ -316,11 +239,11 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
               padding: EdgeInsets.all(2.w),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.glassBorderHighlight),
+                border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
               ),
               child: CircleAvatar(
                 radius: 26.r,
-                backgroundColor: AppColors.forestPrimary,
+                backgroundColor: Theme.of(context).colorScheme.surface,
                 child: student['student_avatar'] != null
                     ? ClipOval(
                         child: CachedNetworkImage(
@@ -330,14 +253,14 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
                           fit: BoxFit.cover,
                           errorWidget: (_, __, ___) => Icon(
                             Icons.person_rounded,
-                            color: AppColors.textMuted,
+                            color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                           ),
                         ),
                       )
                     : Text(
                         (student['student_name'] ?? 'م')[0],
                         style: TextStyle(
-                          color: AppColors.textDisplay,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 20.sp,
                           fontWeight: FontWeight.bold,
                         ),
@@ -355,7 +278,7 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
                     student['student_name'] ?? 'طالب',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textDisplay,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -368,13 +291,13 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
                       _buildTag(
                         icon: Icons.class_outlined,
                         text: student['group_name'] ?? 'لا توجد مجموعة',
-                        color: AppColors.warmAmber,
+                        color: Colors.orange,
                       ),
                       if (student['course_name'] != null)
                         _buildTag(
                           icon: Icons.book_outlined,
                           text: student['course_name'],
-                          color: AppColors.infoPurple,
+                          color: Colors.purple,
                         ),
                     ],
                   ),
@@ -388,20 +311,20 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
                 if (student['student_phone'] != null)
                   _buildActionButton(
                     icon: Icons.phone_rounded,
-                    color: AppColors.emeraldGreen,
+                    color: Colors.green,
                     onTap: () => _makePhoneCall(student['student_phone']),
                   ),
                 SizedBox(width: 8.w),
                 Container(
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
-                    color: AppColors.textDisplay.withValues(alpha: 0.05),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Icon(
                     Icons.arrow_forward_ios_rounded,
                     size: 14.sp,
-                    color: AppColors.textMuted,
+                    color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                   ),
                 ),
               ],
@@ -490,9 +413,7 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
   }
 
   Widget _buildEmptyState() {
-    final subtitle = _errorMessage != null
-        ? _errorMessage!
-        : _searchController.text.isNotEmpty
+    final subtitle = _searchController.text.isNotEmpty
         ? 'لم يتم العثور على نتائج للبحث'
         : 'سيظهر طلابك هنا عند تسجيلهم في مجموعاتك';
 
@@ -505,18 +426,14 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
             Container(
               padding: EdgeInsets.all(24.w),
               decoration: BoxDecoration(
-                color: AppColors.forestPrimary,
+                color: Theme.of(context).colorScheme.surface,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.glassBorderHighlight),
+                border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
               ),
               child: Icon(
-                _errorMessage != null
-                    ? Icons.error_outline_rounded
-                    : Icons.people_outline_rounded,
+                Icons.people_outline_rounded,
                 size: 64.sp,
-                color: _errorMessage != null
-                    ? AppColors.errorRed
-                    : AppColors.accentVivid,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ).animate().scale(
               delay: 200.ms,
@@ -525,12 +442,10 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
             ),
             SizedBox(height: 24.h),
             Text(
-              _errorMessage != null
-                  ? 'تعذّر تحميل الطلاب'
-                  : 'لا يوجد طلاب حتى الآن',
+              'لا يوجد طلاب حتى الآن',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.textDisplay,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
               textAlign: TextAlign.center,
             ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.2),
@@ -539,7 +454,7 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
               subtitle,
               style: Theme.of(
                 context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+              ).textTheme.bodyMedium?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
               textAlign: TextAlign.center,
             ).animate().fadeIn(delay: 500.ms),
           ],

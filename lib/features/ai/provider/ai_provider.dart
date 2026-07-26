@@ -5,6 +5,8 @@ import '../../../../core/services/ai_service.dart';
 import '../../../../core/config/ai_config.dart';
 import '../services/ai_weakness_detector.dart';
 import '../../../../shared/data/supabase_repository.dart';
+import '../../../../core/config/app_config.dart';
+import '../../../../demo/mock_database.dart';
 
 /// مزود AI للمساعد الذكي — تطبيق المعلم
 class AIProvider extends ChangeNotifier {
@@ -71,6 +73,11 @@ class AIProvider extends ChangeNotifier {
 
   /// Load today's generation count from usage log
   Future<void> loadDailyUsage() async {
+    if (AppConfig.isDemoMode) {
+      _todayGenerationCount = 1;
+      notifyListeners();
+      return;
+    }
     try {
       final userId = _repository.client.auth.currentUser?.id;
       if (userId == null) return;
@@ -114,6 +121,13 @@ class AIProvider extends ChangeNotifier {
     _isLoadingConversations = true;
     notifyListeners();
 
+    if (AppConfig.isDemoMode) {
+      _conversations = List<Map<String, dynamic>>.from(MockDatabase.instance.aiConversations);
+      _isLoadingConversations = false;
+      notifyListeners();
+      return;
+    }
+
     try {
       final userId = _repository.client.auth.currentUser?.id;
       if (userId == null) return;
@@ -135,6 +149,18 @@ class AIProvider extends ChangeNotifier {
 
   /// إنشاء محادثة جديدة
   Future<String?> createConversation() async {
+    if (AppConfig.isDemoMode) {
+      final newId = 'conv_demo_${DateTime.now().millisecondsSinceEpoch}';
+      MockDatabase.instance.aiConversations.insert(0, {
+        'id': newId,
+        'teacher_id': 'demo_teacher_id',
+        'title': 'محادثة جديدة',
+        'created_at': DateTime.now().toIso8601String(),
+        'last_message_at': DateTime.now().toIso8601String(),
+      });
+      await loadConversations();
+      return newId;
+    }
     try {
       final userId = _repository.client.auth.currentUser?.id;
       if (userId == null) return null;
@@ -155,6 +181,9 @@ class AIProvider extends ChangeNotifier {
 
   /// جلب رسائل محادثة
   Future<List<Map<String, dynamic>>> loadMessages(String conversationId) async {
+    if (AppConfig.isDemoMode) {
+      return MockDatabase.instance.aiMessages.where((m) => m['session_id'] == conversationId).toList();
+    }
     try {
       final response = await _repository.client
           .from('teacher_ai_messages')
@@ -176,6 +205,42 @@ class AIProvider extends ChangeNotifier {
     required List<Map<String, dynamic>> history,
     String? filePath,
   }) async {
+    if (AppConfig.isDemoMode) {
+      _isGenerating = true;
+      _generationError = null;
+      notifyListeners();
+
+      // Add user message
+      MockDatabase.instance.aiMessages.add({
+        'id': 'msg_user_${DateTime.now().millisecondsSinceEpoch}',
+        'session_id': conversationId,
+        'sender': 'user',
+        'message': content,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+
+      await Future.delayed(const Duration(seconds: 1));
+
+      // Add mock AI response
+      final responseText = 'أهلاً بك. أنا هنا لمساعدتك كمعلم تجريبي. لقد استلمت رسالتك: "$content" وسأقوم بتحليلها وتقديم أفضل الاقتراحات التعليمية قريباً.';
+      MockDatabase.instance.aiMessages.add({
+        'id': 'msg_ai_${DateTime.now().millisecondsSinceEpoch}',
+        'session_id': conversationId,
+        'sender': 'ai',
+        'message': responseText,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+
+      // Update last message time
+      final idx = MockDatabase.instance.aiConversations.indexWhere((c) => c['id'] == conversationId);
+      if (idx != -1) {
+        MockDatabase.instance.aiConversations[idx]['last_message_at'] = DateTime.now().toIso8601String();
+      }
+
+      _isGenerating = false;
+      notifyListeners();
+      return responseText;
+    }
     final cost = AiConfig.getCost(EdSentreTask.teacherChatAssistant);
 
     // خصم الرصيد أولاً
@@ -274,6 +339,12 @@ class AIProvider extends ChangeNotifier {
 
   /// حذف محادثة
   Future<bool> deleteConversation(String conversationId) async {
+    if (AppConfig.isDemoMode) {
+      MockDatabase.instance.aiConversations.removeWhere((c) => c['id'] == conversationId);
+      MockDatabase.instance.aiMessages.removeWhere((m) => m['session_id'] == conversationId);
+      await loadConversations();
+      return true;
+    }
     try {
       await _repository.client
           .from('teacher_ai_conversations')
@@ -296,6 +367,13 @@ class AIProvider extends ChangeNotifier {
   Future<void> loadKnowledgeBase(String centerId) async {
     _isLoadingKnowledge = true;
     notifyListeners();
+
+    if (AppConfig.isDemoMode) {
+      _knowledgeBase = List<Map<String, dynamic>>.from(MockDatabase.instance.aiKnowledgeBase);
+      _isLoadingKnowledge = false;
+      notifyListeners();
+      return;
+    }
 
     try {
       final userId = _repository.client.auth.currentUser?.id;
@@ -434,6 +512,21 @@ class AIProvider extends ChangeNotifier {
     String? extractedText,
     List<String>? targetChapters,
   }) async {
+    if (AppConfig.isDemoMode) {
+      _isGenerating = true;
+      _generationError = null;
+      notifyListeners();
+      await Future.delayed(const Duration(seconds: 2));
+      _isGenerating = false;
+      notifyListeners();
+      return {
+        'title': 'امتحان تجريبي',
+        'questions': [
+          {'text': 'سؤال تجريبي 1 اختيار من متعدد', 'type': 'multiple_choice', 'options': ['أ', 'ب', 'ج', 'د'], 'correct_answer': 'أ', 'marks': 50.0},
+          {'text': 'سؤال تجريبي 2 مقالي', 'type': 'essay', 'correct_answer': 'إجابة نموذجية', 'marks': 50.0}
+        ]
+      };
+    }
     // NOTE: Daily limit replaces credit system
     if (!canGenerate()) {
       _generationError = 'اكتمل حدك اليومي (5 امتحانات). عد غداً!';
@@ -533,6 +626,23 @@ class AIProvider extends ChangeNotifier {
     required String topic,
     required int questionCount,
   }) async {
+    if (AppConfig.isDemoMode) {
+      _isGenerating = true;
+      _generationError = null;
+      notifyListeners();
+      await Future.delayed(const Duration(seconds: 2));
+      _isGenerating = false;
+      notifyListeners();
+      return {
+        'title': 'واجب تجريبي مولد',
+        'description': 'واجب تجريبي لمراجعة الدرس الأول',
+        'max_score': 100.0,
+        'questions': [
+          {'text': 'سؤال تجريبي 1', 'type': 'multiple_choice', 'options': ['أ', 'ب', 'ج', 'د'], 'correct_answer': 'أ', 'marks': 50.0},
+          {'text': 'سؤال تجريبي 2', 'type': 'essay', 'correct_answer': 'إجابة نموذجية', 'marks': 50.0}
+        ]
+      };
+    }
     // NOTE: Daily limit replaces credit system
     if (!canGenerate()) {
       _generationError = 'اكتمل حدك اليومي (5 امتحانات). عد غداً!';
@@ -687,6 +797,25 @@ class AIProvider extends ChangeNotifier {
     required String studentId,
     required String centerId,
   }) async {
+    if (AppConfig.isDemoMode) {
+      await Future.delayed(const Duration(seconds: 1));
+      return [
+        WeaknessInsight(
+          subjectName: 'الفيزياء',
+          type: WeaknessType.grades,
+          severity: WeaknessSeverity.high,
+          message: 'انخفاض ملحوظ في درجات اختبارات الكهربية المستمرة.',
+          suggestion: 'يُنصح بحل 15 مسألة عملية إضافية ومراجعة محاضرة المكثفات.',
+        ),
+        WeaknessInsight(
+          subjectName: 'الرياضيات',
+          type: WeaknessType.attendance,
+          severity: WeaknessSeverity.medium,
+          message: 'تكرار التأخر عن بداية الحصة بمعدل 15 دقيقة.',
+          suggestion: 'التأكيد على الطالب بضرورة الحضور المبكر لعدم تفويت الشرح الأساسي.',
+        )
+      ];
+    }
     // استخدام التحليل بالذكاء الاصطناعي العميق
     return await _weaknessDetector.analyzeStudentWithAI(
       studentId: studentId,

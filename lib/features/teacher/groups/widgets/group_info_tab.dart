@@ -19,9 +19,9 @@ class GroupInfoTab extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: AppColors.forestPrimary,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.glassBorderHighlight),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Stack(
         clipBehavior: Clip.none,
@@ -88,7 +88,7 @@ class GroupInfoTab extends StatelessWidget {
       physics: const BouncingScrollPhysics(),
       children: [
         GlassCard(
-          color: AppColors.darkSurface.withValues(alpha: 0.7),
+          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
           padding: EdgeInsets.all(24.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,7 +96,7 @@ class GroupInfoTab extends StatelessWidget {
               Text(
                 'ملخص سريع',
                 style: TextStyle(
-                  color: AppColors.textDisplay,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.bold,
                   fontSize: 18.sp,
                 ),

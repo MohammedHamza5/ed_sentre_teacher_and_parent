@@ -23,7 +23,7 @@ class AssignmentGroupSelector extends StatelessWidget {
     
     final result = await showModalBottomSheet<Set<String>>(
       context: context,
-      backgroundColor: AppColors.darkSurface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
@@ -41,7 +41,7 @@ class AssignmentGroupSelector extends StatelessWidget {
                       Text(
                         'اختيار المجموعات',
                         style: TextStyle(
-                          color: AppColors.textDisplay,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                         ),
@@ -84,8 +84,8 @@ class AssignmentGroupSelector extends StatelessWidget {
                           },
                           title: Text(
                             group.groupName,
-                            style: const TextStyle(
-                              color: AppColors.textDisplay,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                         );
@@ -101,7 +101,7 @@ class AssignmentGroupSelector extends StatelessWidget {
                         backgroundColor: typeColor,
                         padding: EdgeInsets.symmetric(vertical: 12.h),
                       ),
-                      child: const Text(
+                      child: Text(
                         'تم',
                         style: TextStyle(color: Colors.white),
                       ),
@@ -127,10 +127,10 @@ class AssignmentGroupSelector extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: AppColors.glassBorderHighlight.withValues(alpha: 0.5),
+          color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300).withValues(alpha: 0.5),
         ),
       ),
       child: Column(
@@ -143,7 +143,7 @@ class AssignmentGroupSelector extends StatelessWidget {
               Text(
                 'المجموعات *',
                 style: TextStyle(
-                  color: AppColors.textDisplay,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.bold,
                   fontSize: 14.sp,
                 ),

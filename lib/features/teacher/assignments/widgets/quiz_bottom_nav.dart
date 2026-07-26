@@ -26,10 +26,10 @@ class QuizBottomNav extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: Theme.of(context).colorScheme.surface,
         border: Border(
           top: BorderSide(
-            color: AppColors.glassBorderHighlight.withValues(alpha: 0.5),
+            color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300).withValues(alpha: 0.5),
           ),
         ),
       ),
@@ -41,7 +41,7 @@ class QuizBottomNav extends StatelessWidget {
                 child: OutlinedButton(
                   onPressed: onBack,
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.textDisplay,
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
                     side: BorderSide(
                       color: Theme.of(
                         context,
@@ -52,7 +52,7 @@ class QuizBottomNav extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                   ),
-                  child: const Text('\u0627\u0644\u0633\u0627\u0628\u0642'),
+                  child: Text('\u0627\u0644\u0633\u0627\u0628\u0642'),
                 ),
               ),
             if (currentStep > 0) SizedBox(width: 12.w),
@@ -82,7 +82,7 @@ class QuizBottomNav extends StatelessWidget {
                       ? SizedBox(
                           width: 20.w,
                           height: 20.w,
-                          child: const CircularProgressIndicator(
+                          child: CircularProgressIndicator(
                             backgroundColor: Colors.white,
                             strokeWidth: 2,
                           ),

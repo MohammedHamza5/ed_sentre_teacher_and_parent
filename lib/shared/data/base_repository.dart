@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+import '../../core/services/network_monitor.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 /// Base Repository with Smart Caching Strategy
@@ -24,8 +24,7 @@ abstract class BaseRepository {
     bool forceRefresh = false,
   }) async {
     // 1. Check Connectivity
-    final connectivity = await Connectivity().checkConnectivity();
-    final hasInternet = !connectivity.contains(ConnectivityResult.none);
+    final hasInternet = await NetworkMonitor.instance.checkConnection();
 
     // 2. Try Network if Online
     if (hasInternet && !forceRefresh) {

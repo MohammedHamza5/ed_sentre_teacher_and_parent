@@ -10,7 +10,8 @@ enum UserRole {
   reception,
   accountant,
   supervisor,
-  superAdmin;
+  superAdmin,
+  coordinator;
 
   static UserRole fromString(String role) {
     switch (role.toLowerCase()) {
@@ -36,6 +37,11 @@ enum UserRole {
         return UserRole.supervisor;
       case 'super_admin':
         return UserRole.superAdmin;
+      case 'coordinator':
+      case 'assistant':
+      case 'teaching_assistant':
+      case 'academic_coordinator':
+        return UserRole.coordinator;
       default:
         return UserRole.student;
     }
@@ -47,6 +53,8 @@ enum UserRole {
         return 'center_admin';
       case UserRole.superAdmin:
         return 'super_admin';
+      case UserRole.coordinator:
+        return 'coordinator';
       default:
         return name;
     }
@@ -76,6 +84,8 @@ enum UserRole {
         return 'المشرف';
       case UserRole.superAdmin:
         return 'سوبر أدمن';
+      case UserRole.coordinator:
+        return 'مساعد معلّم / منسق';
     }
   }
 }

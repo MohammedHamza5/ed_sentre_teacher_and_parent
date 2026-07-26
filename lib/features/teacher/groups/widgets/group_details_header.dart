@@ -22,14 +22,14 @@ class GroupDetailsHeader extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface.withValues(alpha: 0.6),
+        color: AppColors.surface.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.glassBorderHighlight),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16.sp, color: AppColors.accentVivid),
+          Icon(icon, size: 16.sp, color: AppColors.primary),
           SizedBox(width: 8.w),
           Text(
             label,
@@ -48,7 +48,7 @@ class GroupDetailsHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.forestPrimary,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(32.r)),
       ),
       child: Stack(
@@ -97,7 +97,7 @@ class GroupDetailsHeader extends StatelessWidget {
                     child: Text(
                       group.courseName ?? 'مادة',
                       style: TextStyle(
-                        color: AppColors.textMuted,
+                        color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -112,22 +112,22 @@ class GroupDetailsHeader extends StatelessWidget {
             start: 16.w,
             end: 16.w,
             child: GlassCard(
-              color: AppColors.darkSurface.withValues(alpha: 0.8),
+              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
               child: Row(
                 children: [
                   Container(
                     padding: EdgeInsets.all(12.w),
                     decoration: BoxDecoration(
-                      color: AppColors.accentVivid.withValues(alpha: 0.15),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(
-                        color: AppColors.accentVivid.withValues(alpha: 0.3),
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Icon(
                       Icons.groups_rounded,
-                      color: AppColors.accentVivid,
+                      color: Theme.of(context).colorScheme.primary,
                       size: 24.sp,
                     ),
                   ),
@@ -142,7 +142,7 @@ class GroupDetailsHeader extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: AppColors.textDisplay,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.bold,
                             fontSize: 18.sp,
                           ),
@@ -153,7 +153,7 @@ class GroupDetailsHeader extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: AppColors.textMuted,
+                            color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                             fontSize: 13.sp,
                             fontWeight: FontWeight.w600,
                           ),

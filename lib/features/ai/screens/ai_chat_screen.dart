@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/config/app_colors.dart';
+import '../../../../core/widgets/genius/shimmer_skeleton.dart';
 import '../../ai/provider/ai_provider.dart';
 
 /// شاشة المحادثة مع المساعد الذكي — مع حفظ السجل
@@ -207,7 +208,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
   void _showConversationHistory() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.darkCard,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       isScrollControlled: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
@@ -238,20 +239,20 @@ class _AIChatScreenState extends State<AIChatScreen> {
           'المساعد الذكي 💬',
           style: TextStyle(color: AppColors.textOnDark, fontSize: 18.sp),
         ),
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         foregroundColor: AppColors.textOnDark,
         elevation: 0,
         actions: [
           // زر المحادثات السابقة
           IconButton(
             onPressed: _showConversationHistory,
-            icon: const Icon(Icons.history_rounded),
+            icon: Icon(Icons.history_rounded),
             tooltip: 'سجل المحادثات',
           ),
           // زر محادثة جديدة
           IconButton(
             onPressed: _createNewConversation,
-            icon: const Icon(Icons.add_comment_rounded),
+            icon: Icon(Icons.add_comment_rounded),
             tooltip: 'محادثة جديدة',
           ),
         ],
@@ -266,8 +267,9 @@ class _AIChatScreenState extends State<AIChatScreen> {
           Expanded(
             child: _isLoadingMessages
                 ? Center(
-                    child: CircularProgressIndicator(
-                      backgroundColor: AppColors.primary,
+                    child: Padding(
+                      padding: EdgeInsets.all(24.w),
+                      child: const AiPulseSkeleton(),
                     ),
                   )
                 : _messages.isEmpty
@@ -335,8 +337,8 @@ class _AIChatScreenState extends State<AIChatScreen> {
       height: 48.h,
       padding: EdgeInsets.symmetric(vertical: 8.h),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
-        border: Border(bottom: BorderSide(color: AppColors.darkBorder)),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(bottom: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300))),
       ),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
@@ -349,8 +351,8 @@ class _AIChatScreenState extends State<AIChatScreen> {
               suggestions[index],
               style: TextStyle(fontSize: 12.sp, color: AppColors.textOnDark),
             ),
-            backgroundColor: AppColors.darkSurface,
-            side: BorderSide(color: AppColors.darkBorder),
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            side: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
             onPressed: () => _handleQuickSuggestion(index),
           );
         },
@@ -390,7 +392,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
                   colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
                 )
               : null,
-          color: isUser ? null : AppColors.darkCard,
+          color: isUser ? null : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(16.r),
             topRight: Radius.circular(16.r),
@@ -425,9 +427,9 @@ class _AIChatScreenState extends State<AIChatScreen> {
         margin: EdgeInsets.only(bottom: 12.h, right: 48.w),
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
-          color: AppColors.darkCard,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: AppColors.darkBorder),
+          border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -466,8 +468,8 @@ class _AIChatScreenState extends State<AIChatScreen> {
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
-        border: Border(top: BorderSide(color: AppColors.darkBorder)),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(top: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300))),
       ),
       child: SafeArea(
         child: Column(
@@ -528,9 +530,9 @@ class _AIChatScreenState extends State<AIChatScreen> {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: AppColors.darkSurface,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(24.r),
-                      border: Border.all(color: AppColors.darkBorder),
+                      border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                     ),
                     child: Row(
                       children: [
@@ -574,7 +576,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
                 ),
                 SizedBox(width: 8.w),
                 Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
                     ),
@@ -653,7 +655,7 @@ class _ConversationHistorySheetState extends State<_ConversationHistorySheet> {
                   width: 40.w,
                   height: 4.h,
                   decoration: BoxDecoration(
-                    color: AppColors.darkBorder,
+                    color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -763,11 +765,11 @@ class _ConversationHistorySheetState extends State<_ConversationHistorySheet> {
         context.read<AIProvider>().deleteConversation(conv['id']);
       },
       child: Card(
-        color: AppColors.darkSurface,
+        color: Theme.of(context).colorScheme.surface,
         margin: EdgeInsets.only(bottom: 8.h),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.r),
-          side: BorderSide(color: AppColors.darkBorder.withValues(alpha: 0.5)),
+          side: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300).withValues(alpha: 0.5)),
         ),
         child: ListTile(
           onTap: () => widget.onSelect(conv['id']),

@@ -19,16 +19,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      
       appBar: AppBar(
         title: const Text(
           'الإعدادات',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: AppColors.textPrimary,
+        
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 20),
           onPressed: () => Navigator.pop(context),
@@ -84,14 +82,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildSection(
               title: 'التطبيق',
               children: [
-                _buildSettingTile(
-                  icon: Icons.language,
-                  title: 'اللغة',
-                  trailing: 'العربية',
-                  iconColor: Colors.purple,
-                  onTap: () {},
-                ),
-                _buildDivider(),
+
                 // ✅ الوضع الليلي مربوط بـ AppSettingsProvider ويُحفظ تلقائياً
                 Consumer<AppSettingsProvider>(
                   builder: (context, settings, _) {
@@ -175,17 +166,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: FontWeight.bold,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).textTheme.bodySmall?.color,
             ),
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
+                color: AppColors.shadow,
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -202,7 +193,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       height: 1,
       indent: 56.w,
       endIndent: 16.w,
-      color: Colors.grey[100],
+      color: Theme.of(context).dividerTheme.color,
     );
   }
 
@@ -215,7 +206,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required VoidCallback onTap,
   }) {
     return ListTile(
-      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 2.h),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       onTap: onTap,
       leading: Container(
         padding: EdgeInsets.all(8.w),
@@ -230,13 +221,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         style: TextStyle(
           fontSize: 14.sp,
           fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
       subtitle: subtitle != null
           ? Text(
               subtitle,
-              style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 12.sp, color: Theme.of(context).textTheme.bodySmall?.color),
             )
           : null,
       trailing: Row(
@@ -245,7 +236,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           if (trailing != null)
             Text(
               trailing,
-              style: TextStyle(fontSize: 13.sp, color: AppColors.textHint),
+              style: TextStyle(fontSize: 13.sp, color: Theme.of(context).textTheme.bodySmall?.color),
             ),
           if (trailing != null) SizedBox(width: 8.w),
           Icon(Icons.arrow_forward_ios, size: 14.sp, color: Colors.grey[300]),
@@ -263,7 +254,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required ValueChanged<bool> onChanged,
   }) {
     return ListTile(
-      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 2.h),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       leading: Container(
         padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
@@ -277,12 +268,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         style: TextStyle(
           fontSize: 14.sp,
           fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
       subtitle: Text(
         subtitle,
-        style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
+        style: TextStyle(fontSize: 12.sp, color: Theme.of(context).textTheme.bodySmall?.color),
       ),
       trailing: Switch.adaptive(
         value: value,
@@ -395,7 +386,7 @@ class _EditProfileFormState extends State<_EditProfileForm> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
       padding: EdgeInsets.fromLTRB(
@@ -415,7 +406,7 @@ class _EditProfileFormState extends State<_EditProfileForm> {
               width: 40.w,
               margin: EdgeInsets.symmetric(horizontal: 140.w),
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: Theme.of(context).colorScheme.outline,
                 borderRadius: BorderRadius.circular(2.r),
               ),
             ),
@@ -425,7 +416,7 @@ class _EditProfileFormState extends State<_EditProfileForm> {
               style: TextStyle(
                 fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
               textAlign: TextAlign.center,
             ),
@@ -458,14 +449,14 @@ class _EditProfileFormState extends State<_EditProfileForm> {
                       width: 24.w,
                       height: 24.w,
                       child: const CircularProgressIndicator(
-                        backgroundColor: Colors.white,
+                        backgroundColor: Colors.transparent,
                         strokeWidth: 2,
                       ),
                     )
                   : Text(
                       'حفظ التغييرات',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.surface,
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
                       ),
@@ -488,21 +479,21 @@ class _EditProfileFormState extends State<_EditProfileForm> {
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: AppColors.textSecondary),
+        prefixIcon: Icon(icon, color: Theme.of(context).textTheme.bodySmall?.color),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: const BorderSide(color: AppColors.primary),
         ),
         filled: true,
-        fillColor: Colors.grey[50],
+        fillColor: Theme.of(context).colorScheme.surface,
       ),
     );
   }
@@ -625,7 +616,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
                         width: 20.w,
                         height: 20.w,
                         child: const CircularProgressIndicator(
-                          backgroundColor: Colors.white,
+                          backgroundColor: Colors.transparent,
                           strokeWidth: 2,
                         ),
                       )

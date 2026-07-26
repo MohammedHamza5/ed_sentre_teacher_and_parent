@@ -1,1 +1,37 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"ed-sentre","appId":"1:941281553238:android:679777b9eb994ec12284f7","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"ed-sentre","configurations":{"android":"1:941281553238:android:679777b9eb994ec12284f7","ios":"1:941281553238:ios:730a4ca7b8cfd57b2284f7"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "ed-sentre",
+          "appId": "1:941281553238:android:0f8667db8a0b34872284f7",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "ed-sentre",
+          "configurations": {
+            "android": "1:941281553238:android:0f8667db8a0b34872284f7",
+            "ios": "1:941281553238:ios:fea7308bd553ceb12284f7"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "site": "ed-sentre-teacher",
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

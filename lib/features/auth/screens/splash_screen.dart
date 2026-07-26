@@ -177,9 +177,7 @@ class _SplashScreenState extends State<SplashScreen>
                                           offset: const Offset(0, 10),
                                         ),
                                       ],
-                                      color: Colors.white.withValues(
-                                        alpha: 0.95,
-                                      ),
+                                      color: const Color(0xFF0F172A),
                                     ),
                                     child: _buildLogo(),
                                   )
@@ -245,17 +243,18 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Widget _buildLogo() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20.r),
-      child: Image.asset(
-        'assets/icons/app_icon.png',
-        width: 90.w,
-        height: 90.w,
-        fit: BoxFit.cover,
-        errorBuilder: (c, e, s) => Icon(
-          Icons.school,
-          size: 56.sp,
-          color: AppColors.primary,
+    return Padding(
+      padding: EdgeInsets.all(12.r),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16.r),
+        child: Image.asset(
+          'assets/icons/app_icon.png',
+          fit: BoxFit.contain,
+          errorBuilder: (c, e, s) => Icon(
+            Icons.school,
+            size: 56.sp,
+            color: AppColors.primary,
+          ),
         ),
       ),
     ).animate().fadeIn(duration: 500.ms).scale(

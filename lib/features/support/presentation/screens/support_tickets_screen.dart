@@ -31,28 +31,26 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'الدعم الفني',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
         elevation: 0,
-        foregroundColor: AppColors.textPrimary,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openNewTicketDialog,
-        label: const Text(
+        label: Text(
           'تذكرة جديدة',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        icon: const Icon(Icons.add),
+        icon: Icon(Icons.add),
         backgroundColor: AppColors.primary,
         elevation: 4,
         shape: RoundedRectangleBorder(
@@ -80,11 +78,11 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: AppColors.shadow,
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -102,13 +100,13 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           SizedBox(height: 8.h),
           Text(
             'يمكنك فتح تذكرة جديدة للحصول على المساعدة',
-            style: TextStyle(fontSize: 14.sp, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 14.sp, color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey)),
           ),
         ],
       ),
@@ -119,13 +117,13 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
     final isOpen = ticket['status'] == 'open';
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: AppColors.shadow,
             blurRadius: 10,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
         border: Border(
@@ -156,7 +154,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                     ),
@@ -189,7 +187,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: AppColors.textSecondary,
+                    color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
                     height: 1.5,
                   ),
                 ),
@@ -243,7 +241,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.r),
         ),
-        title: const Text('تذكرة جديدة', textAlign: TextAlign.center),
+        title: Text('تذكرة جديدة', textAlign: TextAlign.center),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -255,7 +253,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 filled: true,
-                fillColor: Colors.grey[50],
+                fillColor: Theme.of(context).colorScheme.surface,
               ),
             ),
             SizedBox(height: 16.h),
@@ -269,7 +267,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 filled: true,
-                fillColor: Colors.grey[50],
+                fillColor: Theme.of(context).colorScheme.surface,
               ),
             ),
           ],
@@ -287,7 +285,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                   ),
-                  child: const Text('إلغاء'),
+                  child: Text('إلغاء'),
                 ),
               ),
               SizedBox(width: 12.w),
@@ -301,7 +299,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: const Text('تم إرسال التذكرة بنجاح'),
+                        content: Text('تم إرسال التذكرة بنجاح'),
                         backgroundColor: Colors.green,
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(
@@ -326,7 +324,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'إرسال',
                     style: TextStyle(color: Colors.white),
                   ),

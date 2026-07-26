@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:ed_sentre_techer_and_parent/shared/models/group_model.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // AiExamProvider — توليد وحفظ ونشر الامتحانات بالذكاء الاصطناعي
@@ -133,6 +134,88 @@ class AiExamProvider extends ChangeNotifier {
 
   // ── توليد من نص (knowledge base) ───────────────────────────────────────
 
+  Future<Map<String, dynamic>?> generateFromKnowledgeBasePdf({
+    required String fileUrl,
+    required int questionCount,
+    required String difficulty,
+    required String examType,
+    String language = 'ar',
+  }) async {
+    _reset();
+    _set(
+      GenState.reading,
+      'بداية العملية: جاري تنزيل الملف من قاعدة المعرفة...',
+    );
+
+    try {
+      _statusDetail = 'جاري تنزيل بيانات ملف الـ PDF...';
+      notifyListeners();
+
+      final bytes = await supabase.storage
+          .from('ai_documents')
+          .download(fileUrl);
+      if (bytes.isEmpty) {
+        throw Exception('فشل في تنزيل الملف. تأكد من وجود الملف.');
+      }
+
+      final sizeMB = bytes.length / (1024 * 1024);
+      _statusDetail =
+          'تم التنزيل بنجاح. الحجم: ${sizeMB.toStringAsFixed(1)} MB';
+      notifyListeners();
+
+      if (sizeMB > 19.5) {
+        throw Exception(
+          'حجم الملف (${sizeMB.toStringAsFixed(1)} MB) كبير جداً.\n'
+          'الحد الأقصى هو 19.5 MB لضمان سرعة المعالجة.',
+        );
+      }
+
+      _set(GenState.uploading, 'جاري تحويل الملف إلى صيغة رقمية (Base64)...');
+      _setProgress(0.2);
+
+      final base64Pdf = base64Encode(bytes);
+
+      _statusDetail =
+          'جاري إرسال الطلب إلى خادم الذكاء الاصطناعي (Edge Function)...';
+      _setProgress(0.4);
+      notifyListeners();
+
+      _set(
+        GenState.generating,
+        'جاري التواصل مع Gemini AI... قد يستغرق هذا دقيقة.',
+      );
+      _setProgress(0.6);
+
+      final result = await _callEdgeFunction(
+        task: 'generate_exam',
+        pdfBase64: base64Pdf,
+        params: {
+          'questionCount': questionCount,
+          'difficulty': difficulty,
+          'examType': examType,
+          'language': language,
+        },
+        difficulty: difficulty,
+      );
+
+      _statusDetail = 'تم استلام الأسئلة. جاري معالجة البيانات النهائية...';
+      _setProgress(0.9);
+      notifyListeners();
+
+      _setProgress(1.0);
+      _exam = result;
+      _set(
+        GenState.success,
+        'تم توليد ${result['questions']?.length} سؤال بنجاح!',
+      );
+      return result;
+    } catch (e) {
+      _error = _friendlyError(e.toString());
+      _set(GenState.error);
+      return null;
+    }
+  }
+
   Future<Map<String, dynamic>?> generateFromText({
     required String text,
     required int questionCount,
@@ -172,8 +255,7 @@ class AiExamProvider extends ChangeNotifier {
   /// ثم يُنشئ assignment في `assignments` + أسئلة في `exam_questions`
   Future<String?> saveAndPublishExam({
     required String centerId,
-    required String groupId,
-    required String courseId,
+    required List<GroupModel> targetGroups,
     required String title,
     String? description,
     required String examType,
@@ -184,6 +266,11 @@ class AiExamProvider extends ChangeNotifier {
     List<Map<String, dynamic>>? editedQuestions,
   }) async {
     if (_exam == null && editedQuestions == null) return null;
+    if (targetGroups.isEmpty) {
+      _error = 'يرجى تحديد مجموعة واحدة على الأقل.';
+      _set(GenState.error);
+      return null;
+    }
 
     _set(GenState.saving, 'جاري حفظ الامتحان في قاعدة البيانات...');
 
@@ -224,79 +311,85 @@ class AiExamProvider extends ChangeNotifier {
 
       final aiExamId = aiExamResponse['id'] as String;
 
-      // 2. إنشاء assignment في جدول assignments
-      _statusDetail = 'جاري نشر الامتحان للطلاب...';
+      // 2. إنشاء assignments للـ targetGroups
+      _statusDetail = 'جاري نشر الامتحان للمجموعات...';
       _setProgress(0.6);
       notifyListeners();
 
-      final assignmentResponse = await supabase
-          .from('assignments')
-          .insert({
-            'center_id': centerId,
-            'group_id': groupId,
-            'course_id': courseId,
-            'teacher_user_id': userId,
-            'title': title,
-            'description': description ?? 'امتحان منشأ بالذكاء الاصطناعي',
-            'type': examType == 'quiz' ? 'quiz' : 'exam',
-            'max_score': totalMarks,
-            'due_date': DateTime.now()
-                .add(const Duration(days: 7))
-                .toIso8601String(),
-            'questions': questions,
-            'time_limit_minutes': timeLimitMinutes,
-            'settings': {
-              'ai_generated': true,
-              'ai_exam_id': aiExamId,
-              'show_answers_after': showAnswersAfter,
-              'shuffle_questions': shuffleQuestions,
-              'publish_at': DateTime.now().toIso8601String(),
-              'display_mode': 'all',
-            },
-          })
-          .select('id')
-          .single();
+      String? firstAssignmentId;
 
-      final assignmentId = assignmentResponse['id'] as String;
+      for (int i = 0; i < targetGroups.length; i++) {
+        final group = targetGroups[i];
 
-      // 3. حفظ الأسئلة في `exam_questions`
-      _statusDetail = 'جاري حفظ الأسئلة...';
-      _setProgress(0.8);
-      notifyListeners();
+        final assignmentResponse = await supabase
+            .from('assignments')
+            .insert({
+              'center_id': centerId,
+              'group_id': group.id,
+              'course_id': group.courseId,
+              'teacher_user_id': userId,
+              'title': title,
+              'description': description ?? 'امتحان منشأ بالذكاء الاصطناعي',
+              'type': examType == 'quiz' ? 'quiz' : 'exam',
+              'max_score': totalMarks,
+              'due_date': DateTime.now()
+                  .add(const Duration(days: 7))
+                  .toIso8601String(),
+              'questions': questions,
+              'time_limit_minutes': timeLimitMinutes,
+              'settings': {
+                'ai_generated': true,
+                'ai_exam_id': aiExamId,
+                'show_answers_after': showAnswersAfter,
+                'shuffle_questions': shuffleQuestions,
+                'publish_at': DateTime.now().toIso8601String(),
+                'display_mode': 'all',
+              },
+            })
+            .select('id')
+            .single();
 
-      final formattedQuestions = questions.asMap().entries.map((entry) {
-        final q = entry.value as Map<String, dynamic>;
+        final assignmentId = assignmentResponse['id'] as String;
+        firstAssignmentId ??= assignmentId;
 
-        String type = 'mcq';
-        final rawType = q['type']?.toString() ?? 'mcq';
-        if (rawType.contains('true') || rawType.contains('false')) {
-          type = 'true_false';
-        }
+        // 3. حفظ الأسئلة في `exam_questions`
+        final formattedQuestions = questions.asMap().entries.map((entry) {
+          final q = entry.value as Map<String, dynamic>;
 
-        return {
-          'assignment_id': assignmentId,
-          'text': q['text']?.toString() ?? '',
-          'type': type,
-          'marks': (q['marks'] as num?)?.toDouble() ?? 2.0,
-          'options': q['options'] ?? [],
-          'correct_answer': q['correct_answer']?.toString() ?? '0',
-          'explanation': q['explanation']?.toString(),
-          'hint': q['hint']?.toString(),
-          'order_index': entry.key,
-        };
-      }).toList();
+          String type = 'mcq';
+          final rawType = q['type']?.toString() ?? 'mcq';
+          if (rawType.contains('true') || rawType.contains('false')) {
+            type = 'true_false';
+          }
 
-      await supabase.from('exam_questions').insert(formattedQuestions);
+          return {
+            'assignment_id': assignmentId,
+            'text': q['text']?.toString() ?? '',
+            'type': type,
+            'marks': (q['marks'] as num?)?.toDouble() ?? 2.0,
+            'options': q['options'] ?? [],
+            'correct_answer': q['correct_answer']?.toString() ?? '0',
+            'explanation': q['explanation']?.toString(),
+            'hint': q['hint']?.toString(),
+            'order_index': entry.key,
+          };
+        }).toList();
 
-      // 4. ربط الامتحان بالـ assignment
+        await supabase.from('exam_questions').insert(formattedQuestions);
+
+        // Update progress incrementally
+        _setProgress(0.6 + (0.3 * (i + 1) / targetGroups.length));
+      }
+
+      // 4. ربط الامتحان بالـ assignment الأول (كمرجع)
       await supabase
           .from('ai_generated_exams')
-          .update({'published_to_assignment_id': assignmentId})
+          .update({'published_to_assignment_id': firstAssignmentId})
           .eq('id', aiExamId);
 
       _setProgress(1.0);
       _set(GenState.success, 'تم نشر الامتحان بنجاح! 🎉');
-      return assignmentId;
+      return firstAssignmentId;
     } catch (e) {
       _error = _friendlyError(e.toString());
       _set(GenState.error);

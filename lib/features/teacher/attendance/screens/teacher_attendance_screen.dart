@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../../auth/provider/auth_provider.dart';
@@ -95,14 +96,14 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
     setState(() => _isLoading = true);
     final auth = context.read<AuthProvider>();
     final center = context.read<CenterProvider>();
-    final repo = context.read<SupabaseRepository>();
+    final teacherProvider = context.read<TeacherProvider>();
 
     try {
       final teacherId = auth.teacherProfile?.id;
       final centerId = center.currentCenterId;
 
       if (teacherId != null && centerId != null) {
-        _myGroups = await repo.getTeacherGroups(teacherId, centerId);
+        _myGroups = List<GroupModel>.from(teacherProvider.groups);
 
         if (_myGroups.isNotEmpty) {
           if (_selectedGroupId == null ||
@@ -233,7 +234,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
@@ -241,7 +242,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
           style: Theme.of(context).textTheme.headlineMedium,
         ),
         centerTitle: true,
-        backgroundColor: AppColors.forestDeep.withValues(alpha: 0.8),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
         elevation: 0,
         iconTheme: const IconThemeData(color: AppColors.textDisplay),
         flexibleSpace: ClipRRect(
@@ -260,14 +261,14 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
             },
             icon: Icon(
               Icons.refresh_rounded,
-              color: AppColors.accentVivid,
+              color: Theme.of(context).colorScheme.primary,
               size: 26.sp,
             ),
             tooltip: 'تحديث',
           ),
           Padding(
             padding: EdgeInsets.only(left: 8.w),
-            child: const SizedBox.shrink(),
+            child: SizedBox.shrink(),
           ),
         ],
       ),
@@ -312,7 +313,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: GlassCard(
-        color: AppColors.forestPrimary.withValues(alpha: 0.6),
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.6),
         padding: EdgeInsets.all(20.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,7 +322,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
               children: [
                 Icon(
                   Icons.class_rounded,
-                  color: AppColors.accentVivid,
+                  color: Theme.of(context).colorScheme.primary,
                   size: 20.sp,
                 ),
                 SizedBox(width: 8.w),
@@ -329,7 +330,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
                   'المجموعة الحالية',
                   style: Theme.of(
                     context,
-                  ).textTheme.titleSmall?.copyWith(color: AppColors.textMuted),
+                  ).textTheme.titleSmall?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
                 ),
               ],
             ),
@@ -337,26 +338,26 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
               decoration: BoxDecoration(
-                color: AppColors.darkSurface.withValues(alpha: 0.6),
+                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(color: AppColors.glassBorderHighlight),
+                border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: _selectedGroupId,
                   isExpanded: true,
-                  dropdownColor: AppColors.forestDeep,
+                  dropdownColor: Theme.of(context).scaffoldBackgroundColor,
                   style: Theme.of(context).textTheme.titleMedium,
                   icon: Icon(
                     Icons.keyboard_arrow_down_rounded,
-                    color: AppColors.accentVivid,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   items: _myGroups.map((group) {
                     return DropdownMenuItem<String>(
                       value: group.id,
                       child: Text(
                         '${group.groupName} - ${_getDayName(group.dayOfWeek)} ${group.startTime ?? ''}',
-                        style: const TextStyle(color: AppColors.textDisplay),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                       ),
                     );
                   }).toList(),
@@ -398,19 +399,19 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: AppColors.accentVivid.withValues(alpha: 0.15),
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.accentVivid.withValues(alpha: 0.3)),
+        border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.accentVivid, size: 16.sp),
+          Icon(icon, color: Theme.of(context).colorScheme.primary, size: 16.sp),
           SizedBox(width: 6.w),
           Text(
             text,
             style: TextStyle(
-              color: AppColors.textDisplay,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 13.sp,
               fontWeight: FontWeight.bold,
             ),
@@ -429,7 +430,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
             child: _buildStatCard(
               'حاضر',
               _presentCount,
-              AppColors.emeraldGreen,
+              Colors.green,
               Icons.check_circle_rounded,
             ),
           ),
@@ -438,7 +439,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
             child: _buildStatCard(
               'غائب',
               _absentCount,
-              AppColors.errorRed,
+              Theme.of(context).colorScheme.error,
               Icons.cancel_rounded,
             ),
           ),
@@ -458,7 +459,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
 
   Widget _buildStatCard(String label, int count, Color color, IconData icon) {
     return GlassCard(
-      color: AppColors.forestPrimary.withValues(alpha: 0.4),
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
       padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 8.w),
       child: Column(
         children: [
@@ -483,7 +484,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
             label,
             style: Theme.of(
               context,
-            ).textTheme.labelMedium?.copyWith(color: AppColors.textMuted),
+            ).textTheme.labelMedium?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
           ),
         ],
       ),
@@ -513,15 +514,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
   Widget _buildInlineLoader() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Column(
-        children: List.generate(
-          4,
-          (index) => Padding(
-            padding: EdgeInsets.only(bottom: 16.h),
-            child: const ShimmerListItem(),
-          ),
-        ),
-      ),
+      child: const TableListShimmer(itemCount: 6),
     );
   }
 
@@ -557,7 +550,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
 
     switch (status) {
       case 'present':
-        statusColor = AppColors.emeraldGreen;
+        statusColor = AppColors.statusSuccess;
         statusIcon = Icons.check_circle_rounded;
         statusText = 'حاضر';
         break;
@@ -567,117 +560,145 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
         statusText = 'متأخر';
         break;
       case 'absent':
-        statusColor = AppColors.errorRed;
+        statusColor = context.themeError;
         statusIcon = Icons.cancel_rounded;
         statusText = 'غائب';
         break;
       default:
-        statusColor = AppColors.textMuted;
+        statusColor = context.themeTextSecondary;
         statusIcon = Icons.help_outline_rounded;
         statusText = 'لم يُسجل';
     }
 
     return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
-      child:
-          GlassCard(
-                color: AppColors.darkSurface.withValues(alpha: 0.5),
-                padding: EdgeInsets.all(16.w),
-                child: Row(
+      child: Semantics(
+        label: '$name، الحالة: $statusText',
+        container: true,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 56), // Touch target >= 48dp
+          decoration: BoxDecoration(
+            color: context.themeCard,
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: statusColor.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          padding: EdgeInsets.all(16.w),
+          child: Row(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: statusColor.withValues(alpha: 0.6),
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: statusColor.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: CircleAvatar(
+                  radius: 24.r,
+                  backgroundColor: statusColor.withValues(alpha: 0.15),
+                  backgroundImage: avatarUrl != null
+                      ? CachedNetworkImageProvider(
+                          avatarUrl,
+                          maxHeight: 150,
+                          maxWidth: 150,
+                        )
+                      : null,
+                  child: avatarUrl == null
+                      ? Icon(
+                          Icons.person,
+                          color: statusColor,
+                          size: 24.sp,
+                        )
+                      : null,
+                ),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: statusColor.withValues(alpha: 0.5),
-                          width: 2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: statusColor.withValues(alpha: 0.2),
-                            blurRadius: 10,
-                          ),
-                        ],
-                      ),
-                      child: CircleAvatar(
-                        radius: 24.r,
-                        backgroundColor: statusColor.withValues(alpha: 0.15),
-                        backgroundImage: avatarUrl != null
-                            ? NetworkImage(avatarUrl)
-                            : null,
-                        child: avatarUrl == null
-                            ? Icon(
-                                Icons.person,
-                                color: statusColor,
-                                size: 24.sp,
-                              )
-                            : null,
+                    Text(
+                      name,
+                      style: TextStyle(
+                        color: context.themeTextPrimary,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15.sp,
                       ),
                     ),
-                    SizedBox(width: 16.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    if (checkInTime != null) ...[
+                      SizedBox(height: 4.h),
+                      Row(
                         children: [
-                          Text(
-                            name,
-                            style: Theme.of(context).textTheme.titleMedium,
+                          Icon(
+                            Icons.schedule_rounded,
+                            size: 13.sp,
+                            color: context.themeTextSecondary,
                           ),
-                          if (checkInTime != null) ...[
-                            SizedBox(height: 4.h),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.schedule_rounded,
-                                  size: 12.sp,
-                                  color: AppColors.textMuted,
-                                ),
-                                SizedBox(width: 4.w),
-                                Text(
-                                  'تسجيل الدخول: $checkInTime',
-                                  style: Theme.of(context).textTheme.labelSmall
-                                      ?.copyWith(color: AppColors.textMuted),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 6.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(16.r),
-                        border: Border.all(
-                          color: statusColor.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(statusIcon, color: statusColor, size: 16.sp),
-                          SizedBox(width: 6.w),
+                          SizedBox(width: 4.w),
                           Text(
-                            statusText,
+                            'تسجيل: $checkInTime',
                             style: TextStyle(
-                              color: statusColor,
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.bold,
+                              color: context.themeTextSecondary,
+                              fontSize: 11.5.sp,
                             ),
                           ),
                         ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Container(
+                constraints: const BoxConstraints(minHeight: 36, minWidth: 72),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 12.w,
+                  vertical: 6.h,
+                ),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: statusColor.withValues(alpha: 0.4),
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(statusIcon, color: statusColor, size: 16.sp),
+                    SizedBox(width: 6.w),
+                    Text(
+                      statusText,
+                      style: TextStyle(
+                        color: statusColor,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ],
                 ),
-              )
-              .animate(delay: Duration(milliseconds: 50 * index))
-              .fadeIn(duration: 300.ms)
-              .slideX(begin: 0.1, end: 0),
+              ),
+            ],
+          ),
+        )
+        .animate(delay: Duration(milliseconds: 40 * index))
+        .fadeIn(duration: 250.ms)
+        .slideX(begin: 0.08, end: 0),
+      ),
     );
   }
 
@@ -695,3 +716,4 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
     return days[dayIndex];
   }
 }
+

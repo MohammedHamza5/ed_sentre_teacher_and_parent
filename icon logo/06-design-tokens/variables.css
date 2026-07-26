@@ -1,0 +1,49 @@
+/* EdSentre Design Tokens — CSS Variables */
+:root {
+  /* Colors */
+  --color-navyCore: #050E1F; /* Navy Core */
+  --color-navyMid: #0B1A35; /* Navy Mid */
+  --color-navyLight: #112244; /* Navy Light */
+  --color-teal: #00C8D7; /* EdSentre Teal */
+  --color-tealDeep: #00A3B5; /* Teal Deep */
+  --color-electric: #3B7BFF; /* Electric Blue */
+  --color-electricGlow: #5B9BFF; /* Electric Glow */
+  --color-white: #FFFFFF; /* White */
+  --color-whiteSoft: #F4F7FF; /* White Soft */
+  --color-gray500: #6B7DA0; /* Gray 500 */
+  --color-success: #00D68F; /* Success Green */
+  --color-gold: #F5C542; /* Gold */
+  --color-warning: #FFB800; /* Warning Amber */
+  --color-danger: #FF4757; /* Alert Red */
+  --color-gray100: #E8EDF8; /* Gray 100 */
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.25);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.3);
+  --shadow-xl: 0 16px 48px rgba(0,0,0,0.35);
+  --shadow-glow: 0 0 20px rgba(0,200,215,0.25);
+  --shadow-glow-lg: 0 0 40px rgba(0,200,215,0.35);
+}

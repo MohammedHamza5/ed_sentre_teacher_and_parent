@@ -47,7 +47,8 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     final position = _scrollController.position;
-    if (position.pixels >= position.maxScrollExtent - 200) {
+    if (position.maxScrollExtent > 0 &&
+        position.pixels >= position.maxScrollExtent - 50) {
       _loadMore();
     }
   }
@@ -98,6 +99,7 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
         setState(() {
           _isLoading = false;
           _isLoadingMore = false;
+          _hasMore = false; // Prevent infinite retry loops on failure
         });
       }
     }
@@ -172,8 +174,7 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
         padding: EdgeInsets.only(bottom: 80.h),
         child: FloatingActionButton(
           onPressed: () async {
-            await Navigator.push(
-              context,
+            await Navigator.of(context, rootNavigator: true).push(
               MaterialPageRoute(
                 builder: (_) => const TeacherNewChatScreen(),
               ),
@@ -181,7 +182,7 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
             _loadConversations(reset: true);
           },
           backgroundColor: Theme.of(context).colorScheme.primary,
-          child: const Icon(Icons.edit_note, color: Colors.white),
+          child: Icon(Icons.edit_note, color: Colors.white),
         ).animate().scale(delay: 300.ms),
       ),
     );
@@ -273,12 +274,12 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.refresh, color: Colors.white),
+          icon: Icon(Icons.refresh, color: Colors.white),
           onPressed: () => _loadConversations(reset: true),
         ),
         Padding(
           padding: EdgeInsets.only(left: 8.w),
-          child: const SizedBox.shrink(),
+          child: SizedBox.shrink(),
         ),
       ],
     );
@@ -333,8 +334,7 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           child: PremiumCard(
             onTap: () async {
-              await Navigator.push(
-                context,
+              await Navigator.of(context, rootNavigator: true).push(
                 MaterialPageRoute(
                   builder: (_) => TeacherChatScreen(conversation: conversation),
                 ),
@@ -371,9 +371,12 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
                             : null,
                         child: conversation.studentAvatar == null
                             ? Text(
-                                (conversation.studentName ?? 'S')
-                                    .substring(0, 1)
-                                    .toUpperCase(),
+                                (conversation.studentName != null &&
+                                        conversation.studentName!.isNotEmpty)
+                                    ? conversation.studentName!
+                                        .substring(0, 1)
+                                        .toUpperCase()
+                                    : 'S',
                                 style: TextStyle(
                                   fontSize: 18.sp,
                                   fontWeight: FontWeight.bold,
@@ -423,14 +426,14 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
                                 vertical: 2.h,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.infoPurple
+                                color: Colors.purple
                                     .withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(6.r),
                               ),
                               child: Text(
                                 'ولي أمر',
                                 style: TextStyle(
-                                  color: AppColors.infoPurple,
+                                  color: Colors.purple,
                                   fontSize: 10.sp,
                                   fontWeight: FontWeight.bold,
                                 ),

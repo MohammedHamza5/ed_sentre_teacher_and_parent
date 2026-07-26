@@ -30,7 +30,7 @@ class ExamPreviewQuestionEditor extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14.r),
         border: Border.all(color: AppColors.warning, width: 2),
       ),
@@ -71,7 +71,7 @@ class ExamPreviewQuestionEditor extends StatelessWidget {
                       vertical: 8.h,
                     ),
                     filled: true,
-                    fillColor: AppColors.darkInput,
+                    fillColor: Theme.of(context).colorScheme.surface,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8.r),
                     ),
@@ -90,7 +90,7 @@ class ExamPreviewQuestionEditor extends StatelessWidget {
             decoration: InputDecoration(
               labelText: 'نص السؤال',
               filled: true,
-              fillColor: AppColors.darkInput,
+              fillColor: Theme.of(context).colorScheme.surface,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
               ),
@@ -143,7 +143,7 @@ class ExamPreviewQuestionEditor extends StatelessWidget {
                         filled: true,
                         fillColor: isCorrect
                             ? AppColors.success.withValues(alpha: 0.1)
-                            : AppColors.darkInput,
+                            : Theme.of(context).colorScheme.surface,
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: 12.w,
                           vertical: 10.h,
@@ -170,7 +170,7 @@ class ExamPreviewQuestionEditor extends StatelessWidget {
             decoration: InputDecoration(
               labelText: 'شرح الإجابة (اختياري)',
               filled: true,
-              fillColor: AppColors.darkInput,
+              fillColor: Theme.of(context).colorScheme.surface,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
               ),
@@ -184,7 +184,7 @@ class ExamPreviewQuestionEditor extends StatelessWidget {
             children: [
               TextButton(
                 onPressed: onCancel,
-                child: const Text(
+                child: Text(
                   'إلغاء',
                   style: TextStyle(color: AppColors.textOnDarkHint),
                 ),
@@ -192,8 +192,8 @@ class ExamPreviewQuestionEditor extends StatelessWidget {
               SizedBox(width: 8.w),
               ElevatedButton.icon(
                 onPressed: onSave,
-                icon: const Icon(Icons.check, color: Colors.white, size: 18),
-                label: const Text(
+                icon: Icon(Icons.check, color: Colors.white, size: 18),
+                label: Text(
                   'حفظ التعديل',
                   style: TextStyle(color: Colors.white),
                 ),

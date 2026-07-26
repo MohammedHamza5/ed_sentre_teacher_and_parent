@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../provider/auth_provider.dart';
+import '../../../../core/config/app_config.dart';
 
 /// Login Screen - User authentication
 class LoginScreen extends StatefulWidget {
@@ -97,7 +99,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.forestDeep,
+      resizeToAvoidBottomInset: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Container(
         decoration: BoxDecoration(gradient: AppColors.primaryGradient),
         child: SafeArea(
@@ -113,24 +116,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       children: [
                         Container(
-                          width: 100.w,
-                          height: 100.w,
+                          width: 110.w,
+                          height: 110.w,
+                          padding: EdgeInsets.all(12.r),
                           decoration: BoxDecoration(
-                            shape: BoxShape.circle,
+                            color: const Color(0xFF0F172A),
+                            borderRadius: BorderRadius.circular(24.r),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.emeraldGreen.withValues(
-                                  alpha: 0.3,
+                                color: Colors.black.withValues(
+                                  alpha: 0.25,
                                 ),
                                 blurRadius: 20,
                                 offset: const Offset(0, 10),
                               ),
                             ],
                           ),
-                          child: ClipOval(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16.r),
                             child: Image.asset(
                               'assets/icons/app_icon.png',
-                              fit: BoxFit.cover,
+                              fit: BoxFit.contain,
                             ),
                           ),
                         ),
@@ -140,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(
                             fontSize: 32.sp,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textDisplay,
+                            color: Theme.of(context).colorScheme.onSurface,
                             letterSpacing: 1.2,
                           ),
                         ),
@@ -151,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               : 'تسجيل الدخول للنظام',
                           style: TextStyle(
                             fontSize: 16.sp,
-                            color: AppColors.textMuted,
+                            color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                           ),
                         ),
                       ],
@@ -163,9 +169,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Login Form in Glass Card
                   Container(
                     decoration: BoxDecoration(
-                      color: AppColors.darkSurface,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(24.r),
-                      border: Border.all(color: AppColors.darkBorder),
+                      border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.2),
@@ -258,7 +264,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 _obscurePassword
                                     ? Icons.visibility_outlined
                                     : Icons.visibility_off_outlined,
-                                color: AppColors.textMuted,
+                                color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                               ),
                               onPressed: () => setState(
                                 () => _obscurePassword = !_obscurePassword,
@@ -286,7 +292,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 'نسيت كلمة المرور؟',
                                 style: TextStyle(
                                   fontSize: 14.sp,
-                                  color: AppColors.accentVivid,
+                                  color: Theme.of(context).colorScheme.primary,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -300,21 +306,28 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: ElevatedButton(
                               onPressed: _isLoading ? null : _handleLogin,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.accentVivid,
+                                backgroundColor: Theme.of(context).colorScheme.primary,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12.r),
                                 ),
                                 elevation: 0,
                               ),
                               child: _isLoading
-                                  ? SizedBox(
-                                      width: 24.w,
-                                      height: 24.w,
-                                      child: const CircularProgressIndicator(
-                                        color: AppColors.forestDeep,
-                                        strokeWidth: 3,
-                                      ),
-                                    )
+                                  ? Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.sync_rounded, color: AppColors.forestDeep, size: 22.sp),
+                                        SizedBox(width: 8.w),
+                                        Text(
+                                          _isSignUpMode ? 'جاري التسجيل...' : 'جاري التحقق...',
+                                          style: TextStyle(
+                                            fontSize: 15.sp,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.forestDeep,
+                                          ),
+                                        ),
+                                      ],
+                                    ).animate(onPlay: (c) => c.repeat(reverse: true)).fade(duration: 600.ms)
                                   : Text(
                                       _isSignUpMode
                                           ? 'إنشاء حساب'
@@ -338,7 +351,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 _isSignUpMode ? 'لديك حساب؟' : 'ليس لديك حساب؟',
                                 style: TextStyle(
                                   fontSize: 14.sp,
-                                  color: AppColors.textMuted,
+                                  color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                                 ),
                               ),
                               TextButton(
@@ -355,7 +368,64 @@ class _LoginScreenState extends State<LoginScreen> {
                                   style: TextStyle(
                                     fontSize: 14.sp,
                                     fontWeight: FontWeight.bold,
-                                    color: AppColors.emeraldGreen,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          SizedBox(height: 24.h),
+                          const Divider(),
+                          SizedBox(height: 16.h),
+                          Text(
+                            'الدخول التجريبي السريع (Demo Mode)',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green[700],
+                            ),
+                          ),
+                          SizedBox(height: 12.h),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () async {
+                                    setState(() => _isLoading = true);
+                                    AppConfig.isDemoMode = true;
+                                    final success = await context.read<AuthProvider>().signInWithIdentifier('demo_teacher', 'demo');
+                                    setState(() => _isLoading = false);
+                                    if (success && mounted) {
+                                      context.go('/teacher');
+                                    }
+                                  },
+                                  icon: const Icon(Icons.school, size: 18),
+                                  label: const Text('معلم تجريبي'),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                                    side: BorderSide(color: Colors.green[300]!),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () async {
+                                    setState(() => _isLoading = true);
+                                    AppConfig.isDemoMode = true;
+                                    final success = await context.read<AuthProvider>().signInWithIdentifier('demo_parent', 'demo');
+                                    setState(() => _isLoading = false);
+                                    if (success && mounted) {
+                                      context.go('/parent');
+                                    }
+                                  },
+                                  icon: const Icon(Icons.family_restroom, size: 18),
+                                  label: const Text('ولي أمر تجريبي'),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                                    side: BorderSide(color: Colors.green[300]!),
                                   ),
                                 ),
                               ),
@@ -371,15 +441,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   Center(
                     child: TextButton.icon(
                       onPressed: () => _showSupportDialog(context),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.support_agent_outlined,
-                        color: AppColors.textMuted,
+                        color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                       ),
                       label: Text(
                         'تواصل مع الدعم الفني',
                         style: TextStyle(
                           fontSize: 14.sp,
-                          color: AppColors.textMuted,
+                          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                         ),
                       ),
                     ),
@@ -411,29 +481,29 @@ class _LoginScreenState extends State<LoginScreen> {
       keyboardType: keyboardType,
       textInputAction: action,
       onFieldSubmitted: onSubmitted,
-      style: const TextStyle(color: AppColors.textDisplay),
+      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: AppColors.textMuted),
-        hintStyle: TextStyle(color: AppColors.textMuted.withValues(alpha: 0.5)),
+        labelStyle: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
+        hintStyle: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5)),
         hintText: hint,
-        prefixIcon: Icon(icon, color: AppColors.textMuted),
+        prefixIcon: Icon(icon, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: AppColors.forestDeep.withValues(alpha: 0.5),
+        fillColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: AppColors.glassBorderHighlight),
+          borderSide: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: AppColors.glassBorderHighlight),
+          borderSide: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: AppColors.accentVivid),
+          borderSide: const BorderSide(color: AppColors.primary),
         ),
-        errorStyle: const TextStyle(color: AppColors.errorRed),
+        errorStyle: TextStyle(color: Theme.of(context).colorScheme.error),
       ),
       validator: validator,
     );
@@ -443,29 +513,29 @@ class _LoginScreenState extends State<LoginScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkSurface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: Text(
           'نسيت كلمة المرور؟',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18.sp,
-            color: AppColors.textDisplay,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         content: Text(
           'الرجاء التواصل مع إدارة النظام عبر منصة الإدارة أو الدعم الفني لإعادة تعيين كلمة المرور بصلاحياتك.',
-          style: TextStyle(fontSize: 14.sp, color: AppColors.textMuted),
+          style: TextStyle(fontSize: 14.sp, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
-          side: const BorderSide(color: AppColors.darkBorder),
+          side: const BorderSide(color: AppColors.divider),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'حسناً',
-              style: TextStyle(color: AppColors.accentVivid),
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
             ),
           ),
         ],
@@ -477,29 +547,29 @@ class _LoginScreenState extends State<LoginScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkSurface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: Text(
           'التواصل مع الدعم الفني',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18.sp,
-            color: AppColors.textDisplay,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         content: Text(
           'يرجى التواصل مع إدارة النظام عبر البريد الإلكتروني support@edsentre.com أو عبر الواتس آب للإبلاغ عن أي مشكلات فنية.',
-          style: TextStyle(fontSize: 14.sp, color: AppColors.textMuted),
+          style: TextStyle(fontSize: 14.sp, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
-          side: const BorderSide(color: AppColors.darkBorder),
+          side: const BorderSide(color: AppColors.divider),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'حسناً',
-              style: TextStyle(color: AppColors.accentVivid),
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
             ),
           ),
         ],

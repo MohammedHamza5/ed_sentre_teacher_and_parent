@@ -25,10 +25,10 @@ class AssignmentPublishSelector extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: AppColors.glassBorderHighlight.withValues(alpha: 0.5),
+          color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300).withValues(alpha: 0.5),
         ),
       ),
       child: Column(
@@ -43,7 +43,7 @@ class AssignmentPublishSelector extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textDisplay,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -66,7 +66,7 @@ class AssignmentPublishSelector extends StatelessWidget {
               decoration: BoxDecoration(
                 color: publishDate != null
                     ? typeColor.withValues(alpha: 0.1)
-                    : AppColors.darkSurface,
+                    : Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(8.r),
                 border: Border.all(
                   color: publishDate != null
@@ -98,7 +98,7 @@ class AssignmentPublishSelector extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: publishDate != null
-                            ? AppColors.textDisplay
+                            ? Theme.of(context).colorScheme.onSurface
                             : Theme.of(context)
                                 .colorScheme
                                 .onSurface
@@ -157,16 +157,16 @@ class AssignmentPublishSelector extends StatelessWidget {
         }
       },
       selectedColor: typeColor.withValues(alpha: 0.2),
-      backgroundColor: AppColors.darkSurface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       side: BorderSide(
         color: isSelected
             ? typeColor
-            : AppColors.glassBorderHighlight.withValues(alpha: 0.5),
+            : (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300).withValues(alpha: 0.5),
       ),
       labelStyle: TextStyle(
         color: isSelected
             ? typeColor
-            : AppColors.textDisplay.withValues(alpha: 0.7),
+            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
     );

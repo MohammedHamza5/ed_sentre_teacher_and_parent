@@ -30,14 +30,14 @@ class ExamReviewHeader extends StatelessWidget {
           children: [
             Container(
               padding: EdgeInsets.all(4.w),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
-                  colors: [AppColors.accentVivid, AppColors.secondary],
+                  colors: [Theme.of(context).colorScheme.primary, AppColors.secondary],
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.accentVivid,
+                    color: Theme.of(context).colorScheme.primary,
                     blurRadius: 10,
                     spreadRadius: -2,
                   ),

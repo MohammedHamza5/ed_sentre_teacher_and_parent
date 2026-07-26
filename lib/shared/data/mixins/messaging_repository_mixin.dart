@@ -276,80 +276,28 @@ mixin MessagingRepositoryMixin on BaseRepository {
     final userId = currentUserId;
     if (userId == null) return [];
 
-    final parentRecord = await client
-        .from('parents')
-        .select('id')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-    final parentId = parentRecord?['id'] ?? userId;
-
-    final linksResponse = await client
-        .from('student_parents')
-        .select('student_user_id')
-        .eq('parent_id', parentId);
-
-    final links = List<Map<String, dynamic>>.from(linksResponse as List);
-    if (links.isEmpty) return [];
-
-    final studentIds = links.map((l) => l['student_user_id']).toList();
-
-    // Get enrollments for all children to find their teachers
-    final enrollments = await client
-        .from('student_group_enrollments')
-        .select('''
-          student_id,
-          groups!inner(
-            id,
-            name,
-            teacher_id,
-            course_id,
-            courses(name)
-          )
-        ''')
-        .inFilter('student_id', studentIds);
-
-    // Build a list of teacher+student combinations
-    final results = <Map<String, dynamic>>[];
-    final seen = <String>{};
-
-    for (final enrollment in (enrollments as List)) {
-      final group = enrollment['groups'] as Map<String, dynamic>?;
-      if (group == null) continue;
-
-      final teacherUserId = group['teacher_id'] as String?;
-      final studentUserId = enrollment['student_id'] as String?;
-      if (teacherUserId == null || studentUserId == null) continue;
-
-      final key = '$teacherUserId-$studentUserId';
-      if (seen.contains(key)) continue;
-      seen.add(key);
-
-      // Get teacher and student names
-      final teacherUser = await client
-          .from('users')
-          .select('full_name, avatar_url')
-          .eq('id', teacherUserId)
+    try {
+      final parentRecord = await client
+          .from('parents')
+          .select('id')
+          .eq('user_id', userId)
           .maybeSingle();
 
-      final studentUser = await client
-          .from('users')
-          .select('full_name, avatar_url')
-          .eq('id', studentUserId)
-          .maybeSingle();
+      final parentId = parentRecord?['id'] ?? userId;
 
-      results.add({
-        'teacher_id': teacherUserId,
-        'teacher_name': teacherUser?['full_name'] ?? 'معلم',
-        'teacher_avatar': teacherUser?['avatar_url'],
-        'student_id': studentUserId,
-        'student_name': studentUser?['full_name'] ?? 'طالب',
-        'student_avatar': studentUser?['avatar_url'],
-        'course_name': (group['courses'] as Map?)?['name'],
-      });
+      final response = await client.rpc(
+        'get_parent_children_teachers',
+        params: {
+          'p_parent_id': parentId,
+          'p_center_id': centerId,
+        },
+      );
+
+      return (response as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    } catch (e) {
+      // Return empty list on failure, mirroring previous behavior but avoiding crashes
+      return [];
     }
-
-    return results;
   }
 
   // ═══════════════════════════════════════════════════════════════════════

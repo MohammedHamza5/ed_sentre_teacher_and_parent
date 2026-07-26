@@ -11,7 +11,7 @@ class TeacherAssignmentsModals {
   }) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.darkSurface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
@@ -24,7 +24,7 @@ class TeacherAssignmentsModals {
               width: 40.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: AppColors.glassBorderHighlight,
+                color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
                 borderRadius: BorderRadius.circular(2.r),
               ),
             ),
@@ -34,7 +34,7 @@ class TeacherAssignmentsModals {
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textDisplay,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             SizedBox(height: 20.h),
@@ -44,7 +44,7 @@ class TeacherAssignmentsModals {
                   child: _buildCreateOption(
                     icon: Icons.assignment,
                     label: 'واجب',
-                    color: AppColors.accentVivid,
+                    color: Theme.of(context).colorScheme.primary,
                     onTap: () {
                       Navigator.pop(context);
                       onNavigateToCreate('assignment');
@@ -129,7 +129,7 @@ class TeacherAssignmentsModals {
     final isArchived = AssignmentHelper.isArchived(assignment);
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.darkSurface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
@@ -143,7 +143,7 @@ class TeacherAssignmentsModals {
                 height: 4.h,
                 margin: EdgeInsets.only(top: 12.h),
                 decoration: BoxDecoration(
-                  color: AppColors.glassBorderHighlight,
+                  color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -154,7 +154,7 @@ class TeacherAssignmentsModals {
                 ),
                 title: Text(
                   'نشر لمجموعات إضافية',
-                  style: TextStyle(color: AppColors.textDisplay),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -168,7 +168,7 @@ class TeacherAssignmentsModals {
                 ),
                 title: Text(
                   'نسخ',
-                  style: TextStyle(color: AppColors.textDisplay),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                 ),
                 onTap: () => Navigator.pop(context),
               ),
@@ -179,7 +179,7 @@ class TeacherAssignmentsModals {
                 ),
                 title: Text(
                   'مشاركة',
-                  style: TextStyle(color: AppColors.textDisplay),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                 ),
                 onTap: () => Navigator.pop(context),
               ),
@@ -190,7 +190,7 @@ class TeacherAssignmentsModals {
                 ),
                 title: Text(
                   'تعديل موعد الظهور',
-                  style: TextStyle(color: AppColors.textDisplay),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -204,7 +204,7 @@ class TeacherAssignmentsModals {
                 ),
                 title: Text(
                   isArchived ? 'إلغاء الأرشفة' : 'أرشفة',
-                  style: TextStyle(color: AppColors.textDisplay),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -212,8 +212,8 @@ class TeacherAssignmentsModals {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.delete, color: AppColors.errorRed),
-                title: Text('حذف', style: TextStyle(color: AppColors.errorRed)),
+                leading: Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
+                title: Text('حذف', style: TextStyle(color: Theme.of(context).colorScheme.error)),
                 onTap: () {
                   Navigator.pop(context);
                   onDeleteAssignment();
@@ -249,7 +249,7 @@ class TeacherAssignmentsModals {
     final selectedIds = <String>{};
     return await showModalBottomSheet<Set<String>>(
       context: context,
-      backgroundColor: AppColors.darkSurface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
@@ -268,7 +268,7 @@ class TeacherAssignmentsModals {
                       Text(
                         'اختيار المجموعات',
                         style: TextStyle(
-                          color: AppColors.textDisplay,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                         ),
@@ -291,7 +291,7 @@ class TeacherAssignmentsModals {
                           selectedIds.length == availableGroups.length
                               ? 'إلغاء الكل'
                               : 'تحديد الكل',
-                          style: TextStyle(color: AppColors.accentVivid),
+                          style: TextStyle(color: Theme.of(context).colorScheme.primary),
                         ),
                       ),
                     ],
@@ -304,7 +304,7 @@ class TeacherAssignmentsModals {
                         final isChecked = selectedIds.contains(group.id);
                         return CheckboxListTile(
                           value: isChecked,
-                          activeColor: AppColors.accentVivid,
+                          activeColor: Theme.of(context).colorScheme.primary,
                           onChanged: (v) {
                             if (v == true) {
                               selectedIds.add(group.id);
@@ -315,7 +315,7 @@ class TeacherAssignmentsModals {
                           },
                           title: Text(
                             group.groupName,
-                            style: TextStyle(color: AppColors.textDisplay),
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                           ),
                         );
                       }).toList(),
@@ -327,10 +327,10 @@ class TeacherAssignmentsModals {
                     child: ElevatedButton(
                       onPressed: () => Navigator.pop(context, selectedIds),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accentVivid,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                         padding: EdgeInsets.symmetric(vertical: 12.h),
                       ),
-                      child: const Text(
+                      child: Text(
                         'تم',
                         style: TextStyle(color: Colors.white),
                       ),

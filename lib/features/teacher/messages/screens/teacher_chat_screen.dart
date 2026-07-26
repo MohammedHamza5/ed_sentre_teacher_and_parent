@@ -201,7 +201,7 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('فشل إرسال الرسالة'),
+            content: Text('فشل إرسال الرسالة'),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -240,7 +240,7 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
                     ? NetworkImage(widget.conversation.studentAvatar!)
                     : null,
                 child: widget.conversation.studentAvatar == null
-                    ? const Icon(Icons.person, color: Colors.white)
+                    ? Icon(Icons.person, color: Colors.white)
                     : null,
               ),
             ),
@@ -270,7 +270,7 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
                           vertical: 1.h,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.infoPurple.withValues(alpha: 0.2),
+                          color: Colors.purple.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Text(
@@ -278,14 +278,14 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
                           style: TextStyle(
                             fontSize: 9.sp,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.infoPurple,
+                            color: Colors.purple,
                           ),
                         ),
                       ),
                     Container(
                       width: 6.w,
                       height: 6.w,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: Colors.green,
                         shape: BoxShape.circle,
                       ),
@@ -437,7 +437,7 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
           children: [
             IconButton(
               onPressed: () {},
-              icon: const Icon(Icons.attach_file),
+              icon: Icon(Icons.attach_file),
               color: Theme.of(
                 context,
               ).colorScheme.onSurface.withValues(alpha: 0.7),
@@ -490,7 +490,7 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
               ),
               child: IconButton(
                 onPressed: _sendMessage,
-                icon: const Icon(Icons.send, color: Colors.white, size: 20),
+                icon: Icon(Icons.send, color: Colors.white, size: 20),
               ),
             ),
           ],
@@ -503,10 +503,10 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
       decoration: BoxDecoration(
-        color: AppColors.infoPurple.withValues(alpha: 0.1),
+        color: Colors.purple.withValues(alpha: 0.1),
         border: Border(
           top: BorderSide(
-            color: AppColors.infoPurple.withValues(alpha: 0.3),
+            color: Colors.purple.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -517,14 +517,14 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
           children: [
             Icon(
               Icons.visibility_rounded,
-              color: AppColors.infoPurple,
+              color: Colors.purple,
               size: 18.sp,
             ),
             SizedBox(width: 8.w),
             Text(
               'وضع المشاهدة فقط — لا يمكنك الإرسال هنا',
               style: TextStyle(
-                color: AppColors.infoPurple,
+                color: Colors.purple,
                 fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
               ),

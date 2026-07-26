@@ -50,7 +50,7 @@ class AIDailyUsagePulse extends StatelessWidget {
           return Container(
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
-              color: AppColors.darkCard,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(20.r),
               border: Border.all(
                 color: statusColor.withValues(alpha: 0.3),
@@ -171,7 +171,7 @@ class AIDailyUsagePulse extends StatelessWidget {
                   return LinearProgressIndicator(
                     value: value,
                     minHeight: 6.h,
-                    backgroundColor: AppColors.darkBorder,
+                    backgroundColor: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
                     valueColor: AlwaysStoppedAnimation<Color>(statusColor),
                   );
                 },
