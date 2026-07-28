@@ -206,55 +206,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           _buildTextField(
                             controller: _identifierController,
-                            label: _isSignUpMode
-                                ? 'كود الدعوة'
-                                : 'كود الدعوة أو رقم الهاتف',
-                            hint: _isSignUpMode
-                                ? 'أدخل كود الدعوة (مثال: T12345)'
-                                : 'أدخل كود الدعوة أو رقم هاتفك',
+                            label: 'كود الدعوة أو رقم الهاتف',
+                            hint: 'أدخل كود الدعوة (مثال: T-100) أو رقم الهاتف',
                             icon: Icons.badge_outlined,
-                            keyboardType: _isSignUpMode
-                                ? TextInputType.text
-                                : TextInputType.visiblePassword,
+                            keyboardType: TextInputType.text,
                             action: TextInputAction.next,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return _isSignUpMode
-                                    ? 'الرجاء إدخال كود الدعوة'
-                                    : 'الرجاء إدخال الكود أو رقم الهاتف';
-                              }
-                              if (_isSignUpMode && value.trim().length < 6) {
-                                return 'كود الدعوة غير صحيح';
+                                return 'الرجاء إدخال كود الدعوة أو رقم الهاتف';
                               }
                               return null;
                             },
                           ),
-
-                          if (_isSignUpMode) ...[
-                            SizedBox(height: 16.h),
-                            _buildTextField(
-                              controller: _phoneController,
-                              label: 'رقم الهاتف',
-                              hint: 'أدخل رقم هاتفك الخاص',
-                              icon: Icons.phone_outlined,
-                              keyboardType: TextInputType.phone,
-                              action: TextInputAction.next,
-                              validator: (value) {
-                                if (_isSignUpMode &&
-                                    (value == null || value.trim().isEmpty)) {
-                                  return 'الرجاء إدخال رقم الهاتف';
-                                }
-                                return null;
-                              },
-                            ),
-                          ],
 
                           SizedBox(height: 16.h),
 
                           _buildTextField(
                             controller: _passwordController,
                             label: 'كلمة المرور',
-                            hint: 'أدخل كلمة المرور',
+                            hint: 'كلمة السر الخاصة بك (أو آخر 4 أرقام للمساعدين)',
                             icon: Icons.lock_outlined,
                             obscureText: _obscurePassword,
                             action: TextInputAction.done,
@@ -271,11 +241,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                             validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'الرجاء إدخال كلمة المرور';
-                              }
-                              if (value.length < 6) {
-                                return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+                              final idText = _identifierController.text.trim();
+                              final isPhone = RegExp(r'^[0-9+]{10,15}$').hasMatch(idText);
+                              if (!isPhone && (value == null || value.trim().isEmpty)) {
+                                return 'الرجاء إدخال كلمة المرور (أو إنشاء كلمة سر جديدة إذا كانت مرتك الأولى)';
                               }
                               return null;
                             },
@@ -375,6 +344,49 @@ class _LoginScreenState extends State<LoginScreen> {
                             ],
                           ),
 
+                          SizedBox(height: 16.h),
+
+                          // Smart Guidance Card
+                          Container(
+                            padding: EdgeInsets.all(12.r),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(12.r),
+                              border: Border.all(
+                                color: AppColors.primary.withValues(alpha: 0.2),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.smart_toy_rounded, color: AppColors.primary, size: 18.sp),
+                                    SizedBox(width: 8.w),
+                                    Text(
+                                      'إرشادات الدخول السريع:',
+                                      style: TextStyle(
+                                        fontSize: 13.sp,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 6.h),
+                                Text(
+                                  '• 👨‍💼 للمساعدين: أدخل رقم الهاتف (كلمة المرور الإفتراضية هي آخر 4 أرقام من رقم الهاتف).\n'
+                                  '• 👨‍🏫 المعلمين وأولياء الأمور: أدخل كود الدعوة وأنشئ كلمة سر خاصة بك تتيح لك الدخول بها دائماً.',
+                                  style: TextStyle(
+                                    fontSize: 11.5.sp,
+                                    color: Colors.grey[800],
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
                           SizedBox(height: 24.h),
                           const Divider(),
                           SizedBox(height: 16.h),
@@ -393,12 +405,15 @@ class _LoginScreenState extends State<LoginScreen> {
                               Expanded(
                                 child: OutlinedButton.icon(
                                   onPressed: () async {
+                                    final auth = context.read<AuthProvider>();
+                                    final router = GoRouter.of(context);
                                     setState(() => _isLoading = true);
                                     AppConfig.isDemoMode = true;
-                                    final success = await context.read<AuthProvider>().signInWithIdentifier('demo_teacher', 'demo');
+                                    final success = await auth.signInWithIdentifier('demo_teacher', 'demo');
+                                    if (!mounted) return;
                                     setState(() => _isLoading = false);
-                                    if (success && mounted) {
-                                      context.go('/teacher');
+                                    if (success) {
+                                      router.go('/teacher');
                                     }
                                   },
                                   icon: const Icon(Icons.school, size: 18),
@@ -413,12 +428,15 @@ class _LoginScreenState extends State<LoginScreen> {
                               Expanded(
                                 child: OutlinedButton.icon(
                                   onPressed: () async {
+                                    final auth = context.read<AuthProvider>();
+                                    final router = GoRouter.of(context);
                                     setState(() => _isLoading = true);
                                     AppConfig.isDemoMode = true;
-                                    final success = await context.read<AuthProvider>().signInWithIdentifier('demo_parent', 'demo');
+                                    final success = await auth.signInWithIdentifier('demo_parent', 'demo');
+                                    if (!mounted) return;
                                     setState(() => _isLoading = false);
-                                    if (success && mounted) {
-                                      context.go('/parent');
+                                    if (success) {
+                                      router.go('/parent');
                                     }
                                   },
                                   icon: const Icon(Icons.family_restroom, size: 18),

@@ -21,31 +21,30 @@ mixin AuthRepositoryMixin on BaseRepository {
     String identifier,
     String password,
   ) async {
-    String? emailToUse;
+    final cleanIdentifier = identifier.trim();
+    String emailToUse;
 
-    // If it's already an email, use it directly (fallback for old accounts if needed)
-    if (identifier.contains('@')) {
-      emailToUse = identifier;
-    } else if (identifier.toUpperCase().startsWith('T') ||
-        identifier.toUpperCase().startsWith('P')) {
-      emailToUse = '${identifier.toUpperCase()}@edsentre.com';
+    // If it's already an email, use it directly
+    if (cleanIdentifier.contains('@')) {
+      emailToUse = cleanIdentifier.toLowerCase();
+    } else if (cleanIdentifier.toUpperCase().startsWith('T') ||
+        cleanIdentifier.toUpperCase().startsWith('P') ||
+        cleanIdentifier.toUpperCase().startsWith('STD')) {
+      emailToUse = '${cleanIdentifier.toUpperCase()}@edsentre.com';
     } else {
-      // Phone number fallback
+      // Phone number fallback (Assistants / Staff / Phone-based Users)
       try {
         final response = await client.rpc(
           'get_login_identifier_by_phone',
-          params: {'p_phone': identifier},
+          params: {'p_phone': cleanIdentifier},
         );
         if (response != null && response.toString().isNotEmpty) {
           emailToUse = response.toString();
         } else {
-          throw const AuthException(
-            'لم يتم العثور على حساب مرتبط برقم الهاتف هذا.',
-          );
+          emailToUse = '$cleanIdentifier@assistant.edsentre.com';
         }
       } catch (e) {
-        if (e is AuthException) rethrow;
-        throw AuthException('حدث خطأ في البحث برقم الهاتف: $e');
+        emailToUse = '$cleanIdentifier@assistant.edsentre.com';
       }
     }
 

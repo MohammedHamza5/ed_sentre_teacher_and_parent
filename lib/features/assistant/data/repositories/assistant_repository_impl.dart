@@ -3,10 +3,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/repositories/assistant_repository.dart';
 import '../../../../core/errors/result.dart';
 import '../../../../core/errors/app_exceptions.dart';
-import '../../../../core/supabase/supabase_client.dart';
+// Removed invalid core/supabase import
 
 class AssistantRepositoryImpl implements AssistantRepository {
-  final SupabaseClient _client = SupabaseClientManager.client;
+  final SupabaseClient _client = Supabase.instance.client;
 
   @override
   AsyncResult<({bool hasDebt, double debtAmount, String monthYear, String? invoiceId})> fetchStudentStatusLite(String studentId, String centerId) async {

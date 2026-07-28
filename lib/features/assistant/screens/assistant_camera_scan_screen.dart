@@ -81,6 +81,10 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
                     return const Icon(Icons.flash_off, color: Colors.grey);
                   case TorchState.on:
                     return const Icon(Icons.flash_on, color: Colors.yellow);
+                  case TorchState.auto:
+                    return const Icon(Icons.flash_auto, color: Colors.white);
+                  case TorchState.unavailable:
+                    return const Icon(Icons.flash_off, color: Colors.grey);
                 }
               },
             ),

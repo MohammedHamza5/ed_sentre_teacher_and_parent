@@ -2,7 +2,7 @@ name: ed_sentre_techer_and_parent
 description: "EdSentre - Teacher & Parent Mobile App for Educational Center Management"
 publish_to: "none"
 
-version: 1.0.0+1
+version: 1.0.1+4
 
 environment:
   sdk: ^3.8.1
@@ -75,6 +75,7 @@ dependencies:
   encrypt: ^5.0.3
   flutter_secure_storage: ^10.3.1
   uuid: ^4.6.0
+  shorebird_code_push: ^2.0.7
 
 dependency_overrides:
   vector_math: ^2.2.0
@@ -99,6 +100,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - shorebird.yaml
 
   # Custom fonts - uncomment after adding font files to assets/fonts/
   # fonts:

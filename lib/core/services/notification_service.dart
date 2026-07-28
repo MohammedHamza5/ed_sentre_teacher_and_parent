@@ -140,7 +140,7 @@ class NotificationService {
           FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         debugPrint('🔔 [FCM] Foreground message received');
         if (message.notification != null) {
-          _showLocalNotification(
+          showLocalNotification(
             title: message.notification!.title ?? 'إشعار جديد',
             body: message.notification!.body ?? '',
             id: message.hashCode,
@@ -225,7 +225,7 @@ class NotificationService {
   }
 
   /// عرض إشعار محلي
-  Future<void> _showLocalNotification({
+  Future<void> showLocalNotification({
     required String title,
     required String body,
     int id = 0,

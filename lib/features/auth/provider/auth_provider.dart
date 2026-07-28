@@ -221,19 +221,33 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Sign in with identifier (Code or Phone) and password
+  /// Sign in with identifier (Code or Phone) and password
   Future<bool> signInWithIdentifier(String identifier, String password) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
-    if (identifier == 'DEMO1234' || identifier == '123456') {
+    final cleanId = identifier.trim();
+    var cleanPass = password.trim();
+
+    // Check if input is a phone number (Assistant / Staff login)
+    final isPhoneNumber = RegExp(r'^[0-9+]{10,15}$').hasMatch(cleanId);
+    if (isPhoneNumber && (cleanPass.isEmpty || cleanPass.length < 4)) {
+      // Auto-fallback to default password = Last 4 digits of phone number
+      cleanPass = cleanId.substring(cleanId.length - 4);
+      if (kDebugMode) {
+        debugPrint('📱 Assistant Phone Login detected. Using default last 4 digits: $cleanPass');
+      }
+    }
+
+    if (cleanId == 'DEMO1234' || cleanId == '123456' || cleanId.toUpperCase() == 'DEMO') {
       AppConfig.isDemoMode = true;
     }
 
     if (AppConfig.isDemoMode) {
       await Future.delayed(const Duration(seconds: 1));
       
-      final isTeacher = identifier.toLowerCase().contains('teacher') || identifier == '123' || identifier == 'demo_teacher';
+      final isTeacher = cleanId.toLowerCase().contains('teacher') || cleanId == '123' || cleanId == 'demo_teacher';
       
       _currentUser = UserModel(
         id: isTeacher ? 'demo_teacher_id' : 'demo_parent_id',
@@ -268,17 +282,48 @@ class AuthProvider extends ChangeNotifier {
     }
 
     try {
-      await _repository.signInWithIdentifier(identifier, password);
-      // Ensure we have a session before loading profile
-      if (_repository.client.auth.currentSession == null) {
-        throw const AuthException('Login failed: No session created');
+      // Step 1: Try direct SignIn
+      try {
+        await _repository.signInWithIdentifier(cleanId, cleanPass);
+      } catch (signInErr) {
+        if (kDebugMode) {
+          debugPrint('ℹ️ Direct SignIn failed ($signInErr). Checking fallbacks...');
+        }
+
+        // Fallback for phone-based assistants where auth password is formatted as last 4 digits + '00'
+        if (isPhoneNumber && cleanPass.length == 4) {
+          try {
+            debugPrint('📱 Retrying Assistant phone sign-in with formatted password ${cleanPass}00...');
+            await _repository.signInWithIdentifier(cleanId, '${cleanPass}00');
+          } catch (_) {
+            rethrow;
+          }
+        } else if (!isPhoneNumber && cleanPass.length >= 6) {
+          // Step 2: If code format and non-phone, attempt automatic SignUp for first-time setup
+          final signUpSuccess = await signUp(
+            invitationCode: cleanId,
+            password: cleanPass,
+            fullName: 'مستخدم جديد',
+            phone: '',
+          );
+          if (signUpSuccess) {
+            _isLoading = false;
+            notifyListeners();
+            return true;
+          }
+        } else {
+          rethrow;
+        }
       }
 
-      // Mark as potentially needing an invitation code if not verified
-      // Verify role logic will handle the rest
+      // Ensure we have a session before loading profile
+      if (_repository.client.auth.currentSession == null) {
+        throw const AuthException('فشل تسجيل الدخول: تعذر إنشاء الجلسة');
+      }
+
       await _loadUserProfile();
 
-      log.auth('Sign In Success', data: {'identifier': identifier});
+      log.auth('Sign In Success', data: {'identifier': cleanId});
       _isLoading = false;
       notifyListeners();
       return true;
@@ -289,7 +334,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return false;
     } catch (e) {
-      _error = 'حدث خطأ أثناء تسجيل الدخول';
+      _error = 'بيانات الدخول غير صحيحة أو الحساب غير مفعل';
       _isLoading = false;
       notifyListeners();
       return false;

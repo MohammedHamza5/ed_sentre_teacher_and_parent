@@ -3,11 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-import '../cubits/manual_lookup/manual_lookup_cubit.dart';
-import '../cubits/manual_lookup/manual_lookup_state.dart';
+import '../presentation/cubits/manual_lookup/manual_lookup_cubit.dart';
+import '../presentation/cubits/manual_lookup/manual_lookup_state.dart';
 import '../../../../features/auth/provider/auth_provider.dart';
-import '../../../domain/repositories/assistant_repository.dart';
-import '../widgets/student_action_bottom_sheet.dart';
+import '../domain/repositories/assistant_repository.dart';
+import '../presentation/widgets/student_action_bottom_sheet.dart';
 
 class QuickManualLookupScreen extends StatefulWidget {
   const QuickManualLookupScreen({super.key});

@@ -16,6 +16,7 @@ import 'core/providers/providers.dart';
 import 'core/errors/error_handler.dart';
 import 'core/services/network_monitor.dart';
 import 'core/services/notification_service.dart';
+import 'core/services/shorebird_update_service.dart';
 import 'core/utils/app_logger.dart';
 import 'shared/data/supabase_repository.dart';
 import 'demo/mock_supabase_repository.dart';
@@ -56,6 +57,9 @@ void main() async {
       // تهيئة AppLogger
       await AppLogger.instance.initialize();
       log.info('🚀 App Starting...', tag: 'Main');
+
+      // Initialize Shorebird Code Push Service for OTA updates
+      await ShorebirdUpdateService().initialize();
 
       // ── تحذير أمان في Debug إذا كانت الـ credentials hardcoded ────────────
       SupabaseConfig.warnIfUsingDefaults();

@@ -232,7 +232,7 @@ mixin ParentRepositoryMixin on BaseRepository {
       final studentData = await client
           .from('students')
           .select('id')
-          .eq('user_id', studentUserId)
+          .eq('user_id', studentUserId ?? '')
           .maybeSingle();
           
       final studentId = studentData != null ? studentData['id'] : studentUserId;

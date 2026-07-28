@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
-import '../cubits/live_rooms/live_rooms_cubit.dart';
-import '../cubits/live_rooms/live_rooms_state.dart';
+import '../presentation/cubits/live_rooms/live_rooms_cubit.dart';
+import '../presentation/cubits/live_rooms/live_rooms_state.dart';
 import '../../../../features/auth/provider/auth_provider.dart';
-import '../../../domain/repositories/assistant_repository.dart';
+import '../domain/repositories/assistant_repository.dart';
 
 class LiveCenterRoomsScreen extends StatefulWidget {
   const LiveCenterRoomsScreen({super.key});
