@@ -33,18 +33,27 @@ mixin AuthRepositoryMixin on BaseRepository {
       emailToUse = '${cleanIdentifier.toUpperCase()}@edsentre.com';
     } else {
       // Phone number fallback (Assistants / Staff / Phone-based Users)
+      // NOTE: Staff accounts are created with @edsentre.local domain by the Management App.
+      // We first try get_login_identifier_by_phone RPC which queries public.users by phone.
+      // If the RPC returns an email, we use it directly. Otherwise we fall back to
+      // @edsentre.local which is the actual format used during staff creation.
       try {
         final response = await client.rpc(
           'get_login_identifier_by_phone',
           params: {'p_phone': cleanIdentifier},
         );
         if (response != null && response.toString().isNotEmpty) {
+          // NOTE: RPC may return emails of non-staff roles (student/center_admin).
+          // We must use this email only if it belongs to staff (coordinator/reception).
+          // The actual sign-in will fail with wrong password if role doesn't match,
+          // which is acceptable — Supabase Auth is the source of truth.
           emailToUse = response.toString();
         } else {
-          emailToUse = '$cleanIdentifier@assistant.edsentre.com';
+          // NOTE: Staff accounts use @edsentre.local, not @assistant.edsentre.com.
+          emailToUse = '$cleanIdentifier@edsentre.local';
         }
       } catch (e) {
-        emailToUse = '$cleanIdentifier@assistant.edsentre.com';
+        emailToUse = '$cleanIdentifier@edsentre.local';
       }
     }
 

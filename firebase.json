@@ -20,7 +20,7 @@
     }
   },
   "hosting": {
-    "site": "ed-sentre-teacher",
+    "target": "teacher",
     "public": "build/web",
     "ignore": [
       "firebase.json",

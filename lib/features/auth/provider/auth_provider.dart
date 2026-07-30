@@ -232,12 +232,14 @@ class AuthProvider extends ChangeNotifier {
 
     // Check if input is a phone number (Assistant / Staff login)
     final isPhoneNumber = RegExp(r'^[0-9+]{10,15}$').hasMatch(cleanId);
-    if (isPhoneNumber && (cleanPass.isEmpty || cleanPass.length < 4)) {
-      // Auto-fallback to default password = Last 4 digits of phone number
-      cleanPass = cleanId.substring(cleanId.length - 4);
-      if (kDebugMode) {
-        debugPrint('📱 Assistant Phone Login detected. Using default last 4 digits: $cleanPass');
-      }
+    if (isPhoneNumber) {
+      // NOTE: Staff accounts are created by the Management App with auth password = last4digits+'00'.
+      // The display password shown to staff is only the last 4 digits, but the actual Supabase
+      // Auth password is always last4digits+'00'. We always derive from the phone, ignoring
+      // whatever the user typed, because users may type the display password (4 digits) or
+      // an incorrect value.
+      final last4 = cleanId.substring(cleanId.length - 4);
+      cleanPass = '${last4}00';
     }
 
     if (cleanId == 'DEMO1234' || cleanId == '123456' || cleanId.toUpperCase() == 'DEMO') {
@@ -290,15 +292,7 @@ class AuthProvider extends ChangeNotifier {
           debugPrint('ℹ️ Direct SignIn failed ($signInErr). Checking fallbacks...');
         }
 
-        // Fallback for phone-based assistants where auth password is formatted as last 4 digits + '00'
-        if (isPhoneNumber && cleanPass.length == 4) {
-          try {
-            debugPrint('📱 Retrying Assistant phone sign-in with formatted password ${cleanPass}00...');
-            await _repository.signInWithIdentifier(cleanId, '${cleanPass}00');
-          } catch (_) {
-            rethrow;
-          }
-        } else if (!isPhoneNumber && cleanPass.length >= 6) {
+        if (!isPhoneNumber && cleanPass.length >= 6) {
           // Step 2: If code format and non-phone, attempt automatic SignUp for first-time setup
           final signUpSuccess = await signUp(
             invitationCode: cleanId,

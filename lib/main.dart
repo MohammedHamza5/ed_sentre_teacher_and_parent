@@ -59,16 +59,20 @@ void main() async {
       log.info('🚀 App Starting...', tag: 'Main');
 
       // Initialize Shorebird Code Push Service for OTA updates
-      await ShorebirdUpdateService().initialize();
+      if (!kIsWeb) {
+        await ShorebirdUpdateService().initialize();
+      }
 
       // ── تحذير أمان في Debug إذا كانت الـ credentials hardcoded ────────────
       SupabaseConfig.warnIfUsingDefaults();
 
       // Set preferred orientations
-      await SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
+      if (!kIsWeb) {
+        await SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ]);
+      }
 
       // Initialize Hive for local storage
       await Hive.initFlutter();
@@ -79,7 +83,9 @@ void main() async {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      if (!kIsWeb) {
+        FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      }
 
       // Initialize Supabase
       log.info('Initializing Supabase...', tag: 'Main');
@@ -96,8 +102,10 @@ void main() async {
       log.info('✅ Network Monitor initialized', tag: 'Main');
 
       // Initialize Notification Service
-      await NotificationService().initialize();
-      log.info('🔔 Notification Service initialized', tag: 'Main');
+      if (!kIsWeb) {
+        await NotificationService().initialize();
+        log.info('🔔 Notification Service initialized', tag: 'Main');
+      }
 
       // ── تهيئة إعدادات التطبيق (Theme) قبل runApp ─────────────────────────
       final appSettings = AppSettingsProvider();
