@@ -1,4 +1,3 @@
-import 'package:ed_sentre_techer_and_parent/core/config/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -28,7 +27,8 @@ class AssignmentPublishSelector extends StatelessWidget {
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300).withValues(alpha: 0.5),
+          color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)
+              .withValues(alpha: 0.5),
         ),
       ),
       child: Column(
@@ -71,10 +71,9 @@ class AssignmentPublishSelector extends StatelessWidget {
                 border: Border.all(
                   color: publishDate != null
                       ? typeColor
-                      : Theme.of(context)
-                          .colorScheme
-                          .outline
-                          .withValues(alpha: 0.5),
+                      : Theme.of(
+                          context,
+                        ).colorScheme.outline.withValues(alpha: 0.5),
                 ),
               ),
               child: Row(
@@ -83,10 +82,9 @@ class AssignmentPublishSelector extends StatelessWidget {
                     Icons.schedule,
                     color: publishDate != null
                         ? typeColor
-                        : Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.7),
+                        : Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.7),
                     size: 20.sp,
                   ),
                   SizedBox(width: 12.w),
@@ -99,10 +97,9 @@ class AssignmentPublishSelector extends StatelessWidget {
                         fontSize: 14.sp,
                         color: publishDate != null
                             ? Theme.of(context).colorScheme.onSurface
-                            : Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.7),
+                            : Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                   ),
@@ -140,7 +137,8 @@ class AssignmentPublishSelector extends StatelessWidget {
   Widget _buildQuickChip(BuildContext context, String label, int days) {
     final baseDate = DateTime.now().add(Duration(days: days));
     final targetDate = DateTime(baseDate.year, baseDate.month, baseDate.day);
-    final isSelected = publishDate != null &&
+    final isSelected =
+        publishDate != null &&
         publishDate!.day == targetDate.day &&
         publishDate!.month == targetDate.month &&
         publishDate!.year == targetDate.year;
@@ -161,7 +159,8 @@ class AssignmentPublishSelector extends StatelessWidget {
       side: BorderSide(
         color: isSelected
             ? typeColor
-            : (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300).withValues(alpha: 0.5),
+            : (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)
+                  .withValues(alpha: 0.5),
       ),
       labelStyle: TextStyle(
         color: isSelected

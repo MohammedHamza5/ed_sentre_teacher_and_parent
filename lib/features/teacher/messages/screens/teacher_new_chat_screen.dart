@@ -3,7 +3,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/config/app_colors.dart';
 import '../../../../core/providers/center_provider.dart';
 import '../../../../shared/data/supabase_repository.dart';
 import '../../../../shared/models/models.dart';
@@ -110,7 +109,8 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
       final centerId = context.read<CenterProvider>().currentCenterId;
       if (centerId == null) throw Exception('لا يوجد سنتر محدد');
 
-      final studentUserId = student['student_user_id'] as String? ??
+      final studentUserId =
+          student['student_user_id'] as String? ??
           student['user_id'] as String? ??
           '';
 
@@ -167,10 +167,10 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
             child: _isLoading
                 ? _buildLoadingState()
                 : _errorMessage != null
-                    ? _buildErrorState()
-                    : _filteredStudents.isEmpty
-                        ? _buildEmptyState()
-                        : _buildStudentList(),
+                ? _buildErrorState()
+                : _filteredStudents.isEmpty
+                ? _buildEmptyState()
+                : _buildStudentList(),
           ),
         ],
       ),
@@ -200,7 +200,11 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+                    border: Border.all(
+                      color:
+                          (Theme.of(context).dividerTheme.color ??
+                          Colors.grey.shade300),
+                    ),
                   ),
                   child: Icon(
                     Icons.arrow_back_ios_rounded,
@@ -222,10 +226,14 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
               Container(
                 padding: EdgeInsets.all(10.w),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Icon(
@@ -250,8 +258,10 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
 
   Widget _buildStudentList() {
     return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h)
-          .copyWith(bottom: 40.h),
+      padding: EdgeInsets.symmetric(
+        horizontal: 20.w,
+        vertical: 12.h,
+      ).copyWith(bottom: 40.h),
       itemCount: _filteredStudents.length,
       itemBuilder: (context, index) {
         final student = _filteredStudents[index];
@@ -267,108 +277,122 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
     final courseName = student['course_name'] as String?;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: 12.h),
-      child: GestureDetector(
-        onTap: () => _startConversation(student),
-        child: GlassCard(
-          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
-          padding: EdgeInsets.all(16.w),
-          child: Row(
-            children: [
-              // Avatar
-              Container(
-                padding: EdgeInsets.all(2.w),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
-                ),
-                child: CircleAvatar(
-                  radius: 24.r,
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  child: avatar != null
-                      ? ClipOval(
-                          child: Image.network(
-                            avatar,
-                            width: 48.r,
-                            height: 48.r,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Icon(
-                              Icons.person_rounded,
-                              color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
+          padding: EdgeInsets.only(bottom: 12.h),
+          child: GestureDetector(
+            onTap: () => _startConversation(student),
+            child: GlassCard(
+              color: Theme.of(
+                context,
+              ).colorScheme.surface.withValues(alpha: 0.7),
+              padding: EdgeInsets.all(16.w),
+              child: Row(
+                children: [
+                  // Avatar
+                  Container(
+                    padding: EdgeInsets.all(2.w),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color:
+                            (Theme.of(context).dividerTheme.color ??
+                            Colors.grey.shade300),
+                      ),
+                    ),
+                    child: CircleAvatar(
+                      radius: 24.r,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      child: avatar != null
+                          ? ClipOval(
+                              child: Image.network(
+                                avatar,
+                                width: 48.r,
+                                height: 48.r,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Icon(
+                                  Icons.person_rounded,
+                                  color:
+                                      (Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall?.color ??
+                                      Colors.grey),
+                                ),
+                              ),
+                            )
+                          : Text(
+                              name.isNotEmpty ? name[0] : 'ط',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                        )
-                      : Text(
-                          name.isNotEmpty ? name[0] : 'ط',
+                    ),
+                  ),
+                  SizedBox(width: 16.w),
+
+                  // Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.onSurface,
-                            fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
+                            fontSize: 15.sp,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                ),
-              ),
-              SizedBox(width: 16.w),
-
-              // Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15.sp,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 6.h),
-                    Wrap(
-                      spacing: 8.w,
-                      runSpacing: 4.h,
-                      children: [
-                        if (groupName != null)
-                          _buildTag(
-                            icon: Icons.group_rounded,
-                            text: groupName,
-                            color: Colors.orange,
-                          ),
-                        if (courseName != null)
-                          _buildTag(
-                            icon: Icons.book_rounded,
-                            text: courseName,
-                            color: Colors.purple,
-                          ),
+                        SizedBox(height: 6.h),
+                        Wrap(
+                          spacing: 8.w,
+                          runSpacing: 4.h,
+                          children: [
+                            if (groupName != null)
+                              _buildTag(
+                                icon: Icons.group_rounded,
+                                text: groupName,
+                                color: Colors.orange,
+                              ),
+                            if (courseName != null)
+                              _buildTag(
+                                icon: Icons.book_rounded,
+                                text: courseName,
+                                color: Colors.purple,
+                              ),
+                          ],
+                        ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-
-              // Chat icon
-              Container(
-                padding: EdgeInsets.all(10.w),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                   ),
-                ),
-                child: Icon(
-                  Icons.chat_rounded,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: 18.sp,
-                ),
+
+                  // Chat icon
+                  Container(
+                    padding: EdgeInsets.all(10.w),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.chat_rounded,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 18.sp,
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-    )
+        )
         .animate(delay: Duration(milliseconds: 40 * index))
         .fadeIn(duration: 300.ms)
         .slideX(begin: 0.05, end: 0);
@@ -439,31 +463,42 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 shape: BoxShape.circle,
-                border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+                border: Border.all(
+                  color:
+                      (Theme.of(context).dividerTheme.color ??
+                      Colors.grey.shade300),
+                ),
               ),
               child: Icon(
                 Icons.search_off_rounded,
                 size: 56.sp,
-                color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
+                color:
+                    (Theme.of(context).textTheme.bodySmall?.color ??
+                    Colors.grey),
               ),
             ).animate().scale(
-                  delay: 200.ms,
-                  duration: 400.ms,
-                  curve: Curves.easeOutBack,
-                ),
+              delay: 200.ms,
+              duration: 400.ms,
+              curve: Curves.easeOutBack,
+            ),
             SizedBox(height: 24.h),
             Text(
               'لم يتم العثور على طلاب',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
               textAlign: TextAlign.center,
             ).animate().fadeIn(delay: 300.ms),
             SizedBox(height: 8.h),
             Text(
               'جرب البحث باسم مختلف',
-              style: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey), fontSize: 14.sp),
+              style: TextStyle(
+                color:
+                    (Theme.of(context).textTheme.bodySmall?.color ??
+                    Colors.grey),
+                fontSize: 14.sp,
+              ),
               textAlign: TextAlign.center,
             ).animate().fadeIn(delay: 400.ms),
           ],
@@ -484,7 +519,11 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 shape: BoxShape.circle,
-                border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+                border: Border.all(
+                  color:
+                      (Theme.of(context).dividerTheme.color ??
+                      Colors.grey.shade300),
+                ),
               ),
               child: Icon(
                 Icons.error_outline_rounded,
@@ -496,15 +535,20 @@ class _TeacherNewChatScreenState extends State<TeacherNewChatScreen> {
             Text(
               'تعذر تحميل الطلاب',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 8.h),
             Text(
               _errorMessage ?? '',
-              style: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey), fontSize: 13.sp),
+              style: TextStyle(
+                color:
+                    (Theme.of(context).textTheme.bodySmall?.color ??
+                    Colors.grey),
+                fontSize: 13.sp,
+              ),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 24.h),

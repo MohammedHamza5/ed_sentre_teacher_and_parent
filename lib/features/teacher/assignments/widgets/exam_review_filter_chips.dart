@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../core/config/app_colors.dart';
-
 /// Filter chips for exam review screen (all, correct, wrong, unanswered).
 class ExamReviewFilterChips extends StatelessWidget {
   final String activeFilter;
@@ -56,11 +54,7 @@ class ExamReviewFilterChips extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 18.sp,
-              color: isActive ? color : Colors.white54,
-            ),
+            Icon(icon, size: 18.sp, color: isActive ? color : Colors.white54),
             SizedBox(width: 8.w),
             Text(
               label,

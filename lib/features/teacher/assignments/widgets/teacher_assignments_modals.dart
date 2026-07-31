@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../core/config/app_colors.dart';
 import '../../../../shared/models/models.dart';
 import 'assignment_helper.dart';
 
@@ -24,7 +23,9 @@ class TeacherAssignmentsModals {
               width: 40.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
+                color:
+                    (Theme.of(context).dividerTheme.color ??
+                    Colors.grey.shade300),
                 borderRadius: BorderRadius.circular(2.r),
               ),
             ),
@@ -143,18 +144,24 @@ class TeacherAssignmentsModals {
                 height: 4.h,
                 margin: EdgeInsets.only(top: 12.h),
                 decoration: BoxDecoration(
-                  color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
+                  color:
+                      (Theme.of(context).dividerTheme.color ??
+                      Colors.grey.shade300),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
               ListTile(
                 leading: Icon(
                   Icons.group_add,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 title: Text(
                   'نشر لمجموعات إضافية',
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -164,33 +171,45 @@ class TeacherAssignmentsModals {
               ListTile(
                 leading: Icon(
                   Icons.copy,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 title: Text(
                   'نسخ',
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
                 onTap: () => Navigator.pop(context),
               ),
               ListTile(
                 leading: Icon(
                   Icons.share,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 title: Text(
                   'مشاركة',
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
                 onTap: () => Navigator.pop(context),
               ),
               ListTile(
                 leading: Icon(
                   Icons.schedule,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 title: Text(
                   'تعديل موعد الظهور',
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -200,11 +219,15 @@ class TeacherAssignmentsModals {
               ListTile(
                 leading: Icon(
                   isArchived ? Icons.unarchive : Icons.archive,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 title: Text(
                   isArchived ? 'إلغاء الأرشفة' : 'أرشفة',
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -212,8 +235,14 @@ class TeacherAssignmentsModals {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
-                title: Text('حذف', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                leading: Icon(
+                  Icons.delete,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                title: Text(
+                  'حذف',
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   onDeleteAssignment();
@@ -234,15 +263,15 @@ class TeacherAssignmentsModals {
     required bool isLoadingGroups,
   }) async {
     if (isLoadingGroups) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('جاري تحميل المجموعات...')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('جاري تحميل المجموعات...')));
       return null;
     }
     if (groups.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('لا توجد مجموعات متاحة')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('لا توجد مجموعات متاحة')));
       return null;
     }
 
@@ -256,8 +285,9 @@ class TeacherAssignmentsModals {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
-            final availableGroups =
-                groups.where((g) => g.id != currentGroupId).toList();
+            final availableGroups = groups
+                .where((g) => g.id != currentGroupId)
+                .toList();
             return Padding(
               padding: EdgeInsets.all(16.w),
               child: Column(
@@ -291,7 +321,9 @@ class TeacherAssignmentsModals {
                           selectedIds.length == availableGroups.length
                               ? 'إلغاء الكل'
                               : 'تحديد الكل',
-                          style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
                         ),
                       ),
                     ],
@@ -315,7 +347,9 @@ class TeacherAssignmentsModals {
                           },
                           title: Text(
                             group.groupName,
-                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                           ),
                         );
                       }).toList(),
@@ -330,10 +364,7 @@ class TeacherAssignmentsModals {
                         backgroundColor: Theme.of(context).colorScheme.primary,
                         padding: EdgeInsets.symmetric(vertical: 12.h),
                       ),
-                      child: Text(
-                        'تم',
-                        style: TextStyle(color: Colors.white),
-                      ),
+                      child: Text('تم', style: TextStyle(color: Colors.white)),
                     ),
                   ),
                 ],

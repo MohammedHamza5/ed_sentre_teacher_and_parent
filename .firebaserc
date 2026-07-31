@@ -1,15 +1,5 @@
 {
   "projects": {
     "default": "ed-sentre"
-  },
-  "targets": {
-    "ed-sentre": {
-      "hosting": {
-        "teacher": [
-          "ed-sentre-teacher"
-        ]
-      }
-    }
-  },
-  "etags": {}
+  }
 }

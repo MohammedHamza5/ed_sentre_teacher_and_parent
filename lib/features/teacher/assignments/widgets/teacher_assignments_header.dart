@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../core/config/app_colors.dart';
 
 class TeacherAssignmentsHeader extends StatelessWidget {
   final Map<String, dynamic> stats;
@@ -105,10 +104,7 @@ class TeacherAssignmentsHeader extends StatelessWidget {
                   SizedBox(height: 4.h),
                   Text(
                     'إدارة التقييمات والواجبات المنزلية',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12.sp,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 12.sp),
                   ),
                 ],
               ),
@@ -118,11 +114,7 @@ class TeacherAssignmentsHeader extends StatelessWidget {
           Align(
             alignment: Alignment.bottomLeft,
             child: Padding(
-              padding: EdgeInsets.only(
-                left: 16.w,
-                bottom: 60.h,
-                right: 200.w,
-              ),
+              padding: EdgeInsets.only(left: 16.w, bottom: 60.h, right: 200.w),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(

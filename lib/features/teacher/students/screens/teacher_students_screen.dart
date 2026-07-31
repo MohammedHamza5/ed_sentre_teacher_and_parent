@@ -6,7 +6,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-import '../../../../core/config/app_colors.dart';
 import '../../provider/teacher_provider.dart';
 import '../../../../core/widgets/genius/glass_card.dart';
 import '../../../../core/widgets/genius/genius_text_field.dart';
@@ -163,7 +162,11 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+                    border: Border.all(
+                      color:
+                          (Theme.of(context).dividerTheme.color ??
+                          Colors.grey.shade300),
+                    ),
                   ),
                   child: Icon(
                     Icons.arrow_back_ios_rounded,
@@ -187,10 +190,14 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20.r),
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Text(
@@ -239,7 +246,11 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
               padding: EdgeInsets.all(2.w),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+                border: Border.all(
+                  color:
+                      (Theme.of(context).dividerTheme.color ??
+                      Colors.grey.shade300),
+                ),
               ),
               child: CircleAvatar(
                 radius: 26.r,
@@ -253,7 +264,9 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
                           fit: BoxFit.cover,
                           errorWidget: (_, __, ___) => Icon(
                             Icons.person_rounded,
-                            color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
+                            color:
+                                (Theme.of(context).textTheme.bodySmall?.color ??
+                                Colors.grey),
                           ),
                         ),
                       )
@@ -318,13 +331,17 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
                 Container(
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Icon(
                     Icons.arrow_forward_ios_rounded,
                     size: 14.sp,
-                    color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
+                    color:
+                        (Theme.of(context).textTheme.bodySmall?.color ??
+                        Colors.grey),
                   ),
                 ),
               ],
@@ -428,7 +445,11 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 shape: BoxShape.circle,
-                border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+                border: Border.all(
+                  color:
+                      (Theme.of(context).dividerTheme.color ??
+                      Colors.grey.shade300),
+                ),
               ),
               child: Icon(
                 Icons.people_outline_rounded,
@@ -452,9 +473,11 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
             SizedBox(height: 12.h),
             Text(
               subtitle,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color:
+                    (Theme.of(context).textTheme.bodySmall?.color ??
+                    Colors.grey),
+              ),
               textAlign: TextAlign.center,
             ).animate().fadeIn(delay: 500.ms),
           ],

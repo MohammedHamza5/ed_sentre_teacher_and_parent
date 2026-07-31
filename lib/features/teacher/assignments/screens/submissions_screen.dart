@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/config/app_colors.dart';
 import '../../../../shared/data/supabase_repository.dart';
 import '../../../../shared/models/models.dart';
 import '../widgets/submissions/missing_student_card.dart';
@@ -157,7 +156,9 @@ class _SubmissionsScreenState extends State<SubmissionsScreen>
                     height: 300.w,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.15),
                     ),
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
@@ -216,7 +217,9 @@ class _SubmissionsScreenState extends State<SubmissionsScreen>
                             ),
                             child: TabBar(
                               controller: _tabController,
-                              indicatorColor: Theme.of(context).colorScheme.primary,
+                              indicatorColor: Theme.of(
+                                context,
+                              ).colorScheme.primary,
                               labelColor: Colors.white,
                               unselectedLabelColor: Colors.white54,
                               indicatorWeight: 3,
@@ -414,7 +417,11 @@ class _SubmissionsScreenState extends State<SubmissionsScreen>
               icon: Icon(Icons.refresh, color: Colors.white),
               label: Text(
                 'إعادة المحاولة',
-                style: TextStyle(color: Colors.white, fontFamily: 'Cairo', fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'Cairo',
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,

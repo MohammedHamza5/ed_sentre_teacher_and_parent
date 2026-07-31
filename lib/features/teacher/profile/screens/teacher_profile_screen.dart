@@ -412,11 +412,11 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     );
   }
 
-  void _showLogoutDialog(BuildContext context, AuthProvider authProvider) {
-    showDialog(
+  void _showLogoutDialog(BuildContext context, AuthProvider authProvider) async {
+    final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Theme.of(ctx).colorScheme.surface,
         title: const Text('تسجيل الخروج', textAlign: TextAlign.center),
         content: const Text(
           'هل أنت متأكد من رغبتك في تسجيل الخروج من حسابك؟',
@@ -428,7 +428,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pop(ctx, false),
                   style: OutlinedButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
@@ -438,16 +438,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
               SizedBox(width: 12.w),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () async {
-                    Navigator.pop(context);
-                    await authProvider.signOut();
-                    // GoRouter route to login, outside shell
-                    if (context.mounted) {
-                      context.go('/login');
-                    }
-                  },
+                  onPressed: () => Navigator.pop(ctx, true),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.error,
+                    backgroundColor: Theme.of(ctx).colorScheme.error,
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
@@ -459,5 +452,12 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         ],
       ),
     );
+
+    if (confirmed == true && context.mounted) {
+      await authProvider.signOut();
+      if (context.mounted) {
+        context.go('/login');
+      }
+    }
   }
 }

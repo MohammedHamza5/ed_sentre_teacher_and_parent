@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../core/config/app_colors.dart';
 import '../../../../shared/data/supabase_repository.dart';
 import '../../../../shared/models/exam_models.dart';
 import '../../../../shared/models/models.dart';
@@ -108,10 +107,11 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
 
       // NOTE: Fallback for legacy submissions where the student app used
       // dynamic timestamps as keys instead of question IDs.
-      final legacyKeys = legacyAnswersJson.keys
-          .where((k) => int.tryParse(k) != null && k.length >= 13)
-          .toList()
-        ..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
+      final legacyKeys =
+          legacyAnswersJson.keys
+              .where((k) => int.tryParse(k) != null && k.length >= 13)
+              .toList()
+            ..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
 
       _answers = questions.asMap().entries.map((entry) {
         final i = entry.key;
@@ -146,7 +146,8 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
             }
           } else if (q.type == QuestionType.shortAnswer &&
               q.correctAnswer != null) {
-            isCorrect = answerStr.trim().toLowerCase() ==
+            isCorrect =
+                answerStr.trim().toLowerCase() ==
                 q.correctAnswer?.trim().toLowerCase();
           }
           autoScore = isCorrect == true ? q.marks : 0.0;
@@ -199,14 +200,14 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
       final String qType = qData['type']?.toString() ?? 'mcq';
       final questionType = QuestionType.fromString(qType);
 
-      double marks = (qData['points'] as num?)?.toDouble() ??
+      double marks =
+          (qData['points'] as num?)?.toDouble() ??
           (qData['marks'] as num?)?.toDouble() ??
           1.0;
 
       List<String>? options;
       if (qData['options'] != null && qData['options'] is List) {
-        options =
-            (qData['options'] as List).map((e) => e.toString()).toList();
+        options = (qData['options'] as List).map((e) => e.toString()).toList();
       }
 
       final String qId = qData['id']?.toString() ?? i.toString();
@@ -214,7 +215,8 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
       String? correctAnswer;
       if (questionType == QuestionType.mcq ||
           questionType == QuestionType.trueFalse) {
-        final dynamic rawCorrect = qData['correct_answer'] ??
+        final dynamic rawCorrect =
+            qData['correct_answer'] ??
             qData['correct_option_index'] ??
             qData['correct'];
         final int? correctIdx = int.tryParse(rawCorrect?.toString() ?? '');
@@ -225,9 +227,11 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
             correctIdx >= 0) {
           correctAnswer = correctIdx.toString();
         } else if (rawCorrect != null && options != null) {
-          final int foundIdx = options.indexWhere((opt) =>
-              opt.toString().trim().toLowerCase() ==
-              rawCorrect.toString().trim().toLowerCase());
+          final int foundIdx = options.indexWhere(
+            (opt) =>
+                opt.toString().trim().toLowerCase() ==
+                rawCorrect.toString().trim().toLowerCase(),
+          );
           correctAnswer = foundIdx != -1 ? foundIdx.toString() : '0';
         } else {
           correctAnswer = '0';
@@ -240,9 +244,8 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
         ExamQuestion(
           id: qId,
           assignmentId: widget.assignment['id']?.toString() ?? '',
-          text: qData['question']?.toString() ??
-              qData['text']?.toString() ??
-              '',
+          text:
+              qData['question']?.toString() ?? qData['text']?.toString() ?? '',
           type: questionType,
           marks: marks,
           options: options,
@@ -319,107 +322,103 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
               ),
             )
           : _error != null
-              ? _buildErrorScreen()
-              : Stack(
-                  children: [
-                    // Background gradient burst
-                    Positioned(
-                      top: -100,
-                      right: -100,
-                      child: Container(
-                        width: 300.w,
-                        height: 300.w,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color:
-                              Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-                        ),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-                          child: Container(),
-                        ),
-                      ),
+          ? _buildErrorScreen()
+          : Stack(
+              children: [
+                // Background gradient burst
+                Positioned(
+                  top: -100,
+                  right: -100,
+                  child: Container(
+                    width: 300.w,
+                    height: 300.w,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.15),
                     ),
-                    FadeTransition(
-                      opacity: _fadeAnim,
-                      child: CustomScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        slivers: [
-                          SliverToBoxAdapter(
-                            child: SizedBox(height: 100.h),
-                          ),
-                          SliverToBoxAdapter(
-                            child: ExamReviewHeader(
-                              submission: widget.submission,
-                              assignmentTitle: widget.assignmentTitle,
-                            ),
-                          ),
-                          SliverToBoxAdapter(
-                            child: ExamReviewScoreboard(
-                              totalScore: _totalScore,
-                              maxScore: widget.maxScore,
-                              percentage: _percentage,
-                            ),
-                          ),
-                          SliverToBoxAdapter(
-                            child: ExamReviewFilterChips(
-                              activeFilter: _activeFilter,
-                              totalCount: _answers.length,
-                              correctCount: _correctCount,
-                              wrongCount: _wrongCount,
-                              unansweredCount: _unansweredCount,
-                              onFilterChanged: (filter) {
-                                setState(() => _activeFilter = filter);
-                                _animController.reset();
-                                _animController.forward();
-                              },
-                            ),
-                          ),
-                          SliverPadding(
-                            padding:
-                                EdgeInsets.symmetric(horizontal: 20.w),
-                            sliver: SliverList(
-                              delegate: SliverChildBuilderDelegate(
-                                (context, index) {
-                                  final answer = _filteredAnswers[index];
-                                  final originalIndex =
-                                      answer.question?.orderIndex ?? index;
-                                  return SlideTransition(
-                                    position: Tween<Offset>(
-                                      begin: const Offset(0.2, 0),
-                                      end: Offset.zero,
-                                    ).animate(
-                                      CurvedAnimation(
-                                        parent: _animController,
-                                        curve: Interval(
-                                          (index * 0.1).clamp(0.0, 1.0),
-                                          1.0,
-                                          curve: Curves.easeOutBack,
-                                        ),
-                                      ),
-                                    ),
-                                    child: Padding(
-                                      padding:
-                                          EdgeInsets.only(bottom: 24.h),
-                                      child: ExamReviewQuestionCard(
-                                        answer: answer,
-                                        questionNumber: originalIndex + 1,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                childCount: _filteredAnswers.length,
-                              ),
-                            ),
-                          ),
-                          SliverToBoxAdapter(
-                            child: SizedBox(height: 40.h),
-                          ),
-                        ],
-                      ),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+                      child: Container(),
                     ),
-                  ],
+                  ),
                 ),
+                FadeTransition(
+                  opacity: _fadeAnim,
+                  child: CustomScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(child: SizedBox(height: 100.h)),
+                      SliverToBoxAdapter(
+                        child: ExamReviewHeader(
+                          submission: widget.submission,
+                          assignmentTitle: widget.assignmentTitle,
+                        ),
+                      ),
+                      SliverToBoxAdapter(
+                        child: ExamReviewScoreboard(
+                          totalScore: _totalScore,
+                          maxScore: widget.maxScore,
+                          percentage: _percentage,
+                        ),
+                      ),
+                      SliverToBoxAdapter(
+                        child: ExamReviewFilterChips(
+                          activeFilter: _activeFilter,
+                          totalCount: _answers.length,
+                          correctCount: _correctCount,
+                          wrongCount: _wrongCount,
+                          unansweredCount: _unansweredCount,
+                          onFilterChanged: (filter) {
+                            setState(() => _activeFilter = filter);
+                            _animController.reset();
+                            _animController.forward();
+                          },
+                        ),
+                      ),
+                      SliverPadding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate((
+                            context,
+                            index,
+                          ) {
+                            final answer = _filteredAnswers[index];
+                            final originalIndex =
+                                answer.question?.orderIndex ?? index;
+                            return SlideTransition(
+                              position:
+                                  Tween<Offset>(
+                                    begin: const Offset(0.2, 0),
+                                    end: Offset.zero,
+                                  ).animate(
+                                    CurvedAnimation(
+                                      parent: _animController,
+                                      curve: Interval(
+                                        (index * 0.1).clamp(0.0, 1.0),
+                                        1.0,
+                                        curve: Curves.easeOutBack,
+                                      ),
+                                    ),
+                                  ),
+                              child: Padding(
+                                padding: EdgeInsets.only(bottom: 24.h),
+                                child: ExamReviewQuestionCard(
+                                  answer: answer,
+                                  questionNumber: originalIndex + 1,
+                                ),
+                              ),
+                            );
+                          }, childCount: _filteredAnswers.length),
+                        ),
+                      ),
+                      SliverToBoxAdapter(child: SizedBox(height: 40.h)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
     );
   }
 
@@ -428,7 +427,11 @@ class _ExamAnswerReviewScreenState extends State<ExamAnswerReviewScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 48.sp, color: Theme.of(context).colorScheme.error),
+          Icon(
+            Icons.error_outline,
+            size: 48.sp,
+            color: Theme.of(context).colorScheme.error,
+          ),
           SizedBox(height: 16.h),
           Text(
             _error ?? 'حدث خطأ',

@@ -393,13 +393,13 @@ class ParentProfileScreen extends StatelessWidget {
     BuildContext context,
     AuthProvider authProvider,
     ParentProvider parentProvider,
-  ) {
-    showDialog(
+  ) async {
+    final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => Dialog(
+      builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
         child: GlassCard(
-          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
+          color: Theme.of(ctx).colorScheme.surface.withValues(alpha: 0.9),
           padding: EdgeInsets.all(24.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -407,12 +407,12 @@ class ParentProfileScreen extends StatelessWidget {
               Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
+                  color: Theme.of(ctx).colorScheme.error.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.logout_rounded,
-                  color: Theme.of(context).colorScheme.error,
+                  color: Theme.of(ctx).colorScheme.error,
                   size: 32.sp,
                 ),
               ),
@@ -420,25 +420,25 @@ class ParentProfileScreen extends StatelessWidget {
               Text(
                 'تسجيل الخروج',
                 style: Theme.of(
-                  context,
+                  ctx,
                 ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10.h),
               Text(
                 'هل أنت متأكد من تسجيل الخروج؟',
                 style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
+                  ctx,
+                ).textTheme.bodyMedium?.copyWith(color: (Theme.of(ctx).textTheme.bodySmall?.color ?? Colors.grey)),
               ),
               SizedBox(height: 28.h),
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(ctx, false),
                       style: OutlinedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 14.h),
-                        side: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+                        side: BorderSide(color: (Theme.of(ctx).dividerTheme.color ?? Colors.grey.shade300)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14.r),
                         ),
@@ -446,7 +446,7 @@ class ParentProfileScreen extends StatelessWidget {
                       child: Text(
                         'إلغاء',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: Theme.of(ctx).colorScheme.onSurface,
                           fontSize: 16.sp,
                         ),
                       ),
@@ -455,14 +455,9 @@ class ParentProfileScreen extends StatelessWidget {
                   SizedBox(width: 12.w),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () async {
-                        Navigator.pop(context);
-                        parentProvider.clearSelection();
-                        await authProvider.signOut();
-                        if (context.mounted) context.go('/login');
-                      },
+                      onPressed: () => Navigator.pop(ctx, true),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.error,
+                        backgroundColor: Theme.of(ctx).colorScheme.error,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14.r),
@@ -485,6 +480,14 @@ class ParentProfileScreen extends StatelessWidget {
         ),
       ),
     );
+
+    if (confirmed == true && context.mounted) {
+      parentProvider.clearSelection();
+      await authProvider.signOut();
+      if (context.mounted) {
+        context.go('/login');
+      }
+    }
   }
 }
 

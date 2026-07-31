@@ -1,4 +1,3 @@
-import 'package:ed_sentre_techer_and_parent/core/config/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -22,7 +21,10 @@ class AssignmentNoGroupsState extends StatelessWidget {
           SizedBox(height: 16.h),
           Text(
             '\u0644\u0627 \u062a\u0648\u062c\u062f \u0645\u062c\u0645\u0648\u0639\u0627\u062a',
-            style: TextStyle(fontSize: 16.sp, color: Theme.of(context).colorScheme.onSurface),
+            style: TextStyle(
+              fontSize: 16.sp,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
           ),
           SizedBox(height: 8.h),
           Text(

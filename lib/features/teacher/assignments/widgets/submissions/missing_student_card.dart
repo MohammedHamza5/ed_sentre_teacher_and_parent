@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../../core/config/app_colors.dart';
 
 class MissingStudentCard extends StatelessWidget {
   final Map<String, dynamic> student;
@@ -18,7 +17,9 @@ class MissingStudentCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B).withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [
@@ -44,13 +45,18 @@ class MissingStudentCard extends StatelessWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.error.withValues(alpha: 0.15),
+              color: Theme.of(
+                context,
+              ).colorScheme.error.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20.r),
             ),
             child: Row(
               children: [
-                Icon(Icons.warning_amber_rounded,
-                    color: Theme.of(context).colorScheme.error, size: 14.sp),
+                Icon(
+                  Icons.warning_amber_rounded,
+                  color: Theme.of(context).colorScheme.error,
+                  size: 14.sp,
+                ),
                 SizedBox(width: 6.w),
                 Text(
                   'متأخر',

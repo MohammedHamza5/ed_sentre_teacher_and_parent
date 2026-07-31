@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../../../core/config/app_colors.dart';
 import '../../provider/teacher_provider.dart';
 import '../../../../shared/models/models.dart';
 import '../../../../shared/data/supabase_repository.dart';
@@ -100,134 +99,137 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
               ),
             )
           : _group == null
-              ? _buildErrorState()
-              : NestedScrollView(
-                  headerSliverBuilder: (context, innerBoxIsScrolled) {
-                    return [
-                      SliverAppBar(
-                        expandedHeight: 260.h,
-                        floating: false,
-                        pinned: true,
-                        backgroundColor: Theme.of(context).colorScheme.surface,
-                        title: innerBoxIsScrolled
-                            ? Text(
-                                _group!.groupName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18.sp,
-                                ),
-                              )
-                            : null,
-                        centerTitle: true,
-                        leading: IconButton(
-                          icon: Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                          onPressed: () => context.pop(),
-                        ),
-                        flexibleSpace: FlexibleSpaceBar(
-                          background: GroupDetailsHeader(
-                            group: _group!,
-                            tabBarHeight: tabBarHeight,
-                          ),
-                        ),
-                        actions: [
-                          IconButton(
-                            onPressed: _group?.groupCode == null
-                                ? null
-                                : () async {
-                                    final code = _group!.groupCode!;
-                                    await Clipboard.setData(
-                                      ClipboardData(text: code),
-                                    );
-                                    if (!context.mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'تم نسخ كود المجموعة: $code',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Theme.of(context).scaffoldBackgroundColor,
-                                          ),
-                                        ),
-                                        backgroundColor:
-                                            Colors.green,
-                                      ),
-                                    );
-                                  },
-                            icon: Icon(
-                              Icons.copy_all_rounded,
+          ? _buildErrorState()
+          : NestedScrollView(
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  SliverAppBar(
+                    expandedHeight: 260.h,
+                    floating: false,
+                    pinned: true,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    title: innerBoxIsScrolled
+                        ? Text(
+                            _group!.groupName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
                               color: Theme.of(context).colorScheme.onSurface,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18.sp,
                             ),
-                            tooltip: 'نسخ كود المجموعة',
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              if (canMonitorNow) {
-                                context.push(
-                                  '/teacher/attendance/${widget.groupId}',
+                          )
+                        : null,
+                    centerTitle: true,
+                    leading: IconButton(
+                      icon: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      onPressed: () => context.pop(),
+                    ),
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: GroupDetailsHeader(
+                        group: _group!,
+                        tabBarHeight: tabBarHeight,
+                      ),
+                    ),
+                    actions: [
+                      IconButton(
+                        onPressed: _group?.groupCode == null
+                            ? null
+                            : () async {
+                                final code = _group!.groupCode!;
+                                await Clipboard.setData(
+                                  ClipboardData(text: code),
                                 );
-                                return;
-                              }
-                              _showMonitorWindowHint();
-                            },
-                            icon: Icon(
-                              Icons.fact_check_rounded,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                            tooltip: 'مراقبة الحضور',
-                          ),
-                          SizedBox(width: 4.w),
-                        ],
-                        bottom: TabBar(
-                          controller: _tabController,
-                          isScrollable: true,
-                          indicatorColor: Theme.of(context).colorScheme.primary,
-                          labelColor: Theme.of(context).colorScheme.primary,
-                          unselectedLabelColor: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
-                          indicatorWeight: 3,
-                          dividerColor: Colors.transparent,
-                          tabs: const [
-                            Tab(
-                              icon: Icon(Icons.people_alt_rounded),
-                              text: 'الطلاب',
-                            ),
-                            Tab(
-                              icon: Icon(Icons.schedule_rounded),
-                              text: 'المواعيد',
-                            ),
-                            Tab(
-                              icon: Icon(Icons.fact_check_rounded),
-                              text: 'الحضور',
-                            ),
-                            Tab(
-                              icon: Icon(Icons.info_outline_rounded),
-                              text: 'معلومات',
-                            ),
-                          ],
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'تم نسخ كود المجموعة: $code',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(
+                                          context,
+                                        ).scaffoldBackgroundColor,
+                                      ),
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              },
+                        icon: Icon(
+                          Icons.copy_all_rounded,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
+                        tooltip: 'نسخ كود المجموعة',
                       ),
-                    ];
-                  },
-                  body: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      GroupStudentsTab(students: _students),
-                      GroupScheduleTab(group: _group!),
-                      GroupAttendanceTab(
-                        groupId: widget.groupId,
-                        isLiveActive: canMonitorNow,
-                        repository: context.read<SupabaseRepository>(),
-                        onShowMonitorWindowHint: _showMonitorWindowHint,
+                      IconButton(
+                        onPressed: () {
+                          if (canMonitorNow) {
+                            context.push(
+                              '/teacher/attendance/${widget.groupId}',
+                            );
+                            return;
+                          }
+                          _showMonitorWindowHint();
+                        },
+                        icon: Icon(
+                          Icons.fact_check_rounded,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        tooltip: 'مراقبة الحضور',
                       ),
-                      GroupInfoTab(group: _group!),
+                      SizedBox(width: 4.w),
                     ],
+                    bottom: TabBar(
+                      controller: _tabController,
+                      isScrollable: true,
+                      indicatorColor: Theme.of(context).colorScheme.primary,
+                      labelColor: Theme.of(context).colorScheme.primary,
+                      unselectedLabelColor:
+                          (Theme.of(context).textTheme.bodySmall?.color ??
+                          Colors.grey),
+                      indicatorWeight: 3,
+                      dividerColor: Colors.transparent,
+                      tabs: const [
+                        Tab(
+                          icon: Icon(Icons.people_alt_rounded),
+                          text: 'الطلاب',
+                        ),
+                        Tab(
+                          icon: Icon(Icons.schedule_rounded),
+                          text: 'المواعيد',
+                        ),
+                        Tab(
+                          icon: Icon(Icons.fact_check_rounded),
+                          text: 'الحضور',
+                        ),
+                        Tab(
+                          icon: Icon(Icons.info_outline_rounded),
+                          text: 'معلومات',
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                ];
+              },
+              body: TabBarView(
+                controller: _tabController,
+                children: [
+                  GroupStudentsTab(students: _students),
+                  GroupScheduleTab(group: _group!),
+                  GroupAttendanceTab(
+                    groupId: widget.groupId,
+                    isLiveActive: canMonitorNow,
+                    repository: context.read<SupabaseRepository>(),
+                    onShowMonitorWindowHint: _showMonitorWindowHint,
+                  ),
+                  GroupInfoTab(group: _group!),
+                ],
+              ),
+            ),
     );
   }
 
@@ -241,7 +243,11 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               shape: BoxShape.circle,
-              border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+              border: Border.all(
+                color:
+                    (Theme.of(context).dividerTheme.color ??
+                    Colors.grey.shade300),
+              ),
             ),
             child: Icon(
               Icons.error_outline_rounded,
@@ -264,10 +270,11 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
               child: Text(
                 _error!,
                 textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color:
+                      (Theme.of(context).textTheme.bodySmall?.color ??
+                      Colors.grey),
+                ),
               ).animate().fadeIn(delay: 300.ms),
             ),
           ],

@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/providers/center_provider.dart';
 import '../../../../shared/data/supabase_repository.dart';
-import '../../../../core/config/app_colors.dart';
 import '../../../../shared/models/models.dart';
 import '../../../../shared/widgets/premium_widgets.dart';
 import 'teacher_chat_screen.dart';
@@ -110,16 +109,12 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
       setState(() => _filteredConversations = _conversations);
     } else {
       setState(() {
-        _filteredConversations = _conversations
-            .where(
-              (c) {
-                final q = query.toLowerCase();
-                return (c.studentName ?? '').toLowerCase().contains(q) ||
-                    (c.parentName ?? '').toLowerCase().contains(q) ||
-                    c.conversationType.displayName.contains(q);
-              },
-            )
-            .toList();
+        _filteredConversations = _conversations.where((c) {
+          final q = query.toLowerCase();
+          return (c.studentName ?? '').toLowerCase().contains(q) ||
+              (c.parentName ?? '').toLowerCase().contains(q) ||
+              c.conversationType.displayName.contains(q);
+        }).toList();
       });
     }
   }
@@ -175,9 +170,7 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
         child: FloatingActionButton(
           onPressed: () async {
             await Navigator.of(context, rootNavigator: true).push(
-              MaterialPageRoute(
-                builder: (_) => const TeacherNewChatScreen(),
-              ),
+              MaterialPageRoute(builder: (_) => const TeacherNewChatScreen()),
             );
             _loadConversations(reset: true);
           },
@@ -374,8 +367,8 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
                                 (conversation.studentName != null &&
                                         conversation.studentName!.isNotEmpty)
                                     ? conversation.studentName!
-                                        .substring(0, 1)
-                                        .toUpperCase()
+                                          .substring(0, 1)
+                                          .toUpperCase()
                                     : 'S',
                                 style: TextStyle(
                                   fontSize: 18.sp,
@@ -426,8 +419,7 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
                                 vertical: 2.h,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.purple
-                                    .withValues(alpha: 0.15),
+                                color: Colors.purple.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(6.r),
                               ),
                               child: Text(

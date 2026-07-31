@@ -44,6 +44,7 @@ dependencies:
   file_picker: ^10.3.10
   permission_handler: ^11.3.1
   package_info_plus: ^8.3.1
+  device_info_plus: ^11.2.0
   open_file: ^3.5.10
   http: ^1.2.2
   crypto: ^3.0.3

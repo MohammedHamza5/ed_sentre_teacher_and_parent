@@ -32,7 +32,7 @@ mixin TeacherGroupsMixin on BaseRepository {
         '✅ [Repo] getTeacherGroups: Found ${(response as List).length} groups',
       );
 
-      final groupModels = (response as List)
+      final groupModels = (response)
           .map(
             (e) => GroupModel.fromJson({
               ...e,
@@ -99,7 +99,8 @@ mixin TeacherGroupsMixin on BaseRepository {
     int? offset,
   }) async {
     try {
-      final groups = preloadedGroups ?? await getTeacherGroups(teacherId, centerId);
+      final groups =
+          preloadedGroups ?? await getTeacherGroups(teacherId, centerId);
 
       if (groups.isEmpty) return [];
       final groupIds = groups.map((g) => g.id).toList();

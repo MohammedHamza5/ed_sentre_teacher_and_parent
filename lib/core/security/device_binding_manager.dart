@@ -16,9 +16,9 @@ class DeviceBindingManager {
     FlutterSecureStorage? secureStorage,
     Uuid? uuid,
     SupabaseClient? supabase,
-  })  : _secureStorage = secureStorage ?? const FlutterSecureStorage(),
-        _uuid = uuid ?? const Uuid(),
-        _supabase = supabase ?? Supabase.instance.client;
+  }) : _secureStorage = secureStorage ?? const FlutterSecureStorage(),
+       _uuid = uuid ?? const Uuid(),
+       _supabase = supabase ?? Supabase.instance.client;
 
   /// Retrieves the existing device ID, or generates and securely stores a new one if it doesn't exist.
   /// Then registers the device with Supabase, which will automatically revoke older devices for this user.
@@ -44,10 +44,14 @@ class DeviceBindingManager {
     }
 
     // Call the Supabase RPC to register this device and revoke others
-    await _supabase.rpc('register_user_device', params: {
-      'p_device_identifier': deviceId,
-      'p_device_name': deviceName,
-    });
+    try {
+      await _supabase.rpc(
+        'register_user_device',
+        params: {'p_device_identifier': deviceId, 'p_device_name': deviceName},
+      );
+    } catch (_) {
+      // Ignore RPC failure (e.g., offline mode or unauthorized)
+    }
 
     return deviceId;
   }

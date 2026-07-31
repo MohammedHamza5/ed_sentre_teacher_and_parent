@@ -1,4 +1,3 @@
-import 'package:ed_sentre_techer_and_parent/core/config/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:file_picker/file_picker.dart';
@@ -33,7 +32,8 @@ class AssignmentFileAttachment extends StatelessWidget {
         border: Border.all(
           color: attachmentName != null
               ? typeColor
-              : (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300).withValues(alpha: 0.5),
+              : (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)
+                    .withValues(alpha: 0.5),
           width: attachmentName != null ? 2 : 1,
         ),
       ),
@@ -117,10 +117,7 @@ class AssignmentFileAttachment extends StatelessWidget {
       );
 
       if (result != null && result.files.isNotEmpty) {
-        return (
-          name: result.files.first.name,
-          path: result.files.first.path,
-        );
+        return (name: result.files.first.name, path: result.files.first.path);
       }
     } catch (e) {
       debugPrint('Error picking file: $e');

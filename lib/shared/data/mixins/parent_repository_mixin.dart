@@ -226,7 +226,7 @@ mixin ParentRepositoryMixin on BaseRepository {
     debugPrint(
       '💰 [getStudentPayments] centerId: $centerId, studentUserId: $studentUserId, limit: $limit',
     );
-    
+
     try {
       // Resolve actual student table UUID
       final studentData = await client
@@ -234,7 +234,7 @@ mixin ParentRepositoryMixin on BaseRepository {
           .select('id')
           .eq('user_id', studentUserId ?? '')
           .maybeSingle();
-          
+
       final studentId = studentData != null ? studentData['id'] : studentUserId;
 
       // Try RPC with p_student_id first (standard across the ecosystem)
@@ -260,7 +260,7 @@ mixin ParentRepositoryMixin on BaseRepository {
         );
         return (response as List).map((e) => PaymentModel.fromJson(e)).toList();
       }
-    } catch (e, stack) {
+    } catch (e) {
       debugPrint('Error in getStudentPayments: $e');
       return [];
     }

@@ -5,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../../../../shared/data/supabase_repository.dart';
 import '../../../../shared/models/models.dart';
-import '../../../../core/config/app_colors.dart';
 import '../../../../core/widgets/genius/genius_button.dart';
 import 'create_assignment_screen.dart';
 import 'submissions_screen.dart';
@@ -304,7 +303,9 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
           Text(
             _error ?? 'حدث خطأ',
             style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
           SizedBox(height: 12.h),
@@ -328,12 +329,18 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               shape: BoxShape.circle,
-              border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+              border: Border.all(
+                color:
+                    (Theme.of(context).dividerTheme.color ??
+                    Colors.grey.shade300),
+              ),
             ),
             child: Icon(
               Icons.assignment_outlined,
               size: 52.sp,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.3),
             ),
           ),
           SizedBox(height: 16.h),
@@ -349,7 +356,9 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
           Text(
             'اضغط على "إنشاء جديد" للبدء',
             style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.3),
               fontSize: 12.sp,
             ),
           ),
@@ -675,7 +684,11 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
         ),
         content: Text(
           'هل أنت متأكد من حذف "${assignment['title']}"؟',
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+          style: TextStyle(
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.7),
+          ),
         ),
         actions: [
           TextButton(
@@ -683,13 +696,17 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
             child: Text(
               'إلغاء',
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
             child: Text('حذف'),
           ),
         ],

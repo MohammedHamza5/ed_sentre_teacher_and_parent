@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../../core/config/app_colors.dart';
 
 class SubmissionsDashboard extends StatelessWidget {
   final String title;
@@ -82,8 +81,8 @@ class SubmissionsDashboard extends StatelessWidget {
                             color: avgPercentage >= 80
                                 ? Colors.green
                                 : avgPercentage >= 50
-                                    ? Colors.orange
-                                    : Theme.of(context).colorScheme.error,
+                                ? Colors.orange
+                                : Theme.of(context).colorScheme.error,
                           ),
                           Text(
                             '${avgPercentage.toStringAsFixed(0)}%',
@@ -130,14 +129,21 @@ class SubmissionsDashboard extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('تم التصحيح',
-                              style: TextStyle(
-                                  color: Colors.white70, fontSize: 10.sp)),
-                          Text('$gradedCount',
-                              style: TextStyle(
-                                  color: Colors.green,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12.sp)),
+                          Text(
+                            'تم التصحيح',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 10.sp,
+                            ),
+                          ),
+                          Text(
+                            '$gradedCount',
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12.sp,
+                            ),
+                          ),
                         ],
                       ),
                       SizedBox(height: 8.h),
@@ -148,21 +154,29 @@ class SubmissionsDashboard extends StatelessWidget {
                           minHeight: 4.h,
                           backgroundColor: Colors.white12,
                           valueColor: const AlwaysStoppedAnimation(
-                              Colors.green),
+                            Colors.green,
+                          ),
                         ),
                       ),
                       SizedBox(height: 8.h),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('بانتظار التقيم',
-                              style: TextStyle(
-                                  color: Colors.white70, fontSize: 10.sp)),
-                          Text('$pendingCount',
-                              style: TextStyle(
-                                  color: Colors.orange,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12.sp)),
+                          Text(
+                            'بانتظار التقيم',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 10.sp,
+                            ),
+                          ),
+                          Text(
+                            '$pendingCount',
+                            style: TextStyle(
+                              color: Colors.orange,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12.sp,
+                            ),
+                          ),
                         ],
                       ),
                     ],

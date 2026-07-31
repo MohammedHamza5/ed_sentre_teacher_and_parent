@@ -39,7 +39,7 @@ mixin TeacherScheduleMixin on BaseRepository {
         '✅ [Repo] getTeacherSchedule: Found ${(response as List).length} items',
       );
 
-      return (response as List).map((e) {
+      return (response).map((e) {
         final group = e['groups'] as Map<String, dynamic>? ?? {};
         final course =
             group['courses'] as Map<String, dynamic>? ??

@@ -143,22 +143,6 @@ class _AIChatScreenState extends State<AIChatScreen> {
           _selectedFile = null; // Reset after reading/uploading it
         });
       }
-
-      if (uploadedFilePath == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('فشل رفع الملف المرفق. الرجاء المحاولة مجدداً.'),
-            ),
-          );
-        }
-        // Remove the user message assuming it failed since the file was part of it
-        setState(() {
-          _messages.removeLast();
-          _isTyping = false;
-        });
-        return;
-      }
     }
 
     // إرسال إلى AI
@@ -338,7 +322,12 @@ class _AIChatScreenState extends State<AIChatScreen> {
       padding: EdgeInsets.symmetric(vertical: 8.h),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        border: Border(bottom: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300))),
+        border: Border(
+          bottom: BorderSide(
+            color:
+                (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
+          ),
+        ),
       ),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
@@ -352,7 +341,11 @@ class _AIChatScreenState extends State<AIChatScreen> {
               style: TextStyle(fontSize: 12.sp, color: AppColors.textOnDark),
             ),
             backgroundColor: Theme.of(context).colorScheme.surface,
-            side: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+            side: BorderSide(
+              color:
+                  (Theme.of(context).dividerTheme.color ??
+                  Colors.grey.shade300),
+            ),
             onPressed: () => _handleQuickSuggestion(index),
           );
         },
@@ -429,7 +422,10 @@ class _AIChatScreenState extends State<AIChatScreen> {
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+          border: Border.all(
+            color:
+                (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -469,7 +465,12 @@ class _AIChatScreenState extends State<AIChatScreen> {
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        border: Border(top: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300))),
+        border: Border(
+          top: BorderSide(
+            color:
+                (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
+          ),
+        ),
       ),
       child: SafeArea(
         child: Column(
@@ -532,7 +533,11 @@ class _AIChatScreenState extends State<AIChatScreen> {
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(24.r),
-                      border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+                      border: Border.all(
+                        color:
+                            (Theme.of(context).dividerTheme.color ??
+                            Colors.grey.shade300),
+                      ),
                     ),
                     child: Row(
                       children: [
@@ -655,7 +660,9 @@ class _ConversationHistorySheetState extends State<_ConversationHistorySheet> {
                   width: 40.w,
                   height: 4.h,
                   decoration: BoxDecoration(
-                    color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
+                    color:
+                        (Theme.of(context).dividerTheme.color ??
+                        Colors.grey.shade300),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -769,7 +776,11 @@ class _ConversationHistorySheetState extends State<_ConversationHistorySheet> {
         margin: EdgeInsets.only(bottom: 8.h),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.r),
-          side: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300).withValues(alpha: 0.5)),
+          side: BorderSide(
+            color:
+                (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)
+                    .withValues(alpha: 0.5),
+          ),
         ),
         child: ListTile(
           onTap: () => widget.onSelect(conv['id']),

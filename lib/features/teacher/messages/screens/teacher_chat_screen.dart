@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../shared/data/supabase_repository.dart';
 import '../../../../shared/models/models.dart';
-import '../../../../core/config/app_colors.dart';
 import '../../../../core/services/notification_helper.dart';
 
 class TeacherChatScreen extends StatefulWidget {
@@ -515,11 +514,7 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.visibility_rounded,
-              color: Colors.purple,
-              size: 18.sp,
-            ),
+            Icon(Icons.visibility_rounded, color: Colors.purple, size: 18.sp),
             SizedBox(width: 8.w),
             Text(
               'وضع المشاهدة فقط — لا يمكنك الإرسال هنا',

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../core/config/app_colors.dart';
 
 /// Premium scoreboard with circular progress for exam review.
 class ExamReviewScoreboard extends StatelessWidget {

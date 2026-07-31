@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../core/config/app_colors.dart';
 import '../../../../shared/models/models.dart';
 
 class AssignmentGroupSelector extends StatelessWidget {
@@ -20,7 +19,7 @@ class AssignmentGroupSelector extends StatelessWidget {
   Future<void> _openGroupPicker(BuildContext context) async {
     if (groups.isEmpty) return;
     final selectedIds = selectedGroups.map((e) => e.id).toSet();
-    
+
     final result = await showModalBottomSheet<Set<String>>(
       context: context,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -101,10 +100,7 @@ class AssignmentGroupSelector extends StatelessWidget {
                         backgroundColor: typeColor,
                         padding: EdgeInsets.symmetric(vertical: 12.h),
                       ),
-                      child: Text(
-                        'تم',
-                        style: TextStyle(color: Colors.white),
-                      ),
+                      child: Text('تم', style: TextStyle(color: Colors.white)),
                     ),
                   ),
                 ],
@@ -116,7 +112,9 @@ class AssignmentGroupSelector extends StatelessWidget {
     );
 
     if (result != null) {
-      final newSelectedGroups = groups.where((g) => result.contains(g.id)).toList();
+      final newSelectedGroups = groups
+          .where((g) => result.contains(g.id))
+          .toList();
       onGroupsSelected(newSelectedGroups);
     }
   }
@@ -130,7 +128,8 @@ class AssignmentGroupSelector extends StatelessWidget {
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300).withValues(alpha: 0.5),
+          color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)
+              .withValues(alpha: 0.5),
         ),
       ),
       child: Column(
@@ -160,7 +159,9 @@ class AssignmentGroupSelector extends StatelessWidget {
             Text(
               'لم يتم اختيار مجموعة',
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             )
           else

@@ -39,7 +39,9 @@ class AuthProvider extends ChangeNotifier {
   bool get isAuthenticated => _currentUser != null;
   String? get error => _error;
   UserRole? get userRole => _currentUser?.role;
-  bool get isTeacher => _currentUser?.role == UserRole.teacher;
+  bool get isTeacher =>
+      _currentUser?.role == UserRole.teacher ||
+      _currentUser?.role == UserRole.centerAdmin;
   bool get isParent => _currentUser?.role == UserRole.parent;
   bool get isStudent => _currentUser?.role == UserRole.student;
   bool get isCoordinator => _currentUser?.role == UserRole.coordinator;
@@ -176,10 +178,22 @@ class AuthProvider extends ChangeNotifier {
         }
 
         if (role == UserRole.teacher ||
-            _currentUser?.role == UserRole.teacher) {
+            _currentUser?.role == UserRole.teacher ||
+            role == UserRole.centerAdmin ||
+            _currentUser?.role == UserRole.centerAdmin) {
           // Check updated role
-          if (_currentUser?.role == UserRole.teacher) {
-            role = UserRole.teacher; // Update local var
+          if (_currentUser?.role == UserRole.teacher ||
+              _currentUser?.role == UserRole.centerAdmin) {
+            role = _currentUser!.role; // Update local var
+          }
+          if (role == UserRole.centerAdmin) {
+            if (kDebugMode) {
+              debugPrint(
+                '✅ [Auth] User is Center Admin (Independent Teacher) -> Ensuring profile setup',
+              );
+            }
+            await _repository.ensureIndependentTeacherProfile(_currentUser!.id);
+            _needsInvitationCode = false;
           }
           // تحميل بيانات المعلم
           _teacherProfile = await _repository.getTeacherByUserId(

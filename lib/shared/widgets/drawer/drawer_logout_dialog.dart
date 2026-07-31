@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_colors.dart';
 import '../../../features/auth/provider/auth_provider.dart';
@@ -96,5 +97,8 @@ Future<void> confirmDrawerLogout(BuildContext context, AuthProvider auth) async 
 
   if (confirmed == true && context.mounted) {
     await auth.signOut();
+    if (context.mounted) {
+      GoRouter.of(context).go('/login');
+    }
   }
 }

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../core/config/app_colors.dart';
-
 /// The premium header for the AI Assistant screen.
 class AIAssistantHeader extends StatelessWidget {
   const AIAssistantHeader({super.key});
@@ -19,11 +17,7 @@ class AIAssistantHeader extends StatelessWidget {
         background: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                Color(0xFF6C3CE1),
-                Color(0xFF8B5CF6),
-                Color(0xFF4F46E5),
-              ],
+              colors: [Color(0xFF6C3CE1), Color(0xFF8B5CF6), Color(0xFF4F46E5)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),

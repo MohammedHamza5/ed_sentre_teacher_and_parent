@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../core/config/app_colors.dart';
 import '../../../../core/widgets/genius/glass_card.dart';
 import 'assignment_helper.dart';
 
@@ -48,12 +47,13 @@ class TeacherAssignmentCard extends StatelessWidget {
     final courseName = assignment['course_name'] as String? ?? 'غير محدد';
     final type = assignment['type'] as String? ?? 'assignment';
     final dueDateStr = assignment['due_date'] as String?;
-    final DateTime? dueDate =
-        dueDateStr != null ? DateTime.tryParse(dueDateStr) : null;
+    final DateTime? dueDate = dueDateStr != null
+        ? DateTime.tryParse(dueDateStr)
+        : null;
     final publishDate = AssignmentHelper.getPublishDate(assignment);
     final isArchived = AssignmentHelper.isArchived(assignment);
     final maxScore = assignment['max_score'] ?? 0;
-    
+
     // Extract submissions count from Supabase aggregate
     int subCount = 0;
     final subData = assignment['assignment_submissions'];
@@ -64,7 +64,8 @@ class TeacherAssignmentCard extends StatelessWidget {
     }
 
     final isEnded = dueDate != null && DateTime.now().isAfter(dueDate);
-    final isScheduled = publishDate != null && DateTime.now().isBefore(publishDate);
+    final isScheduled =
+        publishDate != null && DateTime.now().isBefore(publishDate);
 
     Color typeColor;
     IconData typeIcon;
@@ -91,7 +92,11 @@ class TeacherAssignmentCard extends StatelessWidget {
       onTap: onViewSubmissions,
       padding: EdgeInsets.all(16.w),
       borderColor: (!isEnded && !isArchived)
-          ? (isScheduled ? Colors.orange : typeColor.withValues(alpha: 0.5)) // Emphasize border color by type
+          ? (isScheduled
+                ? Colors.orange
+                : typeColor.withValues(
+                    alpha: 0.5,
+                  )) // Emphasize border color by type
           : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,7 +126,9 @@ class TeacherAssignmentCard extends StatelessWidget {
                         fontSize: 15.sp,
                         fontWeight: FontWeight.bold,
                         color: isEnded
-                            ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)
+                            ? Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.3)
                             : Theme.of(context).colorScheme.onSurface,
                         fontFamily: 'Cairo',
                       ),
@@ -131,7 +138,9 @@ class TeacherAssignmentCard extends StatelessWidget {
                       '$typeName • $courseName',
                       style: TextStyle(
                         fontSize: 11.sp,
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.7),
                         fontFamily: 'Cairo',
                       ),
                     ),
@@ -142,10 +151,14 @@ class TeacherAssignmentCard extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20.r),
                     border: Border.all(
-                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Text(
@@ -182,13 +195,23 @@ class TeacherAssignmentCard extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.error.withValues(alpha: 0.15),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.error.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20.r),
-                    border: Border.all(color: Theme.of(context).colorScheme.error.withValues(alpha: 0.5)),
+                    border: Border.all(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.error.withValues(alpha: 0.5),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.assignment_late_rounded, color: Theme.of(context).colorScheme.error, size: 10.sp),
+                      Icon(
+                        Icons.assignment_late_rounded,
+                        color: Theme.of(context).colorScheme.error,
+                        size: 10.sp,
+                      ),
                       SizedBox(width: 4.w),
                       Text(
                         'للمراجعة',
@@ -206,14 +229,18 @@ class TeacherAssignmentCard extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Text(
                     'مغلق',
                     style: TextStyle(
                       fontSize: 10.sp,
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.5),
                       fontFamily: 'Cairo',
                     ),
                   ),
@@ -221,7 +248,11 @@ class TeacherAssignmentCard extends StatelessWidget {
             ],
           ),
           SizedBox(height: 14.h),
-          Container(height: 1, color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+          Container(
+            height: 1,
+            color:
+                (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
+          ),
           SizedBox(height: 12.h),
           Row(
             children: [
@@ -253,13 +284,17 @@ class TeacherAssignmentCard extends StatelessWidget {
                   padding: EdgeInsets.symmetric(vertical: 8.h),
                   borderRadius: 10.r,
                   color: Colors.white.withValues(alpha: 0.05),
-                  borderColor: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
+                  borderColor:
+                      (Theme.of(context).dividerTheme.color ??
+                      Colors.grey.shade300),
                   child: Center(
                     child: Text(
                       'التفاصيل / تعديل',
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.7),
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Cairo',
                       ),
@@ -276,7 +311,9 @@ class TeacherAssignmentCard extends StatelessWidget {
                 child: Icon(
                   Icons.more_horiz,
                   size: 18.sp,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.3),
                 ),
               ),
             ],

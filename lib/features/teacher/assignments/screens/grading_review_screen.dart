@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/config/app_colors.dart';
 import '../../../../shared/models/models.dart';
 import '../../../../shared/models/exam_models.dart';
 import '../../../../shared/data/exam_questions_repository.dart';
 import '../../../../shared/data/supabase_repository.dart';
 import '../../../auth/provider/auth_provider.dart';
-import '../../../../core/widgets/genius/shimmer_skeleton.dart';
 
 class GradingReviewScreen extends StatefulWidget {
   final SubmissionModel submission;
@@ -188,10 +186,7 @@ class _GradingReviewScreenState extends State<GradingReviewScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
-          ? Padding(
-              padding: EdgeInsets.all(16.w),
-              child: const CardShimmerSkeleton(itemCount: 3),
-            )
+          ? Center(child: CircularProgressIndicator())
           : _error != null
           ? Center(
               child: Text(_error!, style: TextStyle(color: Colors.red)),
@@ -220,7 +215,12 @@ class _GradingReviewScreenState extends State<GradingReviewScreen> {
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        border: Border(bottom: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300))),
+        border: Border(
+          bottom: BorderSide(
+            color:
+                (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
+          ),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -231,7 +231,9 @@ class _GradingReviewScreenState extends State<GradingReviewScreen> {
               Text(
                 'إجمالي الدرجات',
                 style: TextStyle(
-                  color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
+                  color:
+                      (Theme.of(context).textTheme.bodySmall?.color ??
+                      Colors.grey),
                   fontSize: 12.sp,
                 ),
               ),
@@ -250,7 +252,9 @@ class _GradingReviewScreenState extends State<GradingReviewScreen> {
                   Text(
                     ' / ${widget.maxScore.toStringAsFixed(0)}',
                     style: TextStyle(
-                      color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
+                      color:
+                          (Theme.of(context).textTheme.bodySmall?.color ??
+                          Colors.grey),
                       fontSize: 14.sp,
                     ),
                   ),
@@ -261,7 +265,9 @@ class _GradingReviewScreenState extends State<GradingReviewScreen> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+              color: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(color: Theme.of(context).colorScheme.primary),
             ),
@@ -304,7 +310,9 @@ class _GradingReviewScreenState extends State<GradingReviewScreen> {
           color: isObjective
               ? (answer.isCorrect == true
                     ? Colors.green.withValues(alpha: 0.5)
-                    : Theme.of(context).colorScheme.error.withValues(alpha: 0.5))
+                    : Theme.of(
+                        context,
+                      ).colorScheme.error.withValues(alpha: 0.5))
               : (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
         ),
       ),
@@ -318,7 +326,9 @@ class _GradingReviewScreenState extends State<GradingReviewScreen> {
               Text(
                 'س$index (${question.type.arabicName})',
                 style: TextStyle(
-                  color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
+                  color:
+                      (Theme.of(context).textTheme.bodySmall?.color ??
+                      Colors.grey),
                   fontSize: 12.sp,
                   fontWeight: FontWeight.bold,
                 ),
@@ -329,7 +339,9 @@ class _GradingReviewScreenState extends State<GradingReviewScreen> {
                   decoration: BoxDecoration(
                     color: answer.isCorrect == true
                         ? Colors.green.withValues(alpha: 0.2)
-                        : Theme.of(context).colorScheme.error.withValues(alpha: 0.2),
+                        : Theme.of(
+                            context,
+                          ).colorScheme.error.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Row(
@@ -389,7 +401,9 @@ class _GradingReviewScreenState extends State<GradingReviewScreen> {
                 Text(
                   'إجابة الطالب:',
                   style: TextStyle(
-                    color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
+                    color:
+                        (Theme.of(context).textTheme.bodySmall?.color ??
+                        Colors.grey),
                     fontSize: 11.sp,
                   ),
                 ),
@@ -444,7 +458,9 @@ class _GradingReviewScreenState extends State<GradingReviewScreen> {
                     decoration: InputDecoration(
                       labelText: 'الدرجة المستحقة',
                       labelStyle: TextStyle(
-                        color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
+                        color:
+                            (Theme.of(context).textTheme.bodySmall?.color ??
+                            Colors.grey),
                         fontSize: 12.sp,
                       ),
                       filled: true,
@@ -454,7 +470,9 @@ class _GradingReviewScreenState extends State<GradingReviewScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.r),
-                        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                       ),
                     ),
                   ),
@@ -468,7 +486,9 @@ class _GradingReviewScreenState extends State<GradingReviewScreen> {
                     decoration: InputDecoration(
                       labelText: 'ملاحظتك للطالب (اختياري)',
                       labelStyle: TextStyle(
-                        color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
+                        color:
+                            (Theme.of(context).textTheme.bodySmall?.color ??
+                            Colors.grey),
                         fontSize: 12.sp,
                       ),
                       filled: true,
@@ -478,7 +498,9 @@ class _GradingReviewScreenState extends State<GradingReviewScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.r),
-                        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                       ),
                     ),
                   ),
@@ -496,7 +518,12 @@ class _GradingReviewScreenState extends State<GradingReviewScreen> {
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        border: Border(top: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300))),
+        border: Border(
+          top: BorderSide(
+            color:
+                (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
+          ),
+        ),
       ),
       child: Row(
         children: [

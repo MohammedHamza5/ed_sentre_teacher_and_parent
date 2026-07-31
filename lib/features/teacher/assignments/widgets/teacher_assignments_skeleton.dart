@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
-import '../../../../core/config/app_colors.dart';
 
 class TeacherAssignmentsSkeleton extends StatelessWidget {
   const TeacherAssignmentsSkeleton({super.key});
@@ -18,10 +17,16 @@ class TeacherAssignmentsSkeleton extends StatelessWidget {
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+            border: Border.all(
+              color:
+                  (Theme.of(context).dividerTheme.color ??
+                  Colors.grey.shade300),
+            ),
           ),
           child: Shimmer.fromColors(
-            baseColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
+            baseColor: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.1),
             highlightColor: Theme.of(
               context,
             ).colorScheme.onSurface.withValues(alpha: 0.05),

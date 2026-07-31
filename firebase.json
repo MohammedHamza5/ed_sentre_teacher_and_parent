@@ -1,26 +1,6 @@
 {
-  "flutter": {
-    "platforms": {
-      "android": {
-        "default": {
-          "projectId": "ed-sentre",
-          "appId": "1:941281553238:android:0f8667db8a0b34872284f7",
-          "fileOutput": "android/app/google-services.json"
-        }
-      },
-      "dart": {
-        "lib/firebase_options.dart": {
-          "projectId": "ed-sentre",
-          "configurations": {
-            "android": "1:941281553238:android:0f8667db8a0b34872284f7",
-            "ios": "1:941281553238:ios:fea7308bd553ceb12284f7"
-          }
-        }
-      }
-    }
-  },
   "hosting": {
-    "target": "teacher",
+    "site": "ed-sentre-teacher",
     "public": "build/web",
     "ignore": [
       "firebase.json",

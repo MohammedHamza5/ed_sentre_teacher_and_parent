@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../presentation/widgets/student_action_bottom_sheet.dart';
 
@@ -16,15 +18,19 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
   @override
   void initState() {
     super.initState();
-    _scannerController = MobileScannerController(
-      detectionSpeed: DetectionSpeed.noDuplicates,
-      facing: CameraFacing.back,
-    );
+    if (!kIsWeb) {
+      _scannerController = MobileScannerController(
+        detectionSpeed: DetectionSpeed.noDuplicates,
+        facing: CameraFacing.back,
+      );
+    }
   }
 
   @override
   void dispose() {
-    _scannerController.dispose();
+    if (!kIsWeb) {
+      _scannerController.dispose();
+    }
     super.dispose();
   }
 
@@ -36,37 +42,96 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
     final String? code = barcodes.first.rawValue;
     if (code == null || code.isEmpty) return;
 
-    // Pause scanner and prevent multiple bottom sheets
-    setState(() {
-      _isProcessing = true;
-    });
+    setState(() => _isProcessing = true);
     _scannerController.pause();
 
-    // In a real scenario, the QR might just be the student ID or a JSON payload
-    // We assume the QR contains the student ID directly for this MVP
     final studentId = code;
-    
-    // TODO: The sessionId should be selected by the assistant beforehand
-    const activeSessionId = '00000000-0000-0000-0000-000000000000'; // Placeholder
+    const activeSessionId = '00000000-0000-0000-0000-000000000000';
 
     await StudentActionBottomSheet.show(
       context,
       studentId: studentId,
-      studentName: 'جاري جلب بيانات الطالب...', // Would ideally fetch name before or from QR
+      studentName: 'جاري جلب بيانات الطالب...',
       sessionId: activeSessionId,
     );
 
-    // Resume scanner after bottom sheet is closed
     if (mounted) {
-      setState(() {
-        _isProcessing = false;
-      });
+      setState(() => _isProcessing = false);
       _scannerController.start();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // NOTE: MobileScanner is unavailable on web — show a web-friendly fallback UI.
+    if (kIsWeb) {
+      return _buildWebFallback(context);
+    }
+    return _buildMobileScanner(context);
+  }
+
+  Widget _buildWebFallback(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('لوحة المساعد'),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.qr_code_scanner_rounded,
+                size: 80,
+                color: theme.colorScheme.primary.withOpacity(0.5),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'مسح QR متاح فقط في التطبيق',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'استخدم البحث اليدوي للوصول إلى بيانات الطالب من الويب',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+              FilledButton.icon(
+                onPressed: () => context.go('/assistant/manual-lookup'),
+                icon: const Icon(Icons.search_rounded),
+                label: const Text('البحث اليدوي عن طالب'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 52),
+                  textStyle: theme.textTheme.titleMedium,
+                ),
+              ),
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: () => context.go('/assistant/rooms'),
+                icon: const Icon(Icons.meeting_room_outlined),
+                label: const Text('القاعات المباشرة'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 52),
+                  textStyle: theme.textTheme.titleMedium,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileScanner(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('الماسح السريع'),
@@ -102,7 +167,6 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
             controller: _scannerController,
             onDetect: _onDetect,
           ),
-          // Scanner Overlay
           Container(
             decoration: ShapeDecoration(
               shape: QrScannerOverlayShape(
@@ -126,6 +190,7 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
     );
   }
 }
+
 
 class QrScannerOverlayShape extends ShapeBorder {
   final Color borderColor;

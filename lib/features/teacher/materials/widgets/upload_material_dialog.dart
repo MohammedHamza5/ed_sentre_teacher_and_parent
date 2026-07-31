@@ -99,7 +99,6 @@ class _UploadMaterialDialogState extends State<UploadMaterialDialog> {
           _selectedFile!,
           'materials',
         );
-        if (fileUrl == null) throw Exception('فشل رفع الملف');
       } else {
         fileUrl = _linkController.text;
       }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../core/config/app_colors.dart';
 import '../../../../core/widgets/genius/glass_card.dart';
 import '../../../../shared/models/models.dart';
 import 'group_details_helper.dart';
@@ -26,10 +25,14 @@ class GroupScheduleTab extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
-                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Icon(
@@ -60,7 +63,9 @@ class GroupScheduleTab extends StatelessWidget {
             Icon(
               Icons.calendar_today_rounded,
               size: 64.sp,
-              color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
+              color:
+                  (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)
+                      .withValues(alpha: 0.5),
             ),
             SizedBox(height: 16.h),
             Text(
@@ -74,7 +79,11 @@ class GroupScheduleTab extends StatelessWidget {
             SizedBox(height: 8.h),
             Text(
               'لم يتم تحديد مواعيد لهذه المجموعة',
-              style: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
+              style: TextStyle(
+                color:
+                    (Theme.of(context).textTheme.bodySmall?.color ??
+                    Colors.grey),
+              ),
             ),
           ],
         ),
@@ -125,7 +134,9 @@ class GroupScheduleTab extends StatelessWidget {
                       Text(
                         '${schedule.startTime} - ${schedule.endTime}',
                         style: TextStyle(
-                          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
+                          color:
+                              (Theme.of(context).textTheme.bodySmall?.color ??
+                              Colors.grey),
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -141,14 +152,20 @@ class GroupScheduleTab extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(14.r),
-                    border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+                    border: Border.all(
+                      color:
+                          (Theme.of(context).dividerTheme.color ??
+                          Colors.grey.shade300),
+                    ),
                   ),
                   child: Text(
                     schedule.roomName?.isNotEmpty == true
                         ? schedule.roomName!
                         : '—',
                     style: TextStyle(
-                      color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
+                      color:
+                          (Theme.of(context).textTheme.bodySmall?.color ??
+                          Colors.grey),
                       fontSize: 12.sp,
                       fontWeight: FontWeight.bold,
                     ),

@@ -180,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-                    padding: EdgeInsets.all(24.w),
+                    padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -201,25 +201,25 @@ class _LoginScreenState extends State<LoginScreen> {
                                 return null;
                               },
                             ),
-                            SizedBox(height: 16.h),
+                            SizedBox(height: 22.h),
                           ],
 
                           _buildTextField(
                             controller: _identifierController,
-                            label: 'كود الدعوة أو رقم الهاتف',
-                            hint: 'أدخل كود الدعوة (مثال: T-100) أو رقم الهاتف',
+                            label: 'كود الدعوة، رقم الهاتف، أو الإيميل',
+                            hint: 'أدخل كود الدعوة (مثال: T-100) أو حسابك كمدير مستقل',
                             icon: Icons.badge_outlined,
                             keyboardType: TextInputType.text,
                             action: TextInputAction.next,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'الرجاء إدخال كود الدعوة أو رقم الهاتف';
+                                return 'الرجاء إدخال بيانات الدخول';
                               }
                               return null;
                             },
                           ),
 
-                          SizedBox(height: 16.h),
+                          SizedBox(height: 22.h),
 
                           _buildTextField(
                             controller: _passwordController,
@@ -271,15 +271,16 @@ class _LoginScreenState extends State<LoginScreen> {
                           SizedBox(height: 24.h),
 
                           SizedBox(
-                            height: 52.h,
+                            height: 56.h,
                             child: ElevatedButton(
                               onPressed: _isLoading ? null : _handleLogin,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Theme.of(context).colorScheme.primary,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderRadius: BorderRadius.circular(16.r),
                                 ),
-                                elevation: 0,
+                                elevation: 4,
+                                shadowColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                               ),
                               child: _isLoading
                                   ? Row(
@@ -348,12 +349,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // Smart Guidance Card
                           Container(
-                            padding: EdgeInsets.all(12.r),
+                            padding: EdgeInsets.all(14.r),
                             decoration: BoxDecoration(
                               color: AppColors.primary.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(12.r),
+                              borderRadius: BorderRadius.circular(16.r),
                               border: Border.all(
-                                color: AppColors.primary.withValues(alpha: 0.2),
+                                color: AppColors.primary.withValues(alpha: 0.25),
                               ),
                             ),
                             child: Column(
@@ -361,26 +362,27 @@ class _LoginScreenState extends State<LoginScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    Icon(Icons.smart_toy_rounded, color: AppColors.primary, size: 18.sp),
+                                    Icon(Icons.smart_toy_rounded, color: AppColors.primary, size: 20.sp),
                                     SizedBox(width: 8.w),
                                     Text(
                                       'إرشادات الدخول السريع:',
                                       style: TextStyle(
-                                        fontSize: 13.sp,
+                                        fontSize: 13.5.sp,
                                         fontWeight: FontWeight.bold,
                                         color: AppColors.primary,
                                       ),
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: 6.h),
+                                SizedBox(height: 8.h),
                                 Text(
-                                  '• 👨‍💼 للمساعدين: أدخل رقم الهاتف (كلمة المرور الإفتراضية هي آخر 4 أرقام من رقم الهاتف).\n'
-                                  '• 👨‍🏫 المعلمين وأولياء الأمور: أدخل كود الدعوة وأنشئ كلمة سر خاصة بك تتيح لك الدخول بها دائماً.',
+                                  '• 🎓 المعلم المستقل: سجل الدخول مباشرة ببيانات حسابك الإداري (الإيميل/الهاتف وكلمة المرور).\n'
+                                  '• 👨‍🏫 المعلمين وأولياء الأمور: أدخل كود الدعوة وأنشئ كلمة سر خاصة بك تتيح لك الدخول بها دائماً.\n'
+                                  '• 👨‍💼 المساعدين: أدخل رقم الهاتف (كلمة المرور الإفتراضية هي آخر 4 أرقام من رقم الهاتف).',
                                   style: TextStyle(
-                                    fontSize: 11.5.sp,
-                                    color: Colors.grey[800],
-                                    height: 1.4,
+                                    fontSize: 12.sp,
+                                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey.shade800,
+                                    height: 1.5,
                                   ),
                                 ),
                               ],
@@ -493,35 +495,75 @@ class _LoginScreenState extends State<LoginScreen> {
     Widget? suffixIcon,
     String? Function(String?)? validator,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
       textInputAction: action,
       onFieldSubmitted: onSubmitted,
-      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+      style: TextStyle(
+        fontSize: 15.5.sp,
+        height: 1.4,
+        fontWeight: FontWeight.w500,
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
       decoration: InputDecoration(
+        contentPadding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 18.w),
         labelText: label,
-        labelStyle: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
-        hintStyle: TextStyle(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5)),
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        labelStyle: TextStyle(
+          fontSize: 15.sp,
+          fontWeight: FontWeight.w600,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        hintStyle: TextStyle(
+          fontSize: 13.5.sp,
+          height: 1.4,
+          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)
+              .withValues(alpha: 0.55),
+        ),
         hintText: hint,
-        prefixIcon: Icon(icon, color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
+        hintMaxLines: 2,
+        errorMaxLines: 3,
+        prefixIcon: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: Icon(
+            icon,
+            color: Theme.of(context).colorScheme.primary,
+            size: 24.sp,
+          ),
+        ),
+        prefixIconConstraints: BoxConstraints(minWidth: 56.w, minHeight: 48.h),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
+        fillColor: isDark
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.grey.withValues(alpha: 0.07),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+          borderRadius: BorderRadius.circular(16.r),
+          borderSide: BorderSide(
+            color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
+          ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+          borderRadius: BorderRadius.circular(16.r),
+          borderSide: BorderSide(
+            color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: AppColors.primary),
+          borderRadius: BorderRadius.circular(16.r),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
+            width: 2,
+          ),
         ),
-        errorStyle: TextStyle(color: Theme.of(context).colorScheme.error),
+        errorStyle: TextStyle(
+          fontSize: 13.sp,
+          height: 1.3,
+          color: Theme.of(context).colorScheme.error,
+        ),
       ),
       validator: validator,
     );
