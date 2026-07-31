@@ -70,12 +70,11 @@ class _SubjectDetailManagementScreenState
         });
       }
     } catch (e) {
-      if (context.mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('خطأ في تحميل البيانات: $e')));
-      }
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('خطأ في تحميل البيانات: $e')));
     }
   }
 
@@ -91,12 +90,11 @@ class _SubjectDetailManagementScreenState
       );
       await _loadData();
     } catch (e) {
-      if (context.mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('خطأ: $e')));
-      }
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('خطأ: $e')));
     }
   }
 
@@ -124,12 +122,11 @@ class _SubjectDetailManagementScreenState
       );
       await _loadData();
     } catch (e) {
-      if (context.mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('خطأ: $e')));
-      }
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('خطأ: $e')));
     }
   }
 

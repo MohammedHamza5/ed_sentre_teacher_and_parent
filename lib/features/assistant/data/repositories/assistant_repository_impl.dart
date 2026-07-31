@@ -103,7 +103,7 @@ class AssistantRepositoryImpl implements AssistantRepository {
         });
       }
       
-      return Result.success(Unit.value);
+      return Result.success(null);
     } catch (e, st) {
       debugPrint('Error recordAttendanceAndPayment: $e');
       return Result.failure(UnexpectedException(message: e.toString(), stackTrace: st, originalError: e));

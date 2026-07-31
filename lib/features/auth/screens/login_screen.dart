@@ -5,8 +5,9 @@ import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../core/config/app_colors.dart';
-import '../provider/auth_provider.dart';
 import '../../../../core/config/app_config.dart';
+import '../../../../shared/models/models.dart';
+import '../provider/auth_provider.dart';
 
 /// Login Screen - User authentication
 class LoginScreen extends StatefulWidget {
@@ -59,6 +60,8 @@ class _LoginScreenState extends State<LoginScreen> {
           context.go('/teacher');
         } else if (authProvider.isParent) {
           context.go('/parent');
+        } else if (authProvider.isCoordinator || authProvider.userRole == UserRole.reception) {
+          context.go('/assistant');
         }
       } else if (mounted && authProvider.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -83,6 +86,8 @@ class _LoginScreenState extends State<LoginScreen> {
           context.go('/teacher');
         } else if (authProvider.isParent) {
           context.go('/parent');
+        } else if (authProvider.isCoordinator || authProvider.userRole == UserRole.reception) {
+          context.go('/assistant');
         }
       } else if (mounted && authProvider.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(

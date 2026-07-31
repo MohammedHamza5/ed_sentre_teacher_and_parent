@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:open_file/open_file.dart';
@@ -23,7 +22,9 @@ class UpdateLocalDataSource {
       final response = await client.send(request);
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to download update file: status ${response.statusCode}');
+        throw Exception(
+          'Failed to download update file: status ${response.statusCode}',
+        );
       }
 
       final totalBytes = response.contentLength ?? updateInfo.fileSize;
@@ -49,7 +50,8 @@ class UpdateLocalDataSource {
       if (updateInfo.checksum != null && updateInfo.checksum!.isNotEmpty) {
         final bytes = await file.readAsBytes();
         final digest = crypto.sha256.convert(bytes);
-        if (digest.toString().toUpperCase() != updateInfo.checksum!.toUpperCase()) {
+        if (digest.toString().toUpperCase() !=
+            updateInfo.checksum!.toUpperCase()) {
           if (await file.exists()) {
             await file.delete();
           }

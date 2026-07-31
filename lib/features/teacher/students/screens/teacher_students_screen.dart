@@ -10,7 +10,10 @@ import '../../provider/teacher_provider.dart';
 import '../../../../core/widgets/genius/glass_card.dart';
 import '../../../../core/widgets/genius/genius_text_field.dart';
 import '../../../../core/widgets/genius/shimmer_skeleton.dart';
-
+import '../../../../core/config/app_colors.dart';
+import '../../../../core/config/app_colors.dart';
+import '../widgets/student_report_bottom_sheet.dart';
+import '../widgets/export_center_bottom_sheet.dart';
 /// 🎨 Teacher Students Screen - Forest Dark Edition
 class TeacherStudentsScreen extends StatefulWidget {
   const TeacherStudentsScreen({super.key});
@@ -212,7 +215,31 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
 
               SizedBox(width: 12.w),
 
-              SizedBox.shrink(),
+              GestureDetector(
+                onTap: _showExportCenterSheet,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: Colors.teal.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(color: Colors.teal.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.import_export_rounded, size: 16.sp, color: Colors.teal.shade700),
+                      SizedBox(width: 4.w),
+                      Text(
+                        'تصدير',
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
           SizedBox(height: 24.h),
@@ -230,123 +257,173 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // STUDENT CARD
+  // BOTTOM SHEETS
   // ═══════════════════════════════════════════════════════════════════════════
+
+  void _showExportCenterSheet() {
+    if (_filteredStudents.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('لا يوجد طلاب لتصديرهم'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+
+    final teacherProvider = context.read<TeacherProvider>();
+    final teacherName = teacherProvider.teacherProfile?.fullName ?? 'المعلم';
+    final subjectName = teacherProvider.teacherProfile?.subject ?? 'عام';
+    
+    final query = _searchController.text.trim();
+    final groupName = query.isNotEmpty ? 'بحث_$query' : 'كل_الطلاب';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ExportCenterBottomSheet(
+        students: _filteredStudents,
+        groupName: groupName,
+        teacherName: teacherName,
+        subjectName: subjectName,
+      ),
+    );
+  }
+
+  void _showStudentReportSheet(Map<String, dynamic> student) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.navyCard,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (context) => StudentReportBottomSheet(student: student),
+    );
+  }
 
   Widget _buildStudentCard(Map<String, dynamic> student) {
     return Padding(
       padding: EdgeInsets.only(bottom: 14.h),
-      child: GlassCard(
-        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
-        padding: EdgeInsets.all(16.w),
-        child: Row(
-          children: [
-            // Avatar
-            Container(
-              padding: EdgeInsets.all(2.w),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color:
-                      (Theme.of(context).dividerTheme.color ??
-                      Colors.grey.shade300),
+      child: GestureDetector(
+        onTap: () => _showStudentReportSheet(student),
+        child: GlassCard(
+          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
+          padding: EdgeInsets.all(16.w),
+          child: Row(
+            children: [
+              // Avatar
+              Container(
+                padding: EdgeInsets.all(2.w),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color:
+                        (Theme.of(context).dividerTheme.color ??
+                        Colors.grey.shade300),
+                  ),
                 ),
-              ),
-              child: CircleAvatar(
-                radius: 26.r,
-                backgroundColor: Theme.of(context).colorScheme.surface,
-                child: student['student_avatar'] != null
-                    ? ClipOval(
-                        child: CachedNetworkImage(
-                          imageUrl: student['student_avatar'],
-                          width: 52.r,
-                          height: 52.r,
-                          fit: BoxFit.cover,
-                          errorWidget: (_, __, ___) => Icon(
-                            Icons.person_rounded,
-                            color:
-                                (Theme.of(context).textTheme.bodySmall?.color ??
-                                Colors.grey),
+                child: CircleAvatar(
+                  radius: 26.r,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  child: student['student_avatar'] != null
+                      ? ClipOval(
+                          child: CachedNetworkImage(
+                            imageUrl: student['student_avatar'],
+                            width: 52.r,
+                            height: 52.r,
+                            fit: BoxFit.cover,
+                            errorWidget: (_, __, ___) => Icon(
+                              Icons.person_rounded,
+                              color:
+                                  (Theme.of(context).textTheme.bodySmall?.color ??
+                                  Colors.grey),
+                            ),
+                          ),
+                        )
+                      : Text(
+                          (student['student_name'] ?? 'م')[0],
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      )
-                    : Text(
-                        (student['student_name'] ?? 'م')[0],
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                ),
               ),
-            ),
-            SizedBox(width: 16.w),
+              SizedBox(width: 16.w),
 
-            // Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    student['student_name'] ?? 'طالب',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 8.h),
-                  Wrap(
-                    spacing: 8.w,
-                    runSpacing: 6.h,
-                    children: [
-                      _buildTag(
-                        icon: Icons.class_outlined,
-                        text: student['group_name'] ?? 'لا توجد مجموعة',
-                        color: Colors.orange,
+              // Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      student['student_name'] ?? 'طالب',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
-                      if (student['course_name'] != null)
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 8.h),
+                    Wrap(
+                      spacing: 8.w,
+                      runSpacing: 6.h,
+                      children: [
                         _buildTag(
-                          icon: Icons.book_outlined,
-                          text: student['course_name'],
-                          color: Colors.purple,
+                          icon: Icons.class_outlined,
+                          text: student['group_name'] ?? 'لا توجد مجموعة',
+                          color: Colors.orange,
                         ),
-                    ],
+                        if (student['course_name'] != null)
+                          _buildTag(
+                            icon: Icons.book_outlined,
+                            text: student['course_name'],
+                            color: Colors.purple,
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Actions
+              Row(
+                children: [
+                  _buildActionButton(
+                    icon: Icons.analytics_rounded,
+                    color: Colors.amber,
+                    onTap: () => _showStudentReportSheet(student),
+                  ),
+                  SizedBox(width: 8.w),
+                  if (student['student_phone'] != null)
+                    _buildActionButton(
+                      icon: Icons.phone_rounded,
+                      color: Colors.green,
+                      onTap: () => _makePhoneCall(student['student_phone']),
+                    ),
+                  if (student['student_phone'] != null)
+                    SizedBox(width: 8.w),
+                  Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 14.sp,
+                      color:
+                          (Theme.of(context).textTheme.bodySmall?.color ??
+                          Colors.grey),
+                    ),
                   ),
                 ],
               ),
-            ),
-
-            // Actions
-            Row(
-              children: [
-                if (student['student_phone'] != null)
-                  _buildActionButton(
-                    icon: Icons.phone_rounded,
-                    color: Colors.green,
-                    onTap: () => _makePhoneCall(student['student_phone']),
-                  ),
-                SizedBox(width: 8.w),
-                Container(
-                  padding: EdgeInsets.all(8.w),
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  child: Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14.sp,
-                    color:
-                        (Theme.of(context).textTheme.bodySmall?.color ??
-                        Colors.grey),
-                  ),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

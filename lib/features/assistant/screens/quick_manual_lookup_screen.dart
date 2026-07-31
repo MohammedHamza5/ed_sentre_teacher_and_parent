@@ -13,7 +13,8 @@ class QuickManualLookupScreen extends StatefulWidget {
   const QuickManualLookupScreen({super.key});
 
   @override
-  State<QuickManualLookupScreen> createState() => _QuickManualLookupScreenState();
+  State<QuickManualLookupScreen> createState() =>
+      _QuickManualLookupScreenState();
 }
 
 class _QuickManualLookupScreenState extends State<QuickManualLookupScreen> {
@@ -24,7 +25,8 @@ class _QuickManualLookupScreenState extends State<QuickManualLookupScreen> {
   @override
   void initState() {
     super.initState();
-    final centerId = context.read<AuthProvider>().currentUser?.defaultCenterId ?? '';
+    final centerId =
+        context.read<AuthProvider>().currentUser?.defaultCenterId ?? '';
     _cubit = ManualLookupCubit(GetIt.I<AssistantRepository>(), centerId);
   }
 
@@ -38,90 +40,271 @@ class _QuickManualLookupScreenState extends State<QuickManualLookupScreen> {
 
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
+    _debounce = Timer(const Duration(milliseconds: 400), () {
       _cubit.search(query);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return BlocProvider.value(
       value: _cubit,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('البحث اليدوي السريع'),
+          title: const Text(
+            'البحث اليدوي السريع',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           centerTitle: true,
+          elevation: 0,
         ),
         body: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
+            // Search Bar Container
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              decoration: BoxDecoration(
+                color:
+                    theme.appBarTheme.backgroundColor ??
+                    theme.scaffoldBackgroundColor,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
               child: TextField(
                 controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'ابحث برقم الهاتف أو الاسم (3 أحرف على الأقل)...',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      _searchController.clear();
-                      _cubit.search('');
-                    },
-                  ),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
-                onChanged: _onSearchChanged,
+                decoration: InputDecoration(
+                  hintText:
+                      'ابحث برقم الهاتف أو اسم الطالب (3 أحرف على الأقل)...',
+                  hintStyle: TextStyle(
+                    color: colorScheme.onSurface.withOpacity(0.4),
+                    fontSize: 14,
+                    fontWeight: FontWeight.normal,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.person_search_rounded,
+                    color: colorScheme.primary,
+                    size: 26,
+                  ),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded),
+                          onPressed: () {
+                            _searchController.clear();
+                            _cubit.search('');
+                            setState(() {});
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: colorScheme.surfaceContainerHighest.withOpacity(
+                    0.5,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: colorScheme.outline.withOpacity(0.15),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: colorScheme.primary,
+                      width: 1.5,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                ),
+                onChanged: (val) {
+                  setState(() {});
+                  _onSearchChanged(val);
+                },
               ),
             ),
+
+            // Search Results
             Expanded(
               child: BlocBuilder<ManualLookupCubit, ManualLookupState>(
                 builder: (context, state) {
                   if (state is ManualLookupInitial) {
-                    return const Center(
-                      child: Text(
-                        'اكتب 3 أحرف أو أرقام على الأقل للبحث', 
-                        style: TextStyle(color: Colors.grey, fontSize: 16)
-                      )
+                    return _buildEmptyState(
+                      icon: Icons.manage_search_rounded,
+                      title: 'جاهز لبدء البحث',
+                      subtitle:
+                          'قم بكتابة جزء من اسم الطالب أو رقم هاتفه للوصول الفوري وتسجيل الحضور.',
+                      colorScheme: colorScheme,
+                      theme: theme,
                     );
                   }
                   if (state is ManualLookupLoading) {
-                    return const Center(child: CircularProgressIndicator());
+                    return Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const CircularProgressIndicator(),
+                          const SizedBox(height: 16),
+                          Text(
+                            'جاري البحث عن الطلاب...',
+                            style: TextStyle(
+                              color: colorScheme.onSurface.withOpacity(0.6),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
                   }
                   if (state is ManualLookupError) {
-                    return Center(child: Text(state.message, style: const TextStyle(color: Colors.red)));
+                    return _buildEmptyState(
+                      icon: Icons.error_outline_rounded,
+                      title: 'حدث خطأ أثناء البحث',
+                      subtitle: state.message,
+                      colorScheme: colorScheme,
+                      theme: theme,
+                      isError: true,
+                    );
                   }
                   if (state is ManualLookupLoaded) {
                     if (state.results.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          'لا يوجد طالب مطابق للبحث', 
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
-                        )
+                      return _buildEmptyState(
+                        icon: Icons.person_off_outlined,
+                        title: 'لا يوجد طالب مطابق',
+                        subtitle:
+                            'لم نعثر على أي طالب بهذا الاسم أو الهاتف في هذا السنتر.',
+                        colorScheme: colorScheme,
+                        theme: theme,
                       );
                     }
                     return ListView.separated(
+                      padding: const EdgeInsets.all(16),
                       itemCount: state.results.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final student = state.results[index];
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
-                            child: const Icon(Icons.person),
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: theme.cardColor,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: colorScheme.outline.withOpacity(0.12),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.03),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
-                          title: Text(student.fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Text(student.phone),
-                          trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                          onTap: () {
-                            // Placeholder session ID for now
-                            const activeSessionId = '00000000-0000-0000-0000-000000000000';
-                            StudentActionBottomSheet.show(
-                              context,
-                              studentId: student.id,
-                              studentName: student.fullName,
-                              sessionId: activeSessionId,
-                            );
-                          },
+                          child: Material(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(16),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () {
+                                const activeSessionId =
+                                    '00000000-0000-0000-0000-000000000000';
+                                StudentActionBottomSheet.show(
+                                  context,
+                                  studentId: student.id,
+                                  studentName: student.fullName,
+                                  sessionId: activeSessionId,
+                                );
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 24,
+                                      backgroundColor: colorScheme.primary
+                                          .withOpacity(0.12),
+                                      child: Text(
+                                        student.fullName.isNotEmpty
+                                            ? student.fullName[0].toUpperCase()
+                                            : '؟',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: colorScheme.primary,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            student.fullName,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.phone_android_rounded,
+                                                size: 14,
+                                                color: colorScheme.onSurface
+                                                    .withOpacity(0.5),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                student.phone.isNotEmpty
+                                                    ? student.phone
+                                                    : 'بدون رقم',
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  color: colorScheme.onSurface
+                                                      .withOpacity(0.6),
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: colorScheme.primary.withOpacity(
+                                          0.08,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(
+                                        Icons.how_to_reg_rounded,
+                                        color: colorScheme.primary,
+                                        size: 22,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                         );
                       },
                     );
@@ -129,6 +312,54 @@ class _QuickManualLookupScreenState extends State<QuickManualLookupScreen> {
                   return const SizedBox();
                 },
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required ColorScheme colorScheme,
+    required ThemeData theme,
+    bool isError = false,
+  }) {
+    final color = isError ? const Color(0xFFEF4444) : colorScheme.primary;
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 40, color: color),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              title,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.6),
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../auth/provider/auth_provider.dart';
 import '../../provider/parent_provider.dart';
@@ -15,7 +14,6 @@ import '../../../../shared/widgets/app_drawer.dart';
 import '../widgets/parent_stats_section.dart';
 import '../widgets/parent_quick_actions_grid.dart';
 import '../widgets/parent_recent_activity_list.dart';
-
 
 /// 🟢 Parent Home Screen - Radical Glassmorphism 2.0 Overhaul
 class ParentHomeScreen extends StatefulWidget {
@@ -68,7 +66,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
     final selectedChild = parentProvider.selectedChild;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor, // Radical base color
+      backgroundColor: Theme.of(
+        context,
+      ).scaffoldBackgroundColor, // Radical base color
       body: _isLoading
           ? Padding(
               padding: EdgeInsets.all(20.w),
@@ -85,7 +85,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                   SliverToBoxAdapter(
                     child: GlassCard(
                       borderRadius: 32.r,
-                      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surface.withValues(alpha: 0.8),
                       padding: EdgeInsets.fromLTRB(20.w, 50.h, 20.w, 30.h),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,9 +118,14 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                                   SizedBox(width: 8.w),
                                   Text(
                                     'EdSentre',
-                                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineSmall
+                                        ?.copyWith(
                                           fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).colorScheme.onSurface,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
                                         ),
                                   ),
                                 ],
@@ -138,14 +145,16 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                                   SizedBox(width: 8.w),
                                   DrawerMenuButton(
                                     isTeacher: false,
-                                    color: Theme.of(context).colorScheme.onSurface,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
                                   ),
                                 ],
                               ),
                             ],
                           ),
                           SizedBox(height: 20.h),
-                          
+
                           // Greeting Row
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,15 +162,19 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                               Text(
                                 'مرحباً بك 👋',
                                 style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
+                                    ?.copyWith(
+                                      color:
+                                          (Theme.of(
+                                            context,
+                                          ).textTheme.bodySmall?.color ??
+                                          Colors.grey),
+                                    ),
                               ),
                               SizedBox(height: 4.h),
                               Text(
                                 authProvider.currentUser?.fullName ??
                                     'ولي الأمر',
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.displaySmall,
+                                style: Theme.of(context).textTheme.displaySmall,
                               ),
                             ],
                           ),
@@ -195,17 +208,25 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                                       ),
                                       decoration: BoxDecoration(
                                         color: isSelected
-                                            ? Theme.of(context).colorScheme.primary
-                                            : Theme.of(context).colorScheme.surface.withValues(
-                                                alpha: 0.5,
-                                              ),
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.primary
+                                            : Theme.of(context)
+                                                  .colorScheme
+                                                  .surface
+                                                  .withValues(alpha: 0.5),
                                         borderRadius: BorderRadius.circular(
                                           24.r,
                                         ),
                                         border: Border.all(
                                           color: isSelected
-                                              ? Theme.of(context).colorScheme.primary
-                                              : (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primary
+                                              : (Theme.of(
+                                                      context,
+                                                    ).dividerTheme.color ??
+                                                    Colors.grey.shade300),
                                         ),
                                       ),
                                       child: Center(
@@ -216,8 +237,12 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                                               .labelLarge
                                               ?.copyWith(
                                                 color: isSelected
-                                                    ? Theme.of(context).scaffoldBackgroundColor
-                                                    : Theme.of(context).colorScheme.onSurface,
+                                                    ? Theme.of(
+                                                        context,
+                                                      ).scaffoldBackgroundColor
+                                                    : Theme.of(
+                                                        context,
+                                                      ).colorScheme.onSurface,
                                                 fontWeight: isSelected
                                                     ? FontWeight.bold
                                                     : FontWeight.normal,
@@ -242,12 +267,13 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                                 vertical: 8.h,
                               ),
                               decoration: BoxDecoration(
-                                color: Theme.of(context).scaffoldBackgroundColor.withValues(
-                                  alpha: 0.4,
-                                ),
+                                color: Theme.of(context).scaffoldBackgroundColor
+                                    .withValues(alpha: 0.4),
                                 borderRadius: BorderRadius.circular(16.r),
                                 border: Border.all(
-                                  color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
+                                  color:
+                                      (Theme.of(context).dividerTheme.color ??
+                                      Colors.grey.shade300),
                                 ),
                               ),
                               child: Row(
@@ -255,17 +281,23 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                                 children: [
                                   Icon(
                                     Icons.school_outlined,
-                                    color: Theme.of(context).colorScheme.onSurface,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
                                     size: 20.sp,
                                   ),
                                   SizedBox(width: 12.w),
                                   DropdownButtonHideUnderline(
                                     child: DropdownButton<String>(
                                       value: parentProvider.selectedCenterId,
-                                      dropdownColor: Theme.of(context).colorScheme.surface,
+                                      dropdownColor: Theme.of(
+                                        context,
+                                      ).colorScheme.surface,
                                       icon: Icon(
                                         Icons.arrow_drop_down,
-                                        color: Theme.of(context).colorScheme.onSurface,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurface,
                                         size: 20.sp,
                                       ),
                                       style: Theme.of(
@@ -327,7 +359,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                             AppColors.warningAmber,
                           ),
                           SizedBox(height: 16.h),
-                          ParentRecentActivityList(recentActivities: _recentActivities),
+                          ParentRecentActivityList(
+                            recentActivities: _recentActivities,
+                          ),
 
                           SizedBox(height: 100.h),
                         ],
@@ -358,11 +392,20 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
       child: Container(
         padding: EdgeInsets.all(10.w),
         decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
+          color: Theme.of(
+            context,
+          ).scaffoldBackgroundColor.withValues(alpha: 0.5),
           shape: BoxShape.circle,
-          border: Border.all(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
+          border: Border.all(
+            color:
+                (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
+          ),
         ),
-        child: Icon(icon, color: Theme.of(context).colorScheme.onSurface, size: 24.sp),
+        child: Icon(
+          icon,
+          color: Theme.of(context).colorScheme.onSurface,
+          size: 24.sp,
+        ),
       ),
     );
   }

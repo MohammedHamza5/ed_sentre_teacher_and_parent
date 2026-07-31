@@ -53,8 +53,10 @@ dependencies:
   qr_flutter: ^4.1.0
   mobile_scanner: ^7.4.0
 
-  # PDF Viewer
+  # PDF Viewer & Generator
   syncfusion_flutter_pdfviewer: ^28.2.6
+  pdf: ^3.11.3
+  printing: ^5.14.2
 
   # Networking
   connectivity_plus: ^6.1.1

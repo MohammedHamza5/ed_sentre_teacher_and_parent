@@ -40,8 +40,6 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final centerProvider = context.watch<CenterProvider>();
-
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Column(

@@ -13,6 +13,7 @@ import '../widgets/exam_preview_summary.dart';
 import '../widgets/exam_preview_publish_settings.dart';
 import '../widgets/exam_preview_question_view.dart';
 import '../widgets/exam_preview_question_editor.dart';
+import '../services/exam_pdf_service.dart';
 
 /// شاشة معاينة الامتحان المولّد — يراجع المعلم الأسئلة ثم ينشر (محرر تفاعلي)
 class ExamPreviewScreen extends StatefulWidget {
@@ -337,6 +338,101 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
     _startEditing(newQ);
   }
 
+  void _showPdfExportOptions() {
+    final auth = context.read<AuthProvider>();
+    final teacherName = auth.teacherProfile?.fullName ?? auth.currentUser?.fullName ?? 'المعلم المستقل';
+    final duration = int.tryParse(_durationController.text) ?? 30;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.navyCard,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(20.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'تصدير الاختبار كـ PDF للطباعة',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textOnDark,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 16.h),
+              ListTile(
+                leading: Container(
+                  padding: EdgeInsets.all(8.r),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Icon(Icons.description_outlined, color: AppColors.primary),
+                ),
+                title: Text(
+                  'نسخة أوراق الطلاب (بدون إجابات)',
+                  style: TextStyle(color: AppColors.textOnDark, fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
+                  'مخصصة للطباعة والتوزيع مع خانة لأسم الطالب ورقم المجموعات.',
+                  style: TextStyle(color: AppColors.textOnDarkHint, fontSize: 12.sp),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  ExamPdfService.generateAndPrintExam(
+                    title: _titleController.text.isNotEmpty ? _titleController.text : 'امتحان بالذكاء الاصطناعي',
+                    description: _descriptionController.text,
+                    durationMinutes: duration,
+                    questions: _questions,
+                    isModelAnswer: false,
+                    teacherName: teacherName,
+                  );
+                },
+              ),
+              Divider(color: AppColors.darkBorder, height: 24.h),
+              ListTile(
+                leading: Container(
+                  padding: EdgeInsets.all(8.r),
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Icon(Icons.check_circle_outline_rounded, color: AppColors.success),
+                ),
+                title: Text(
+                  'نموذج الإجابة الرسمي (Model Answer)',
+                  style: TextStyle(color: AppColors.textOnDark, fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
+                  'يبرز الإجابات الصحيحة والتوضيحات التحليلة للمعلم والمراجعة.',
+                  style: TextStyle(color: AppColors.textOnDarkHint, fontSize: 12.sp),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  ExamPdfService.generateAndPrintExam(
+                    title: _titleController.text.isNotEmpty ? _titleController.text : 'امتحان بالذكاء الاصطناعي',
+                    description: _descriptionController.text,
+                    durationMinutes: duration,
+                    questions: _questions,
+                    isModelAnswer: true,
+                    teacherName: teacherName,
+                  );
+                },
+              ),
+              SizedBox(height: 12.h),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   // ─── بناء واجهة المستخدم ──────────────────────────────────────────
 
   @override
@@ -351,6 +447,14 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         iconTheme: IconThemeData(color: AppColors.textOnDark),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.print_rounded, color: AppColors.primary, size: 24.sp),
+            tooltip: 'تصدير ورقة الامتحان كـ PDF / طباعة',
+            onPressed: _showPdfExportOptions,
+          ),
+          SizedBox(width: 8.w),
+        ],
       ),
       body: _isLoadingGroups
           ? Center(

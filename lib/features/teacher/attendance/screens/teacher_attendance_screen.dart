@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../../auth/provider/auth_provider.dart';
@@ -236,6 +237,13 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       extendBodyBehindAppBar: true,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.push('/teacher/scan'),
+        icon: Icon(Icons.qr_code_scanner_rounded, size: 22.sp),
+        label: Text('مسح الكروت (QR)', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700)),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.white,
+      ),
       appBar: AppBar(
         title: Text(
           'متابعة الحضور',

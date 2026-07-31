@@ -7,7 +7,6 @@ import '../../../../core/config/app_colors.dart';
 import '../../../auth/provider/auth_provider.dart';
 import '../../../../core/providers/center_provider.dart';
 import '../../provider/teacher_provider.dart';
-import '../../../../shared/data/supabase_repository.dart';
 import '../../../../shared/models/group_model.dart';
 import '../../../../shared/models/enums.dart';
 import '../../../../core/widgets/genius/glass_card.dart';
@@ -52,7 +51,6 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
         context,
         listen: false,
       );
-      final repo = Provider.of<SupabaseRepository>(context, listen: false);
 
       final teacherId = authProvider.teacherProfile?.id;
 
@@ -60,6 +58,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
         await centerProvider.loadTeacherCenters(teacherId);
       }
 
+      if (!mounted) return;
       final centerId = centerProvider.currentCenterId;
 
       if (teacherId != null && centerId != null) {

@@ -109,7 +109,6 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
     try {
       final auth = context.read<AuthProvider>();
       final center = context.read<CenterProvider>();
-      final repo = context.read<SupabaseRepository>();
 
       final teacherId = auth.teacherProfile?.id;
       final centerId = center.currentCenterId;

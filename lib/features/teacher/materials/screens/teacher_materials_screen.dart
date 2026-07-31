@@ -723,6 +723,7 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
     );
 
     if (confirmed == true) {
+      if (!mounted) return;
       try {
         final repo = context.read<SupabaseRepository>();
         await repo.deleteStudyMaterial(material['id']);

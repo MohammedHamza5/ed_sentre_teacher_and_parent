@@ -181,6 +181,12 @@ class AppRouter {
                 builder: (context, state) => const TeacherAttendanceScreen(),
               ),
               GoRoute(
+                path: 'scan',
+                name: 'teacher-scan',
+                parentNavigatorKey: _rootNavigatorKey,
+                builder: (context, state) => const AssistantCameraScanScreen(),
+              ),
+              GoRoute(
                 path: 'attendance/:groupId',
                 name: 'teacher-attendance-group',
                 parentNavigatorKey: _rootNavigatorKey,

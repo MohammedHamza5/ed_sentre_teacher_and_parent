@@ -25,6 +25,12 @@ class TeacherQuickActions extends StatelessWidget {
         color: AppColors.teal,
       ),
       _QuickActionItem(
+        icon: Icons.qr_code_scanner_rounded,
+        label: 'مسح QR',
+        route: '/teacher/scan',
+        color: const Color(0xFFF97316), // Vibrant Orange for rapid visibility
+      ),
+      _QuickActionItem(
         icon: Icons.assignment_rounded,
         label: 'الواجبات',
         route: '/teacher/assignments',
@@ -66,10 +72,10 @@ class TeacherQuickActions extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
+        crossAxisCount: 3,
         crossAxisSpacing: 12.w,
         mainAxisSpacing: 12.h,
-        childAspectRatio: 0.85,
+        childAspectRatio: 1.15,
       ),
       itemCount: actions.length,
       itemBuilder: (context, index) => _buildActionCard(context, actions[index], index),

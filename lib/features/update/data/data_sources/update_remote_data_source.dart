@@ -11,10 +11,10 @@ class UpdateRemoteDataSource {
     final platform = Platform.isAndroid
         ? 'teacher_android'
         : Platform.isIOS
-            ? 'teacher_ios'
-            : Platform.isWindows
-                ? 'teacher_windows'
-                : 'teacher_android';
+        ? 'teacher_ios'
+        : Platform.isWindows
+        ? 'teacher_windows'
+        : 'teacher_android';
 
     final response = await _supabase
         .from('app_versions')
@@ -27,6 +27,6 @@ class UpdateRemoteDataSource {
       return null;
     }
 
-    return UpdateInfoModel.fromJson(response.first as Map<String, dynamic>);
+    return UpdateInfoModel.fromJson(response.first);
   }
 }

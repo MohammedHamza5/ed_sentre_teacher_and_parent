@@ -41,6 +41,8 @@ enum UserRole {
       case 'assistant':
       case 'teaching_assistant':
       case 'academic_coordinator':
+      case 'center_staff':
+      case 'staff':
         return UserRole.coordinator;
       default:
         return UserRole.student;
