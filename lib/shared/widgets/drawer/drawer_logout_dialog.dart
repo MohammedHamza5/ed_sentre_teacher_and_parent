@@ -8,8 +8,11 @@ import '../../../features/auth/provider/auth_provider.dart';
 
 /// Centralized logout dialog for the drawer
 Future<void> confirmDrawerLogout(BuildContext context, AuthProvider auth) async {
-  Navigator.of(context).pop(); // close drawer first
-  await Future.delayed(const Duration(milliseconds: 300));
+  final scaffoldState = Scaffold.maybeOf(context);
+  if (scaffoldState?.isDrawerOpen == true) {
+    Navigator.of(context).pop(); // close drawer first
+    await Future.delayed(const Duration(milliseconds: 300));
+  }
 
   if (!context.mounted) return;
 
@@ -41,7 +44,7 @@ Future<void> confirmDrawerLogout(BuildContext context, AuthProvider auth) async 
             Text(
               'تسجيل الخروج',
               style: TextStyle(
-                color: AppColors.textOnDark,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
               ),
@@ -51,7 +54,7 @@ Future<void> confirmDrawerLogout(BuildContext context, AuthProvider auth) async 
         content: Text(
           'هل أنت متأكد من تسجيل الخروج من الحساب؟',
           style: TextStyle(
-            color: AppColors.textOnDarkSecondary,
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
             fontSize: 14.sp,
           ),
         ),
@@ -61,7 +64,7 @@ Future<void> confirmDrawerLogout(BuildContext context, AuthProvider auth) async 
             child: Text(
               'إلغاء',
               style: TextStyle(
-                color: AppColors.textOnDarkSecondary,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                 fontSize: 14.sp,
               ),
             ),

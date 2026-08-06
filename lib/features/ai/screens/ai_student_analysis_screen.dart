@@ -6,8 +6,9 @@ import '../../teacher/provider/teacher_provider.dart';
 import '../../ai/provider/ai_provider.dart';
 import '../../../../core/providers/center_provider.dart';
 import '../../../../shared/data/supabase_repository.dart';
+import 'package:go_router/go_router.dart';
 
-/// شاشة تحليل أداء الطلاب بالذكاء الاصطناعي
+/// شاشة تحليل أداء المجموعات والطلاب بالذكاء الاصطناعي
 class AIStudentAnalysisScreen extends StatefulWidget {
   const AIStudentAnalysisScreen({super.key});
 
@@ -23,6 +24,7 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
   String? _selectedStudentId;
   Map<String, dynamic>? _analysisResult;
   List<Map<String, dynamic>> _students = [];
+  bool _isGroupAnalysis = false;
 
   @override
   void initState() {
@@ -67,11 +69,11 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
       backgroundColor: AppColors.darkBackground,
       appBar: AppBar(
         title: Text(
-          'تحليل أداء الطلاب 📊',
-          style: TextStyle(color: AppColors.textOnDark),
+          'مستشار الأداء الذكي 📊',
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
         backgroundColor: Theme.of(context).colorScheme.surface,
-        foregroundColor: AppColors.textOnDark,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         elevation: 0,
       ),
       body: Column(
@@ -97,7 +99,7 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
             Expanded(
               child: _analysisResult != null
                   ? _buildAnalysisResult()
-                  : _selectedStudentId != null
+                  : (_selectedStudentId != null || _selectedGroupId != null)
                   ? _buildAnalyzeButton()
                   : _buildInstructions(),
             ),
@@ -118,10 +120,10 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
       child: DropdownButtonFormField<String>(
         value: _selectedGroupId,
         dropdownColor: AppColors.darkElevated,
-        style: TextStyle(color: AppColors.textOnDark, fontSize: 14.sp),
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14.sp),
         decoration: InputDecoration(
           labelText: 'اختر المجموعة أولاً',
-          labelStyle: TextStyle(color: AppColors.textOnDarkSecondary),
+          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
           prefixIcon: Icon(Icons.group, color: AppColors.primary),
           border: InputBorder.none,
         ),
@@ -134,7 +136,7 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
         onChanged: (v) {
           setState(() {
             _selectedGroupId = v;
-            _selectedStudentId = null;
+            _selectedStudentId = 'all_group'; // Default to group analysis
             _analysisResult = null;
             _students = [];
           });
@@ -180,19 +182,25 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
       child: DropdownButtonFormField<String>(
         value: _selectedStudentId,
         dropdownColor: AppColors.darkElevated,
-        style: TextStyle(color: AppColors.textOnDark, fontSize: 14.sp),
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14.sp),
         decoration: InputDecoration(
           labelText: 'اختر الطالب',
-          labelStyle: TextStyle(color: AppColors.textOnDarkSecondary),
+          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
           prefixIcon: Icon(Icons.person, color: AppColors.primary),
           border: InputBorder.none,
         ),
-        items: _students.map((s) {
-          return DropdownMenuItem<String>(
-            value: s['id'] as String,
-            child: Text(s['name'] as String),
-          );
-        }).toList(),
+        items: [
+          DropdownMenuItem<String>(
+            value: 'all_group',
+            child: Text('🌟 تحليل شامل للمجموعة 🌟', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+          ),
+          ..._students.map((s) {
+            return DropdownMenuItem<String>(
+              value: s['id'] as String,
+              child: Text(s['name'] as String),
+            );
+          }),
+        ],
         onChanged: (v) {
           setState(() {
             _selectedStudentId = v;
@@ -229,7 +237,7 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
               style: TextStyle(
                 fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textOnDark,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             SizedBox(height: 12.h),
@@ -237,7 +245,7 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
               'اختر مجموعة ثم طالب للحصول على:\n\n• تحليل نقاط القوة والضعف\n• مقارنة بمتوسط الصف\n• اقتراحات للتحسين\n• تقرير شامل',
               style: TextStyle(
                 fontSize: 14.sp,
-                color: AppColors.textOnDarkSecondary,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                 height: 1.8,
               ),
               textAlign: TextAlign.center,
@@ -254,6 +262,8 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
       orElse: () => {'name': '', 'grade': ''},
     );
 
+    final isGroup = _selectedStudentId == 'all_group' || _selectedStudentId == null;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -267,25 +277,26 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
             child: CircleAvatar(
               radius: 50.r,
               backgroundColor: Theme.of(context).colorScheme.surface,
-              child: Icon(Icons.person, size: 50.sp, color: AppColors.primary),
+              child: Icon(isGroup ? Icons.groups : Icons.person, size: 50.sp, color: AppColors.primary),
             ),
           ),
           SizedBox(height: 16.h),
           Text(
-            selectedStudent['name'] as String? ?? '',
+            isGroup ? 'تحليل أداء المجموعة بالكامل' : (selectedStudent['name'] as String? ?? ''),
             style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,
-              color: AppColors.textOnDark,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          Text(
-            selectedStudent['grade'] as String? ?? '',
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: AppColors.textOnDarkSecondary,
+          if (!isGroup)
+            Text(
+              selectedStudent['grade'] as String? ?? '',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
             ),
-          ),
           SizedBox(height: 32.h),
           Container(
             decoration: BoxDecoration(
@@ -300,7 +311,7 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
               ],
             ),
             child: ElevatedButton.icon(
-              onPressed: _isAnalyzing ? null : _analyzeStudent,
+              onPressed: _isAnalyzing ? null : _performAnalysis,
               icon: _isAnalyzing
                   ? SizedBox(
                       width: 20.w,
@@ -312,7 +323,7 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
                     )
                   : Icon(Icons.auto_awesome, color: Colors.white),
               label: Text(
-                _isAnalyzing ? 'جاري التحليل...' : 'تحليل الأداء',
+                _isAnalyzing ? 'جاري التحليل...' : (isGroup ? 'تحليل المجموعة' : 'تحليل الطالب'),
                 style: TextStyle(color: Colors.white),
               ),
               style: ElevatedButton.styleFrom(
@@ -330,7 +341,7 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
             'تحليل مجاني بالذكاء الاصطناعي',
             style: TextStyle(
               fontSize: 12.sp,
-              color: AppColors.textOnDarkSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -380,6 +391,31 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
             icon: Icons.lightbulb,
           ),
           SizedBox(height: 24.h),
+
+          // CTA: Create Quiz (Only for group analysis)
+          if (_isGroupAnalysis) ...[
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  context.push('/teacher/create-assignment'); // Navigates to assignment creation
+                },
+                icon: Icon(Icons.flash_on, color: Colors.white),
+                label: Text(
+                  'تنفيذ نصيحة الذكاء الاصطناعي: بناء اختبار علاجي الآن',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 16.h),
+          ],
 
           // Analyze Another
           SizedBox(
@@ -513,7 +549,7 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textOnDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -524,7 +560,7 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
               'لا توجد بيانات كافية',
               style: TextStyle(
                 fontSize: 13.sp,
-                color: AppColors.textOnDarkSecondary,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             )
           else
@@ -549,7 +585,7 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
                         item,
                         style: TextStyle(
                           fontSize: 13.sp,
-                          color: AppColors.textOnDarkSecondary,
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                           height: 1.4,
                         ),
                       ),
@@ -563,43 +599,56 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
     );
   }
 
-  Future<void> _analyzeStudent() async {
-    if (_selectedStudentId == null) return;
+  Future<void> _performAnalysis() async {
+    if (_selectedGroupId == null) return;
 
     final aiProvider = context.read<AIProvider>();
     final centerProvider = context.read<CenterProvider>();
+    final isGroup = _selectedStudentId == 'all_group' || _selectedStudentId == null;
 
-    // NOTE: Analysis is always available — no daily limit or credit check
-
-    setState(() => _isAnalyzing = true);
+    setState(() {
+      _isAnalyzing = true;
+      _isGroupAnalysis = isGroup;
+    });
 
     try {
-      final insights = await aiProvider.analyzeStudentWeaknesses(
-        studentId: _selectedStudentId!,
-        centerId: centerProvider.currentCenterId!,
-      );
+      if (isGroup) {
+        final result = await aiProvider.analyzeGroupPerformance(
+          groupId: _selectedGroupId!,
+        );
+        if (result != null) {
+          setState(() {
+            _analysisResult = result;
+          });
+        }
+      } else {
+        final insights = await aiProvider.analyzeStudentWeaknesses(
+          studentId: _selectedStudentId!,
+          centerId: centerProvider.currentCenterId!,
+        );
 
-      final weaknesses = <String>[];
-      final suggestions = <String>[];
+        final weaknesses = <String>[];
+        final suggestions = <String>[];
 
-      for (final insight in insights) {
-        weaknesses.add(insight.message);
-        suggestions.add(insight.suggestion);
+        for (final insight in insights) {
+          weaknesses.add(insight.message);
+          suggestions.add(insight.suggestion);
+        }
+
+        int overallScore = 100 - (insights.length * 15);
+        overallScore = overallScore.clamp(20, 100);
+
+        setState(() {
+          _analysisResult = {
+            'overall_score': overallScore,
+            'strengths': insights.isEmpty
+                ? ['أداء جيد بشكل عام', 'لا توجد نقاط ضعف واضحة']
+                : <String>[],
+            'weaknesses': weaknesses,
+            'suggestions': suggestions,
+          };
+        });
       }
-
-      int overallScore = 100 - (insights.length * 15);
-      overallScore = overallScore.clamp(20, 100);
-
-      setState(() {
-        _analysisResult = {
-          'overall_score': overallScore,
-          'strengths': insights.isEmpty
-              ? ['أداء جيد بشكل عام', 'لا توجد نقاط ضعف واضحة']
-              : <String>[],
-          'weaknesses': weaknesses,
-          'suggestions': suggestions,
-        };
-      });
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

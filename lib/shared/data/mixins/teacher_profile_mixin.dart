@@ -106,6 +106,19 @@ mixin TeacherProfileMixin on BaseRepository {
           debugPrint('✅ [TeacherProfileMixin] Enrollment status updated to active!');
         }
       }
+
+      // 4. Automatically bind any orphaned groups in this center (where teacher_id is null) to this independent teacher
+      if (kDebugMode) {
+        debugPrint('🔗 [TeacherProfileMixin] Linking unassigned groups in admin center to teacher profile...');
+      }
+      await client
+          .from('groups')
+          .update({'teacher_id': teacherId})
+          .eq('center_id', centerId)
+          .isFilter('teacher_id', null);
+      if (kDebugMode) {
+        debugPrint('✅ [TeacherProfileMixin] Groups successfully linked to independent teacher!');
+      }
     } catch (e) {
       if (kDebugMode) {
         debugPrint('❌ [TeacherProfileMixin] Error ensuring independent teacher setup: $e');
@@ -155,18 +168,35 @@ mixin TeacherProfileMixin on BaseRepository {
 
     final orFilter = conditions.join(',');
 
-    final response = await client
+    final enrollmentsResponse = await client
         .from('teacher_enrollments')
         .select('centers!inner(*)')
         .or(orFilter)
         .eq('status', 'active');
 
-    if ((response as List).isNotEmpty) {
-      final distinctCenters = <String, CenterModel>{};
-      for (var e in response) {
+    final ownedCentersResponse = await client
+        .from('centers')
+        .select('*')
+        .eq('admin_user_id', teacherUserId)
+        .isFilter('deleted_at', null);
+
+    final distinctCenters = <String, CenterModel>{};
+
+    if ((enrollmentsResponse as List).isNotEmpty) {
+      for (var e in enrollmentsResponse) {
         final center = CenterModel.fromJson(e['centers']);
         distinctCenters[center.id] = center;
       }
+    }
+
+    if ((ownedCentersResponse as List).isNotEmpty) {
+      for (var e in ownedCentersResponse) {
+        final center = CenterModel.fromJson(e);
+        distinctCenters[center.id] = center;
+      }
+    }
+
+    if (distinctCenters.isNotEmpty) {
       return distinctCenters.values.toList();
     }
 
@@ -178,17 +208,36 @@ mixin TeacherProfileMixin on BaseRepository {
     return [];
   }
 
-  /// Get user's centers (teacher enrollments)
   Future<List<CenterModel>> getTeacherCenters(String teacherId) async {
-    final response = await client
+    final enrollmentsResponse = await client
         .from('teacher_enrollments')
         .select('centers!inner(*)')
         .eq('teacher_id', teacherId)
         .eq('status', 'active');
 
-    return (response as List)
-        .map((e) => CenterModel.fromJson(e['centers']))
-        .toList();
+    final ownedCentersResponse = await client
+        .from('centers')
+        .select('*')
+        .eq('admin_user_id', teacherId)
+        .isFilter('deleted_at', null);
+
+    final distinctCenters = <String, CenterModel>{};
+
+    if ((enrollmentsResponse as List).isNotEmpty) {
+      for (var e in enrollmentsResponse) {
+        final center = CenterModel.fromJson(e['centers']);
+        distinctCenters[center.id] = center;
+      }
+    }
+
+    if ((ownedCentersResponse as List).isNotEmpty) {
+      for (var e in ownedCentersResponse) {
+        final center = CenterModel.fromJson(e);
+        distinctCenters[center.id] = center;
+      }
+    }
+
+    return distinctCenters.values.toList();
   }
 
   /// Get teacher enrollment details for a specific center (includes salary info)

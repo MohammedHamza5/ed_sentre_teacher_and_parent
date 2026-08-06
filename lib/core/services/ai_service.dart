@@ -87,6 +87,7 @@ class AiRouterService {
   bool _defaultJsonForTask(EdSentreTask task) {
     switch (task) {
       case EdSentreTask.teacherGenerateExam:
+      case EdSentreTask.teacherGenerateDeepExam:
       case EdSentreTask.teacherGenerateAssignment:
       case EdSentreTask.teacherAnalyzeClassPerformance:
       case EdSentreTask.teacherExtractConceptsFromBook:
@@ -100,6 +101,8 @@ class AiRouterService {
     switch (task) {
       case EdSentreTask.teacherGenerateExam:
         return ['questions', 'total_marks'];
+      case EdSentreTask.teacherGenerateDeepExam:
+        return ['questions', 'total_marks', 'cognitive_level_distribution'];
       case EdSentreTask.teacherGenerateAssignment:
         return ['questions'];
       case EdSentreTask.teacherAnalyzeClassPerformance:

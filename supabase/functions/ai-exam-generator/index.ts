@@ -13,7 +13,7 @@ const CORS = {
 
 // NOTE: تم الترقية من gemini-2.0-flash إلى gemini-2.5-flash
 // أذكى + نفس الحد المجاني (1500 طلب/يوم)
-const GEMINI_MODEL = 'gemini-2.5-flash';
+const GEMINI_MODEL = 'gemini-3.5-flash';
 const GEMINI_URL =
   `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 

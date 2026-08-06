@@ -8,6 +8,7 @@ import '../../features/auth/provider/auth_provider.dart';
 import '../../features/teacher/provider/teacher_provider.dart';
 import '../../features/parent/provider/parent_provider.dart';
 
+import '../models/enums.dart';
 import 'drawer/drawer_models.dart';
 import 'drawer/drawer_shell.dart';
 import 'drawer/drawer_header.dart';
@@ -25,8 +26,13 @@ final GlobalKey<ScaffoldState> parentScaffoldKey = GlobalKey<ScaffoldState>(
   debugLabel: 'ParentShell',
 );
 
+final GlobalKey<ScaffoldState> assistantScaffoldKey = GlobalKey<ScaffoldState>(
+  debugLabel: 'AssistantShell',
+);
+
 void openTeacherDrawer() => teacherScaffoldKey.currentState?.openDrawer();
 void openParentDrawer() => parentScaffoldKey.currentState?.openDrawer();
+void openAssistantDrawer() => assistantScaffoldKey.currentState?.openDrawer();
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DRAWER MENU BUTTON
@@ -199,6 +205,13 @@ class TeacherAppDrawer extends StatelessWidget {
         DrawerSectionData(
           title: 'الموارد والتقارير',
           items: [
+            DrawerItemData(
+              icon: Icons.inventory_2_rounded,
+              label: 'بنك الأسئلة',
+              route: '/teacher/question-bank',
+              gradient: AppColors.premiumSunset,
+              isActive: location.startsWith('/teacher/question-bank'),
+            ),
             DrawerItemData(
               icon: Icons.folder_copy_rounded,
               label: 'الملزمات',
@@ -385,3 +398,76 @@ class ParentAppDrawer extends StatelessWidget {
     );
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ASSISTANT APP DRAWER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+class AssistantAppDrawer extends StatelessWidget {
+  const AssistantAppDrawer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final location = GoRouterState.of(context).matchedLocation;
+
+    final userName = auth.currentUser?.fullName ?? 'مساعد';
+    final userPhone = auth.currentUser?.phone ?? '';
+    final avatarUrl = auth.currentUser?.avatarUrl;
+    final roleLabel =
+        auth.userRole == UserRole.coordinator ? 'منسق ميداني' : 'مساعد';
+
+    const assistantGradient = LinearGradient(
+      colors: [Color(0xFF0D9488), Color(0xFF14B8A6)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+
+    return DrawerShell(
+      header: DrawerHeaderWidget(
+        userName: userName,
+        subtitle: 'المساعد الميداني',
+        phone: userPhone,
+        avatarUrl: avatarUrl,
+        roleLabel: roleLabel,
+        roleColor: AppColors.teal,
+        gradient: assistantGradient,
+        stats: const [],
+      ),
+      items: [
+        DrawerSectionData(
+          title: 'المهام والوصول السريع',
+          items: [
+            DrawerItemData(
+              icon: Icons.qr_code_scanner_rounded,
+              label: 'مسح QR السريع',
+              route: '/assistant',
+              gradient: assistantGradient,
+              isActive: location == '/assistant',
+            ),
+            DrawerItemData(
+              icon: Icons.meeting_room_rounded,
+              label: 'مراقبة القاعات المباشرة',
+              route: '/assistant/rooms',
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0EA5E9), Color(0xFF38BDF8)],
+              ),
+              isActive: location.startsWith('/assistant/rooms'),
+            ),
+            DrawerItemData(
+              icon: Icons.person_search_rounded,
+              label: 'البحث اليدوي عن طالب',
+              route: '/assistant/manual-lookup',
+              gradient: const LinearGradient(
+                colors: [Color(0xFF8B5CF6), Color(0xFFA78BFA)],
+              ),
+              isActive: location.startsWith('/assistant/manual-lookup'),
+            ),
+          ],
+        ),
+      ],
+      onLogout: () => confirmDrawerLogout(context, auth),
+    );
+  }
+}
+

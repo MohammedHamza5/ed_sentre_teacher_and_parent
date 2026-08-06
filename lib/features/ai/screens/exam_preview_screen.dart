@@ -1,18 +1,21 @@
 import 'dart:math';
 
 import 'package:ed_sentre_techer_and_parent/core/config/app_colors.dart';
-import 'package:ed_sentre_techer_and_parent/features/exam_generator/presentation/providers/ai_exam_provider.dart';
 import 'package:ed_sentre_techer_and_parent/shared/models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../auth/provider/auth_provider.dart';
 import '../../../../core/providers/center_provider.dart';
 import '../../../../shared/data/supabase_repository.dart';
+import '../../exam_generator/presentation/cubits/exam_generator/exam_generator_cubit.dart';
+import '../../exam_generator/presentation/cubits/exam_generator/exam_generator_state.dart';
+import '../../exam_generator/domain/use_cases/publish_ai_exam_use_case.dart';
 import '../widgets/exam_preview_summary.dart';
 import '../widgets/exam_preview_publish_settings.dart';
 import '../widgets/exam_preview_question_view.dart';
 import '../widgets/exam_preview_question_editor.dart';
+import '../widgets/exam_preview_cognitive_chart.dart';
 import '../services/exam_pdf_service.dart';
 
 /// شاشة معاينة الامتحان المولّد — يراجع المعلم الأسئلة ثم ينشر (محرر تفاعلي)
@@ -31,7 +34,6 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
   final _durationController = TextEditingController();
 
   bool _isLoadingGroups = true;
-  bool _isPublishing = false;
   List<GroupModel> _groups = [];
   Set<String> _selectedGroupIds = {};
   bool _showAnswersAfter = true;
@@ -41,7 +43,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
   List<Map<String, dynamic>> _questions = [];
   final Set<String> _editingIds = {};
 
-  // Controllers لحفظ حالة التعديل لكل سؤال (مفتاح: question id)
+  // للتحكم بحالة التعديل لكل سؤال
   final Map<String, Map<String, TextEditingController>> _editControllers = {};
   final Map<String, int> _editCorrectAnswers = {};
 
@@ -116,15 +118,11 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
       return;
     }
 
-    setState(() => _isPublishing = true);
-
-    final provider = context.read<AiExamProvider>();
     final center = context.read<CenterProvider>();
     final centerId = center.currentCenterId;
 
     if (centerId == null) {
       _showSnack('لم يتم تحديد المركز');
-      setState(() => _isPublishing = false);
       return;
     }
 
@@ -137,29 +135,22 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
     final selectedGroups =
         _groups.where((g) => _selectedGroupIds.contains(g.id)).toList();
 
-    final assignmentId = await provider.saveAndPublishExam(
-      centerId: centerId,
-      targetGroups: selectedGroups,
-      title: _titleController.text.trim(),
-      description: _descriptionController.text.trim().isEmpty
-          ? null
-          : _descriptionController.text.trim(),
-      examType: examType,
-      difficulty: widget.examData['difficulty']?.toString() ?? 'medium',
-      timeLimitMinutes: duration,
-      showAnswersAfter: _showAnswersAfter,
-      shuffleQuestions: _shuffleQuestions,
-      editedQuestions: _questions, // تمرير الأسئلة المعدلة
+    context.read<ExamGeneratorCubit>().publishExam(
+      PublishAiExamParams(
+        centerId: centerId,
+        targetGroups: selectedGroups,
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+        examType: examType,
+        difficulty: widget.examData['difficulty']?.toString() ?? 'medium',
+        timeLimitMinutes: duration,
+        showAnswersAfter: _showAnswersAfter,
+        shuffleQuestions: _shuffleQuestions,
+        editedQuestions: _questions,
+      ),
     );
-
-    if (mounted) {
-      setState(() => _isPublishing = false);
-      if (assignmentId != null) {
-        _showSuccessDialog();
-      } else {
-        _showSnack(provider.error ?? 'فشل النشر');
-      }
-    }
   }
 
   void _showSnack(String msg) {
@@ -182,7 +173,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
             Text(
               'تم النشر بنجاح! 🎉',
               style: TextStyle(
-                color: AppColors.textOnDark,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
               ),
@@ -191,10 +182,10 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
           ],
         ),
         content: Text(
-          'تم نشر الامتحان بنجاح إلى ${_selectedGroupIds.length} مجموعة.\n'
+          'تم نشر الامتحان بنجاح لـ ${_selectedGroupIds.length} مجموعات.\n'
           'سيظهر للطلاب في قائمة الامتحانات.',
           style: TextStyle(
-            color: AppColors.textOnDarkSecondary,
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
             fontSize: 14.sp,
           ),
           textAlign: TextAlign.center,
@@ -269,7 +260,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
         _questions[index] = {
           ...q,
           'text': controllers['text']?.text ?? '',
-          'explanation': controllers['explanation']?.text ?? '',
+          'explanation': controllers['explanation']?.text,
           'marks': int.tryParse(controllers['marks']?.text ?? '2') ?? 2,
           'options': newOptions,
           'correct_answer': _editCorrectAnswers[id] ?? 0,
@@ -361,7 +352,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textOnDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -377,11 +368,11 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                 ),
                 title: Text(
                   'نسخة أوراق الطلاب (بدون إجابات)',
-                  style: TextStyle(color: AppColors.textOnDark, fontWeight: FontWeight.w600),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600),
                 ),
                 subtitle: Text(
                   'مخصصة للطباعة والتوزيع مع خانة لأسم الطالب ورقم المجموعات.',
-                  style: TextStyle(color: AppColors.textOnDarkHint, fontSize: 12.sp),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12.sp),
                 ),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -407,11 +398,11 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                 ),
                 title: Text(
                   'نموذج الإجابة الرسمي (Model Answer)',
-                  style: TextStyle(color: AppColors.textOnDark, fontWeight: FontWeight.w600),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600),
                 ),
                 subtitle: Text(
                   'يبرز الإجابات الصحيحة والتوضيحات التحليلة للمعلم والمراجعة.',
-                  style: TextStyle(color: AppColors.textOnDarkHint, fontSize: 12.sp),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12.sp),
                 ),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -437,16 +428,24 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BlocListener<ExamGeneratorCubit, ExamGeneratorState>(
+      listener: (context, state) {
+        if (state is ExamGeneratorSaved || state is ExamGeneratorSuccess) {
+          _showSuccessDialog();
+        } else if (state is ExamGeneratorFailure) {
+          _showSnack('حدث خطأ أثناء الحفظ');
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppColors.darkBackground,
       appBar: AppBar(
         title: Text(
           'محرر الامتحانات الذكي',
-          style: TextStyle(color: AppColors.textOnDark, fontSize: 18.sp),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18.sp),
         ),
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
-        iconTheme: IconThemeData(color: AppColors.textOnDark),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
         actions: [
           IconButton(
             icon: Icon(Icons.print_rounded, color: AppColors.primary, size: 24.sp),
@@ -475,6 +474,10 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                           difficulty: widget.examData['difficulty']?.toString(),
                         ),
                         SizedBox(height: 20.h),
+                        if (widget.examData['cognitiveLevelDistribution'] != null)
+                          ExamPreviewCognitiveChart(
+                            cognitiveLevelDistribution: widget.examData['cognitiveLevelDistribution'] as Map<String, dynamic>,
+                          ),
                         ExamPreviewPublishSettings(
                           titleController: _titleController,
                           descriptionController: _descriptionController,
@@ -499,7 +502,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                               child: Text(
                                 'لا توجد أسئلة، قم بإضافة سؤال جديد.',
                                 style: TextStyle(
-                                  color: AppColors.textOnDarkHint,
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                                 ),
                               ),
                             ),
@@ -602,19 +605,25 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                       top: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                     ),
                   ),
-                  child: _buildPublishButton(),
+                  child: BlocBuilder<ExamGeneratorCubit, ExamGeneratorState>(
+                    builder: (context, state) {
+                      final isPublishing = state is ExamGeneratorSaving;
+                      return _buildPublishButton(isPublishing);
+                    },
+                  ),
                 ),
               ],
             ),
+      ),
     );
   }
 
-  Widget _buildPublishButton() {
+  Widget _buildPublishButton(bool isPublishing) {
     return SizedBox(
       width: double.infinity,
       height: 54.h,
       child: ElevatedButton(
-        onPressed: _isPublishing || _editingIds.isNotEmpty
+        onPressed: isPublishing || _editingIds.isNotEmpty
             ? null
             : _publishExam,
         style: ElevatedButton.styleFrom(
@@ -624,7 +633,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
             borderRadius: BorderRadius.circular(16.r),
           ),
         ),
-        child: _isPublishing
+        child: isPublishing
             ? CircularProgressIndicator(backgroundColor: Colors.white)
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -653,7 +662,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
         Text(
           'الأسئلة (${_questions.length})',
           style: TextStyle(
-            color: AppColors.textOnDark,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 16.sp,
             fontWeight: FontWeight.bold,
           ),
@@ -661,13 +670,13 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
         const Spacer(),
         Icon(
           Icons.drag_indicator,
-          color: AppColors.textOnDarkHint,
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
           size: 16.sp,
         ),
         SizedBox(width: 4.w),
         Text(
           'اسحب للترتيب',
-          style: TextStyle(color: AppColors.textOnDarkHint, fontSize: 12.sp),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12.sp),
         ),
       ],
     );

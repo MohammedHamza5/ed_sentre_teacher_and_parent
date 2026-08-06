@@ -5,16 +5,29 @@ import '../app_drawer.dart';
 
 class DrawerMenuButton extends StatelessWidget {
   final bool isTeacher;
+  final bool isAssistant;
   final Color? color;
+  final VoidCallback? onTap;
 
-  const DrawerMenuButton({super.key, required this.isTeacher, this.color});
+  const DrawerMenuButton({
+    super.key,
+    this.isTeacher = false,
+    this.isAssistant = false,
+    this.color,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final effectiveColor = color ?? Colors.white;
 
+    final VoidCallback effectiveTap = onTap ??
+        (isAssistant
+            ? openAssistantDrawer
+            : (isTeacher ? openTeacherDrawer : openParentDrawer));
+
     return GestureDetector(
-      onTap: isTeacher ? openTeacherDrawer : openParentDrawer,
+      onTap: effectiveTap,
       child: Container(
         padding: EdgeInsets.all(10.w),
         decoration: BoxDecoration(

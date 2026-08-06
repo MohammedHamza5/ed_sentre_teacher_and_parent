@@ -18,8 +18,8 @@ class AIProvider extends ChangeNotifier {
   // State
   // ═══════════════════════════════════════════════════════════════════════
 
-  // Daily usage limit
-  static const int kDailyGenerationLimit = 5;
+  // Daily usage limit (10 exams/day safe free-tier limit)
+  static const int kDailyGenerationLimit = AiConfig.kDailyExamLimit;
   int _todayGenerationCount = 0;
 
   // Legacy credits (kept for DB compat — no longer blocks usage)
@@ -66,6 +66,7 @@ class AIProvider extends ChangeNotifier {
   String? get generationError => _generationError;
   List<Map<String, dynamic>> get conversations => _conversations;
   bool get isLoadingConversations => _isLoadingConversations;
+  AIWeaknessDetector get weaknessDetector => _weaknessDetector;
 
   // ═══════════════════════════════════════════════════════════════════════
   // Daily Usage Tracking (replaces credit system)
@@ -89,7 +90,12 @@ class AIProvider extends ChangeNotifier {
           .from('ai_usage_log')
           .select('id')
           .eq('teacher_id', userId)
-          .inFilter('action_type', ['generate_exam', 'generate_assignment'])
+          .inFilter('action_type', [
+            'generate_exam',
+            'generate_assignment',
+            'analyze_student',
+            'analyze_group',
+          ])
           .gte('created_at', startOfDay.toIso8601String());
 
       _todayGenerationCount = (response as List).length;
@@ -273,6 +279,9 @@ class AIProvider extends ChangeNotifier {
         content: content,
         params: {
           'messages': historyMessages,
+          'can_generate_exam': canGenerate(),
+          'remaining_exam_quota': remainingToday,
+          'daily_exam_limit': kDailyGenerationLimit,
           if (filePath != null) 'file_path': filePath,
         },
       );
@@ -817,10 +826,19 @@ class AIProvider extends ChangeNotifier {
       ];
     }
     // استخدام التحليل بالذكاء الاصطناعي العميق
-    return await _weaknessDetector.analyzeStudentWithAI(
+    final insights = await _weaknessDetector.analyzeStudentWithAI(
       studentId: studentId,
       centerId: centerId,
     );
+    if (insights.isNotEmpty) {
+      await _logUsage(
+        actionType: 'analyze_student',
+        creditsUsed: 0,
+        inputData: {'student_id': studentId, 'center_id': centerId},
+        outputData: {'insights_count': insights.length},
+      );
+    }
+    return insights;
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -871,6 +889,45 @@ class AIProvider extends ChangeNotifier {
       });
     } catch (e) {
       debugPrint('Error logging usage: $e');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // مستشار المجموعات (Group Analysis)
+  // ═══════════════════════════════════════════════════════════════════════
+
+  /// Analyze the entire group's performance
+  Future<Map<String, dynamic>?> analyzeGroupPerformance({
+    required String groupId,
+  }) async {
+    _isGenerating = true;
+    _generationError = null;
+    notifyListeners();
+
+    try {
+      final centerId = _repository.client.auth.currentUser?.userMetadata?['center_id'] as String?;
+      if (centerId == null) throw Exception('No center ID found');
+
+      final result = await _weaknessDetector.analyzeGroupWithAI(
+        groupId: groupId,
+        centerId: centerId,
+      );
+      if (result != null) {
+        await _logUsage(
+          actionType: 'analyze_group',
+          creditsUsed: 0,
+          inputData: {'group_id': groupId, 'center_id': centerId},
+          outputData: result,
+        );
+      }
+      return result;
+    } catch (e) {
+      debugPrint('Error analyzing group: $e');
+      _generationError = 'فشل في تحليل بيانات المجموعة. الرجاء المحاولة مرة أخرى.';
+      return null;
+    } finally {
+      _isGenerating = false;
+      notifyListeners();
     }
   }
 }

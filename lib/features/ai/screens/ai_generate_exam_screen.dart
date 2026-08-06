@@ -1,12 +1,14 @@
 import 'dart:io';
 
-import 'package:ed_sentre_techer_and_parent/core/config/app_colors.dart';
-import 'package:ed_sentre_techer_and_parent/features/ai/screens/exam_preview_screen.dart';
-import 'package:ed_sentre_techer_and_parent/features/exam_generator/presentation/providers/ai_exam_provider.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:ed_sentre_techer_and_parent/core/config/app_colors.dart';
+import 'package:ed_sentre_techer_and_parent/features/ai/screens/exam_preview_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ed_sentre_techer_and_parent/core/di/setup_di.dart';
+import 'package:ed_sentre_techer_and_parent/features/exam_generator/presentation/cubits/exam_generator/exam_generator_cubit.dart';
+import 'package:ed_sentre_techer_and_parent/features/exam_generator/presentation/cubits/exam_generator/exam_generator_state.dart';
 
 /// شاشة توليد الامتحانات بالذكاء الاصطناعي
 /// المعلم يختار ملف PDF + إعدادات → يتم التوليد → ينتقل لشاشة المعاينة والنشر
@@ -41,9 +43,12 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
     _selectedType = widget.examType ?? 'exam';
   }
 
+  final _themeController = TextEditingController();
+
   @override
   void dispose() {
     _questionCountController.dispose();
+    _themeController.dispose();
     super.dispose();
   }
 
@@ -58,18 +63,19 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
     }
   }
 
-  void _generate() async {
-    final provider = context.read<AiExamProvider>();
+  void _generate(BuildContext context) async {
+    final cubit = context.read<ExamGeneratorCubit>();
     final count = int.tryParse(_questionCountController.text) ?? 10;
+    final theme = _themeController.text.trim().isEmpty ? null : _themeController.text.trim();
 
     if (widget.fileUrl != null) {
-      final result = await provider.generateFromKnowledgeBasePdf(
-        fileUrl: widget.fileUrl!,
+      cubit.generateExam(
+        knowledgeBaseId: widget.knowledgeBaseId,
         questionCount: count,
         difficulty: _selectedDifficulty,
         examType: _selectedType,
+        theme: theme,
       );
-      _handleGenerationResult(result, provider);
       return;
     }
 
@@ -80,38 +86,36 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
       return;
     }
 
-    final result = await provider.generateFromPdf(
-      pdfFile: _selectedFile!,
+    cubit.generateExam(
+      filePath: _selectedFile!.path,
       questionCount: count,
       difficulty: _selectedDifficulty,
       examType: _selectedType,
+      theme: theme,
+    );
+  }
+
+  void _handleSuccess(BuildContext context, ExamGeneratorSuccess state) async {
+    final blueprintModel = state.blueprint as dynamic;
+    final jsonResult = blueprintModel.toJson();
+
+    final published = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: context.read<ExamGeneratorCubit>(),
+          child: ExamPreviewScreen(examData: jsonResult),
+        ),
+      ),
     );
 
-    _handleGenerationResult(result, provider);
-  }
-
-  void _handleGenerationResult(Map<String, dynamic>? result, AiExamProvider provider) async {
-    if (result != null && mounted) {
-      // NOTE: بدلاً من إظهار dialog بسيط، ننتقل لشاشة المعاينة الكاملة
-      final published = await Navigator.push<bool>(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ChangeNotifierProvider.value(
-            value: provider,
-            child: ExamPreviewScreen(examData: result),
-          ),
-        ),
-      );
-
-      if (published == true && mounted) {
-        provider.reset();
-        Navigator.pop(context, true);
-      }
-    } else if (mounted && provider.hasError) {
-      _showErrorDialog(provider.error ?? 'فشل التوليد لأسباب تقنية');
+    if (published == true && context.mounted) {
+      context.read<ExamGeneratorCubit>().reset();
+      Navigator.pop(context, true);
     }
   }
-  void _showErrorDialog(String error) {
+
+  void _showErrorDialog(BuildContext context, String error) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -121,11 +125,11 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
         ),
         title: Text(
           'عذراً، حدث خطأ ❌',
-          style: TextStyle(color: AppColors.textOnDark),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
         content: Text(
           error,
-          style: TextStyle(color: AppColors.textOnDarkSecondary),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
         ),
         actions: [
           TextButton(
@@ -135,11 +139,11 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              _generate();
+              _generate(context);
             },
             child: Text(
               'إعادة المحاولة',
-              style: TextStyle(color: AppColors.textOnDark),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
           ),
         ],
@@ -149,18 +153,29 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AiExamProvider>();
+    return BlocProvider(
+      create: (_) => sl<ExamGeneratorCubit>(),
+      child: BlocConsumer<ExamGeneratorCubit, ExamGeneratorState>(
+        listener: (context, state) {
+          if (state is ExamGeneratorSuccess) {
+            _handleSuccess(context, state);
+          } else if (state is ExamGeneratorFailure) {
+            _showErrorDialog(context, state.message);
+          }
+        },
+        builder: (context, state) {
+          final isLoading = state is ExamGeneratorLoading;
 
-    return Scaffold(
+          return Scaffold(
       backgroundColor: AppColors.darkBackground,
       appBar: AppBar(
         title: Text(
           'مولد الامتحانات الذكي',
-          style: TextStyle(color: AppColors.textOnDark),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: AppColors.textOnDark),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       ),
       body: Stack(
         children: [
@@ -175,16 +190,19 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
                 SizedBox(height: 24.h),
                 _buildSettingsSection(),
                 SizedBox(height: 32.h),
-                _buildGenerateButton(),
+                _buildGenerateButton(context),
               ],
             ),
           ),
-          if (provider.isLoading)
+          if (isLoading)
             Container(
               color: Colors.black87,
-              child: _buildLoadingState(provider),
+              child: _buildLoadingState(state),
             ),
         ],
+      ),
+    );
+        },
       ),
     );
   }
@@ -239,7 +257,16 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
     );
   }
 
-  Widget _buildLoadingState(AiExamProvider provider) {
+  Widget _buildLoadingState(ExamGeneratorState state) {
+    String statusMsg = 'المساعد الذكي يقرأ ويحلل البيانات...';
+    double progress = 0.5;
+    if (state is ExamGeneratorLoading) {
+      statusMsg = 'جاري هندسة الأسئلة بالذكاء الاصطناعي...';
+    } else if (state is ExamGeneratorSaving) {
+      statusMsg = 'جاري حفظ ونشر الامتحان...';
+      progress = 0.9;
+    }
+
     return Center(
       child: Padding(
         padding: EdgeInsets.all(24.r),
@@ -281,7 +308,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildDynamicAiIcon(provider),
+                _buildDynamicAiIcon(state),
                 SizedBox(height: 32.h),
                 Text(
                   'المساعد الذكي يعمل...',
@@ -294,7 +321,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
                 ),
                 SizedBox(height: 12.h),
                 Text(
-                  provider.statusMessage,
+                  statusMsg,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: const Color(0xFF8B5CF6),
@@ -303,15 +330,15 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
                   ),
                 ),
                 SizedBox(height: 32.h),
-                _buildSmartProgressIndicators(provider),
+                _buildSmartProgressIndicators(progress),
                 SizedBox(height: 24.h),
-                if (provider.progress > 0)
+                if (progress > 0)
                   TextButton.icon(
-                    onPressed: () => provider.reset(),
-                    icon: Icon(Icons.close, color: AppColors.textOnDarkHint, size: 18.sp),
+                    onPressed: () => context.read<ExamGeneratorCubit>().reset(),
+                    icon: Icon(Icons.close, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5), size: 18.sp),
                     label: Text(
                       'إلغاء العملية',
-                      style: TextStyle(color: AppColors.textOnDarkHint, fontSize: 14.sp),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 14.sp),
                     ),
                   ),
               ],
@@ -322,18 +349,18 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
     );
   }
 
-  Widget _buildDynamicAiIcon(AiExamProvider provider) {
-    // Determine icon and animation based on state
+  Widget _buildDynamicAiIcon(ExamGeneratorState state) {
     IconData iconData = Icons.auto_awesome;
     Color iconColor = const Color(0xFF8B5CF6);
     bool isSpinning = false;
     bool isPulsing = false;
 
-    if (provider.state == GenState.reading || provider.state == GenState.uploading) {
+    if (state is ExamGeneratorLoading) {
       iconData = Icons.document_scanner_rounded;
       iconColor = AppColors.info;
       isPulsing = true;
-    } else if (provider.state == GenState.generating) {
+      isSpinning = true;
+    } else if (state is ExamGeneratorSaving) {
       iconData = Icons.memory;
       iconColor = AppColors.success;
       isSpinning = true;
@@ -382,8 +409,8 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
     );
   }
 
-  Widget _buildSmartProgressIndicators(AiExamProvider provider) {
-    if (provider.progress == 0) return SizedBox.shrink();
+  Widget _buildSmartProgressIndicators(double progress) {
+    if (progress == 0) return SizedBox.shrink();
 
     return Column(
       children: [
@@ -400,7 +427,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
               AnimatedContainer(
                 duration: const Duration(milliseconds: 500),
                 height: 12.h,
-                width: MediaQuery.of(context).size.width * 0.7 * provider.progress,
+                width: MediaQuery.of(context).size.width * 0.7 * progress,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF8B5CF6), Color(0xFFC084FC)],
@@ -419,13 +446,13 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
         ),
         SizedBox(height: 24.h),
         // AI Thinking Steps (Simulated)
-        _buildChecklistItem('قراءة وتحليل المنهج', provider.progress >= 0.2),
+        _buildChecklistItem('قراءة وتحليل المنهج', progress >= 0.2),
         SizedBox(height: 8.h),
-        _buildChecklistItem('استخراج المفاهيم المعقدة', provider.progress >= 0.4),
+        _buildChecklistItem('استخراج المفاهيم المعقدة', progress >= 0.4),
         SizedBox(height: 8.h),
-        _buildChecklistItem('هندسة الأسئلة المتدرجة الصعوبة', provider.progress >= 0.6),
+        _buildChecklistItem('هندسة الأسئلة المتدرجة الصعوبة', progress >= 0.6),
         SizedBox(height: 8.h),
-        _buildChecklistItem('صياغة خيارات الإجابة والمشتتات (Traps)', provider.progress >= 0.9),
+        _buildChecklistItem('صياغة خيارات الإجابة والمشتتات (Traps)', progress >= 0.9),
       ],
     );
   }
@@ -484,13 +511,13 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
             SizedBox(height: 12.h),
             Text(
               'ملف من قاعدة المعرفة',
-              style: TextStyle(color: AppColors.textOnDarkHint, fontSize: 12.sp),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12.sp),
             ),
             SizedBox(height: 4.h),
             Text(
               widget.knowledgeTitle ?? 'ملف PDF',
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textOnDark, fontSize: 16.sp, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 16.sp, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -521,7 +548,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
               size: 48.sp,
               color: _selectedFile != null
                   ? const Color(0xFF8B5CF6)
-                  : AppColors.textOnDarkHint,
+                  : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
             ),
             SizedBox(height: 12.h),
             Text(
@@ -530,8 +557,8 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
                   : 'اضغط لاختيار ملف PDF المنهج',
               style: TextStyle(
                 color: _selectedFile != null
-                    ? AppColors.textOnDark
-                    : AppColors.textOnDarkHint,
+                    ? Theme.of(context).colorScheme.onSurface
+                    : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                 fontSize: 14.sp,
               ),
             ),
@@ -541,7 +568,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
                 child: Text(
                   '(الحد الأقصى 20 ميجابايت)',
                   style: TextStyle(
-                    color: AppColors.textOnDarkHint,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                     fontSize: 11.sp,
                   ),
                 ),
@@ -559,7 +586,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
         Text(
           'إعدادات الامتحان',
           style: TextStyle(
-            color: AppColors.textOnDark,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 18.sp,
             fontWeight: FontWeight.bold,
           ),
@@ -572,6 +599,16 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
           controller: _questionCountController,
           icon: Icons.format_list_numbered,
           keyboardType: TextInputType.number,
+        ),
+
+        SizedBox(height: 16.h),
+
+        // Gamification Theme
+        _buildTextField(
+          label: 'ثيم الامتحان (قصة/لعبة) - اختياري',
+          controller: _themeController,
+          icon: Icons.color_lens_outlined,
+          hintText: 'مثال: مغامرة في الفضاء، قصة بوليسية...',
         ),
 
         SizedBox(height: 16.h),
@@ -608,7 +645,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
       padding: EdgeInsets.only(bottom: 8.h),
       child: Text(
         text,
-        style: TextStyle(color: AppColors.textOnDarkSecondary, fontSize: 13.sp),
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7), fontSize: 13.sp),
       ),
     );
   }
@@ -622,7 +659,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       selectedColor: const Color(0xFF8B5CF6),
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : AppColors.textOnDarkSecondary,
+        color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
         fontSize: 12.sp,
       ),
     );
@@ -637,7 +674,7 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       selectedColor: const Color(0xFF8B5CF6).withValues(alpha: 0.6),
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : AppColors.textOnDarkSecondary,
+        color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
         fontSize: 12.sp,
       ),
     );
@@ -648,14 +685,17 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
     required TextEditingController controller,
     required IconData icon,
     TextInputType? keyboardType,
+    String? hintText,
   }) {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      style: TextStyle(color: AppColors.textOnDark),
+      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: AppColors.textOnDarkHint),
+        labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+        hintText: hintText,
+        hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5).withValues(alpha: 0.5), fontSize: 12.sp),
         prefixIcon: Icon(icon, color: const Color(0xFF8B5CF6)),
         filled: true,
         fillColor: Theme.of(context).colorScheme.surface,
@@ -667,12 +707,12 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
     );
   }
 
-  Widget _buildGenerateButton() {
+  Widget _buildGenerateButton(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       height: 54.h,
       child: ElevatedButton(
-        onPressed: _generate,
+        onPressed: () => _generate(context),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF8B5CF6),
           shape: RoundedRectangleBorder(
@@ -699,3 +739,4 @@ class _AIGenerateExamScreenState extends State<AIGenerateExamScreen> {
     );
   }
 }
+

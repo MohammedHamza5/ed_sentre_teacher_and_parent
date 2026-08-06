@@ -28,6 +28,9 @@ class _CurriculumManagementScreenState
     extends State<CurriculumManagementScreen> {
   bool _isLoading = true;
   List<Map<String, dynamic>> _subjects = [];
+  // Tracks official books found for the subject name typed in the add-sheet
+  List<Map<String, dynamic>> _officialBooksForNewSubject = [];
+  bool _isImporting = false;
 
   @override
   void initState() {
@@ -70,159 +73,299 @@ class _CurriculumManagementScreenState
     }
   }
 
+  /// Checks the official curriculum_books table for books matching [name].
+  Future<void> _checkOfficialBooksForSubject(String name, StateSetter setSheetState) async {
+    if (name.trim().isEmpty) {
+      setSheetState(() => _officialBooksForNewSubject = []);
+      return;
+    }
+    final repo = context.read<SupabaseRepository>();
+    final books = await repo.getAvailableBooksForSubject(name.trim());
+    setSheetState(() => _officialBooksForNewSubject = books);
+  }
+
+  /// Imports an official curriculum book into this center's subjects/chapters/lessons.
+  Future<void> _importOfficialCurriculum({
+    required Map<String, dynamic> book,
+    required String centerId,
+    required String icon,
+    required String color,
+    required StateSetter setSheetState,
+  }) async {
+    setSheetState(() => _isImporting = true);
+    try {
+      final repo = context.read<SupabaseRepository>();
+      final subjectId = await repo.importCurriculumToCenter(
+        centerId: centerId,
+        subjectName: book['subject_name'] as String? ?? '',
+        gradeLevel: book['grade_level'] as String? ?? '1',
+        semester: book['semester'] as int? ?? 1,
+        icon: icon,
+        color: color,
+      );
+      if (!mounted) return;
+      if (subjectId != null) {
+        Navigator.pop(context);
+        _loadSubjects();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('✅ تم استيراد المنهج الرسمي بنجاح!'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('لم يتم العثور على منهج رسمي لهذه المادة والمرحلة')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ في الاستيراد: $e')));
+    } finally {
+      if (mounted) setSheetState(() => _isImporting = false);
+    }
+  }
+
   void _showAddSubjectSheet() {
     final nameCtrl = TextEditingController();
     final gradeCtrl = TextEditingController(text: '1');
     final semCtrl = TextEditingController(text: '1');
     final colorCtrl = TextEditingController(text: '#10B981'); // Emerald
     final iconCtrl = TextEditingController(text: '📚');
+    
+    // Reset state before showing sheet
+    _officialBooksForNewSubject = [];
+    _isImporting = false;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
-                  border: Border(
-                    top: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
-                  ),
-                ),
-                padding: EdgeInsets.all(24.w),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 40.w,
-                        height: 4.h,
-                        decoration: BoxDecoration(
-                          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
-                          borderRadius: BorderRadius.circular(2.r),
-                        ),
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            // Add listener here to avoid multiple listeners
+            // In a real app, use a proper debounce package or Timer.
+            // For simplicity here, we'll just check on change with a small delay or directly.
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
+                      border: Border(
+                        top: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                       ),
                     ),
-                    SizedBox(height: 24.h),
-                    Row(
+                    padding: EdgeInsets.all(24.w),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Container(
-                          padding: EdgeInsets.all(10.w),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary.withValues(
-                              alpha: 0.15,
+                        Center(
+                          child: Container(
+                            width: 40.w,
+                            height: 4.h,
+                            decoration: BoxDecoration(
+                              color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(2.r),
                             ),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.menu_book_rounded,
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 24.sp,
                           ),
                         ),
-                        SizedBox(width: 12.w),
-                        Text(
-                          'إضافة مادة جديدة',
-                          style: Theme.of(context).textTheme.headlineMedium,
+                        SizedBox(height: 24.h),
+                        Row(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(10.w),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary.withValues(
+                                  alpha: 0.15,
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.menu_book_rounded,
+                                color: Theme.of(context).colorScheme.primary,
+                                size: 24.sp,
+                              ),
+                            ),
+                            SizedBox(width: 12.w),
+                            Text(
+                              'إضافة مادة جديدة',
+                              style: Theme.of(context).textTheme.headlineMedium,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    SizedBox(height: 24.h),
-                    GeniusTextField(
-                      controller: nameCtrl,
-                      label: 'اسم المادة (مثال: رياضيات)',
-                      prefixIcon: Icons.edit_rounded,
-                    ),
-                    SizedBox(height: 16.h),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GeniusTextField(
-                            controller: gradeCtrl,
-                            label: 'الصف (1-12)',
-                            prefixIcon: Icons.school_rounded,
-                            keyboardType: TextInputType.number,
+                        SizedBox(height: 24.h),
+                        GeniusTextField(
+                          controller: nameCtrl,
+                          label: 'اسم المادة (مثال: رياضيات)',
+                          prefixIcon: Icons.edit_rounded,
+                          onChanged: (val) {
+                            // Simple debounce-like behavior could be added here
+                            _checkOfficialBooksForSubject(val, setSheetState);
+                          },
+                        ),
+                        SizedBox(height: 16.h),
+                        
+                        // 🤖 AI OFFICIAL CURRICULUM BANNER
+                        if (_officialBooksForNewSubject.isNotEmpty) ...[
+                          Container(
+                            padding: EdgeInsets.all(16.w),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(16.r),
+                              border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.auto_awesome_rounded, color: AppColors.primary, size: 20.sp),
+                                    SizedBox(width: 8.w),
+                                    Expanded(
+                                      child: Text(
+                                        'تم العثور على مناهج رسمية لهذه المادة!',
+                                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 12.h),
+                                ..._officialBooksForNewSubject.map((book) {
+                                  return Padding(
+                                    padding: EdgeInsets.only(bottom: 8.h),
+                                    child: ElevatedButton.icon(
+                                      onPressed: _isImporting ? null : () {
+                                        final centerId = context.read<CenterProvider>().currentCenterId;
+                                        if (centerId != null) {
+                                          _importOfficialCurriculum(
+                                            book: book,
+                                            centerId: centerId,
+                                            icon: iconCtrl.text,
+                                            color: colorCtrl.text,
+                                            setSheetState: setSheetState,
+                                          );
+                                        }
+                                      },
+                                      icon: _isImporting 
+                                          ? SizedBox(width: 16.w, height: 16.w, child: const CircularProgressIndicator(strokeWidth: 2))
+                                          : const Icon(Icons.download_rounded),
+                                      label: Text('استيراد: ${book['book_title']} (${book['grade_label']})'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primary,
+                                        foregroundColor: Colors.white,
+                                        elevation: 0,
+                                        minimumSize: Size(double.infinity, 45.h),
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ],
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 16.w),
-                        Expanded(
-                          child: GeniusTextField(
-                            controller: semCtrl,
-                            label: 'الفصل (1-2)',
-                            prefixIcon: Icons.auto_awesome_motion_rounded,
-                            keyboardType: TextInputType.number,
+                          SizedBox(height: 16.h),
+                          Center(
+                            child: Text(
+                              'أو إكمال الإضافة يدوياً:',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16.h),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GeniusTextField(
-                            controller: iconCtrl,
-                            label: 'أيقونة (Emoji)',
-                            prefixIcon: Icons.emoji_emotions_rounded,
-                          ),
-                        ),
-                        SizedBox(width: 16.w),
-                        Expanded(
-                          child: GeniusTextField(
-                            controller: colorCtrl,
-                            label: 'لون البطاقة (HEX)',
-                            prefixIcon: Icons.color_lens_rounded,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 32.h),
-                    GeniusButton(
-                      label: 'إضافة المادة',
-                      onPressed: () async {
-                        final centerId = context
-                            .read<CenterProvider>()
-                            .currentCenterId;
-                        if (centerId == null || nameCtrl.text.isEmpty) return;
+                          SizedBox(height: 16.h),
+                        ],
 
-                        Navigator.pop(context);
-                        setState(() => _isLoading = true);
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GeniusTextField(
+                                controller: gradeCtrl,
+                                label: 'الصف (1-12)',
+                                prefixIcon: Icons.school_rounded,
+                                keyboardType: TextInputType.number,
+                              ),
+                            ),
+                            SizedBox(width: 16.w),
+                            Expanded(
+                              child: GeniusTextField(
+                                controller: semCtrl,
+                                label: 'الفصل (1-2)',
+                                prefixIcon: Icons.auto_awesome_motion_rounded,
+                                keyboardType: TextInputType.number,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 16.h),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GeniusTextField(
+                                controller: iconCtrl,
+                                label: 'أيقونة (Emoji)',
+                                prefixIcon: Icons.emoji_emotions_rounded,
+                              ),
+                            ),
+                            SizedBox(width: 16.w),
+                            Expanded(
+                              child: GeniusTextField(
+                                controller: colorCtrl,
+                                label: 'لون البطاقة (HEX)',
+                                prefixIcon: Icons.color_lens_rounded,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 32.h),
+                        GeniusButton(
+                          label: 'إضافة المادة (يدوياً)',
+                          onPressed: () async {
+                            final centerId = context
+                                .read<CenterProvider>()
+                                .currentCenterId;
+                            if (centerId == null || nameCtrl.text.isEmpty) return;
 
-                        try {
-                          final repo = context.read<SupabaseRepository>();
-                          await repo.addSubject(
-                            centerId: centerId,
-                            name: nameCtrl.text,
-                            gradeLevel: gradeCtrl.text,
-                            semester: int.tryParse(semCtrl.text),
-                            icon: iconCtrl.text,
-                            color: colorCtrl.text,
-                          );
-                          _loadSubjects();
-                        } catch (e) {
-                          if (context.mounted) {
-                            setState(() => _isLoading = false);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('خطأ في الإضافة: $e')),
-                            );
-                          }
-                        }
-                      },
+                            Navigator.pop(context);
+                            setState(() => _isLoading = true);
+
+                            try {
+                              final repo = context.read<SupabaseRepository>();
+                              await repo.addSubject(
+                                centerId: centerId,
+                                name: nameCtrl.text,
+                                gradeLevel: gradeCtrl.text,
+                                semester: int.tryParse(semCtrl.text),
+                                icon: iconCtrl.text,
+                                color: colorCtrl.text,
+                              );
+                              _loadSubjects();
+                            } catch (e) {
+                              if (context.mounted) {
+                                setState(() => _isLoading = false);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('خطأ في الإضافة: $e')),
+                                );
+                              }
+                            }
+                          },
+                        ),
+                        SizedBox(height: 16.h),
+                      ],
                     ),
-                    SizedBox(height: 16.h),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          }
         );
       },
     );

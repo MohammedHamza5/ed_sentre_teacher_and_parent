@@ -34,7 +34,7 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
     required this.onSortToggle,
   });
 
-  Widget _buildUrgentTasksPanel() {
+  Widget _buildUrgentTasksPanel(BuildContext context) {
     final pendingVal = stats['pending_grading'] ?? 0;
     if (pendingVal == 0) return SizedBox.shrink();
 
@@ -75,7 +75,7 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
                 ),
                 Text(
                   'يوجد $pendingVal امتحانات/واجبات تحتاج لتقييمك الآن.',
-                  style: TextStyle(color: Colors.white, fontSize: 12.sp),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 12.sp),
                 ),
               ],
             ),
@@ -85,7 +85,7 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusChip(String value, String label) {
+  Widget _buildStatusChip(BuildContext context, String value, String label) {
     final isSelected = statusFilter == value;
     return GestureDetector(
       onTap: () => onStatusChanged(value),
@@ -105,8 +105,8 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
           label,
           style: TextStyle(
             color: isSelected
-                ? Colors.white
-                : AppColors.textDisplay.withValues(alpha: 0.7),
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
             fontSize: 12.sp,
             fontWeight: FontWeight.w600,
           ),
@@ -115,7 +115,7 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
     );
   }
 
-  Widget _buildGroupDropdown() {
+  Widget _buildGroupDropdown(BuildContext context) {
     return Container(
       height: 48.h,
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 0.h),
@@ -128,9 +128,9 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
         child: DropdownButton<String>(
           value: selectedGroupId,
           isExpanded: true,
-          dropdownColor: AppColors.surface,
-          style: TextStyle(color: Colors.white, fontSize: 13.sp),
-          icon: Icon(Icons.arrow_drop_down_rounded, color: Colors.white54),
+          dropdownColor: Theme.of(context).colorScheme.surface,
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 13.sp),
+          icon: Icon(Icons.arrow_drop_down_rounded, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
           items: [
             DropdownMenuItem(
               value: 'all',
@@ -148,7 +148,7 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
     );
   }
 
-  Widget _buildSortToggle() {
+  Widget _buildSortToggle(BuildContext context) {
     bool isNewest = sortOrder == 'newest';
     return InkWell(
       onTap: onSortToggle,
@@ -173,7 +173,7 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
             Text(
               isNewest ? 'الأحدث' : 'الأقدم',
               style: TextStyle(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 12.sp,
                 fontWeight: FontWeight.bold,
               ),
@@ -189,7 +189,7 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildUrgentTasksPanel(),
+        _buildUrgentTasksPanel(context),
         Container(
           margin: EdgeInsets.only(bottom: 12.h),
           padding: EdgeInsets.all(12.w),
@@ -252,11 +252,11 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
-                    _buildStatusChip('all', 'الكل'),
+                    _buildStatusChip(context, 'all', 'الكل'),
                     SizedBox(width: 8.w),
-                    _buildStatusChip('active', 'نشطة'),
+                    _buildStatusChip(context, 'active', 'نشطة'),
                     SizedBox(width: 8.w),
-                    _buildStatusChip('ended', 'منتهية'),
+                    _buildStatusChip(context, 'ended', 'منتهية'),
                   ],
                 ),
               ),
@@ -265,9 +265,9 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
               SizedBox(height: 12.h),
               Row(
                 children: [
-                  Expanded(child: _buildGroupDropdown()),
+                  Expanded(child: _buildGroupDropdown(context)),
                   SizedBox(width: 12.w),
-                  _buildSortToggle(),
+                  _buildSortToggle(context),
                 ],
               ),
             ],

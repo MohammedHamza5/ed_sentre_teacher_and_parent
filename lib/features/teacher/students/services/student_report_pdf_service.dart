@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -5,14 +6,14 @@ import 'package:intl/intl.dart';
 
 /// خدمة إنشاء وتصدير التقرير الشهري لمتابعة أداء الطالب (للطباعة والمشاركة مع أولياء الأمور)
 class StudentReportPdfService {
-  static Future<void> generateStudentReport({
+  static Future<Uint8List> generatePdfBytes({
     required String studentName,
     required String studentCode,
     required String groupName,
     required String teacherName,
     required String subjectName,
     required String teacherNotes,
-    required String evaluationRating, // مثلاً: مميز ⭐، جيد جداً، يحتاج متابعة
+    required String evaluationRating,
     required int attendancePercentage,
     required int examsAverage,
     required int homeworkCompletion,
@@ -93,9 +94,38 @@ class StudentReportPdfService {
       ),
     );
 
-    // عرض شاشة التصدير / الطباعة للنظام
+    return pdf.save();
+  }
+
+  static Future<void> generateStudentReport({
+    required String studentName,
+    required String studentCode,
+    required String groupName,
+    required String teacherName,
+    required String subjectName,
+    required String teacherNotes,
+    required String evaluationRating,
+    required int attendancePercentage,
+    required int examsAverage,
+    required int homeworkCompletion,
+    List<Map<String, dynamic>>? recentScores,
+  }) async {
+    final bytes = await generatePdfBytes(
+      studentName: studentName,
+      studentCode: studentCode,
+      groupName: groupName,
+      teacherName: teacherName,
+      subjectName: subjectName,
+      teacherNotes: teacherNotes,
+      evaluationRating: evaluationRating,
+      attendancePercentage: attendancePercentage,
+      examsAverage: examsAverage,
+      homeworkCompletion: homeworkCompletion,
+      recentScores: recentScores,
+    );
+
     await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdf.save(),
+      onLayout: (PdfPageFormat format) async => bytes,
       name: 'تقرير_المستوى_${studentName.replaceAll(' ', '_')}.pdf',
     );
   }

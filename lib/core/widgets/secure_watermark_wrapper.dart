@@ -60,7 +60,6 @@ class _WatermarkOverlay extends StatefulWidget {
 class _WatermarkOverlayState extends State<_WatermarkOverlay>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  final Random _random = Random();
 
   @override
   void initState() {

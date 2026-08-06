@@ -58,7 +58,6 @@ mixin TeacherDashboardMixin on BaseRepository {
       client
           .from('groups')
           .select('id')
-          .eq('teacher_id', teacherId)
           .eq('center_id', centerId)
           .eq('is_active', true),
       // 2. Today's Classes
@@ -129,7 +128,6 @@ mixin TeacherDashboardMixin on BaseRepository {
         .from('schedules')
         .select('id')
         .eq('center_id', centerId)
-        .eq('teacher_id', teacherId)
         .eq('day_of_week', todayName);
     return (todaySchedule as List).length;
   }

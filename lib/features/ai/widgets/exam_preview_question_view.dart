@@ -42,7 +42,7 @@ class ExamPreviewQuestionView extends StatelessWidget {
                 index: index,
                 child: Icon(
                   Icons.drag_indicator,
-                  color: AppColors.textOnDarkHint,
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
               SizedBox(width: 8.w),
@@ -94,7 +94,7 @@ class ExamPreviewQuestionView extends StatelessWidget {
                     Text(
                       '${question['marks'] ?? 2} درجة',
                       style: TextStyle(
-                        color: AppColors.textOnDarkHint,
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                         fontSize: 11.sp,
                       ),
                     ),
@@ -145,7 +145,7 @@ class ExamPreviewQuestionView extends StatelessWidget {
           Text(
             question['text']?.toString() ?? '',
             style: TextStyle(
-              color: AppColors.textOnDark,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 14.sp,
               height: 1.5,
             ),
@@ -180,7 +180,7 @@ class ExamPreviewQuestionView extends StatelessWidget {
                       border: Border.all(
                         color: isCorrect
                             ? AppColors.success
-                            : AppColors.textOnDarkHint,
+                            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                     ),
                     child: Center(
@@ -189,7 +189,7 @@ class ExamPreviewQuestionView extends StatelessWidget {
                           : Text(
                               String.fromCharCode(65 + e.key),
                               style: TextStyle(
-                                color: AppColors.textOnDarkHint,
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                                 fontSize: 11.sp,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -203,7 +203,7 @@ class ExamPreviewQuestionView extends StatelessWidget {
                       style: TextStyle(
                         color: isCorrect
                             ? AppColors.success
-                            : AppColors.textOnDarkSecondary,
+                            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                         fontSize: 13.sp,
                       ),
                     ),
@@ -235,7 +235,7 @@ class ExamPreviewQuestionView extends StatelessWidget {
                     child: Text(
                       explanation,
                       style: TextStyle(
-                        color: AppColors.textOnDarkSecondary,
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                         fontSize: 12.sp,
                         height: 1.4,
                       ),

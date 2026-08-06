@@ -144,8 +144,9 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
   Widget _buildEmptyState() {
     return EmptyState(
       icon: Icons.account_balance_wallet_outlined,
-      title: 'لا توجد بيانات مالية',
-      subtitle: 'لم يتم حساب الراتب لهذا الشهر بعد',
+      title: 'لم يُحسب الراتب بعد',
+      subtitle:
+          'يتم حساب الراتب تلقائياً بعد تسجيل جلسات الحضور وإتمام الحصص. تأكد من تسجيل الحضور في مجموعاتك لهذا الشهر.',
     );
   }
 }

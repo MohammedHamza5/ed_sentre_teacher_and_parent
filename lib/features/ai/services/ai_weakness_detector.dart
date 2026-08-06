@@ -196,4 +196,40 @@ class AIWeaknessDetector {
         return WeaknessSeverity.low;
     }
   }
+
+  /// Analyze a full group's performance with AI
+  Future<Map<String, dynamic>?> analyzeGroupWithAI({
+    required String groupId,
+    required String centerId,
+  }) async {
+    try {
+      // Fetch students in the group
+      final students = await _repository.getGroupStudents(groupId);
+      
+      final buffer = StringBuffer();
+      buffer.writeln('Group Size: ${students.length} students');
+      buffer.writeln('Please provide a holistic analysis of this group including:');
+      buffer.writeln('- Overall class health (a score out of 100)');
+      buffer.writeln('- 3 Key strengths (what the group excels at)');
+      buffer.writeln('- 3 Common weaknesses (where the group struggles collectively)');
+      buffer.writeln('- 3 Actionable suggestions (e.g., remedial quiz, specific topics to review)');
+
+      final response = await _aiService.router.executeTask(
+        task: EdSentreTask.teacherAnalyzeClassPerformance,
+        content: buffer.toString(),
+      );
+
+      if (response.isValid && response.json != null) {
+        return response.json;
+      }
+
+      // NOTE: Returning null here is intentional. The widget hides itself when
+      // AI returns no valid data. We must NEVER show hardcoded/fabricated
+      // insights — a teacher could act on fake data and harm students.
+      return null;
+    } catch (e) {
+      debugPrint('Error in AI Group analysis: $e');
+      return null;
+    }
+  }
 }

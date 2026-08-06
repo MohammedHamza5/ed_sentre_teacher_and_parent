@@ -24,6 +24,12 @@ class ParentQuickActionsGrid extends StatelessWidget {
         'route': '/parent/schedule',
       },
       {
+        'icon': Icons.auto_stories_rounded,
+        'label': 'منهجي',
+        'color': AppColors.primary,
+        'route': '/parent/curriculum',
+      },
+      {
         'icon': Icons.assessment_outlined,
         'label': 'تقرير الدرجات',
         'color': AppColors.warningAmber,

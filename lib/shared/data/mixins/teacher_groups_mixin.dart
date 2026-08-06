@@ -18,11 +18,10 @@ mixin TeacherGroupsMixin on BaseRepository {
       '🔎 [Repo] getTeacherGroups: Teacher=$teacherId, Center=$centerId',
     );
     try {
-      // NOTE: Added center_id filter, is_active=true, deleted_at IS NULL
+      // NOTE: In Independent Teacher architecture, all groups in centerId belong to the teacher
       var response = await client
           .from('groups')
           .select('*, courses(name)')
-          .eq('teacher_id', teacherId)
           .eq('center_id', centerId)
           .eq('is_active', true)
           .isFilter('deleted_at', null)

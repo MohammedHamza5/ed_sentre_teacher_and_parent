@@ -13,6 +13,7 @@ import '../../../../core/widgets/genius/genius_text_field.dart';
 import '../../../../core/widgets/genius/staggered_list_animator.dart';
 import '../../../../core/widgets/genius/shimmer_skeleton.dart';
 import '../../../../shared/widgets/premium_widgets.dart' show EmptyState;
+import '../../../ai_assistant/screens/ai_assistant_chat_screen.dart';
 
 /// 🟢 Subject Detail & Chapters Management Screen - Glassmorphism Update
 class SubjectDetailManagementScreen extends StatefulWidget {
@@ -536,6 +537,55 @@ class _SubjectDetailManagementScreenState
                       ),
                       onTap: () =>
                           _showAddLessonSheet(chapter['id'], lessons.length),
+                    ),
+                    Divider(
+                      color: Theme.of(context).dividerTheme.color?.withValues(alpha: 0.2) ?? Colors.grey.withValues(alpha: 0.2),
+                      height: 1,
+                      indent: 24.w,
+                      endIndent: 24.w,
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 28.w,
+                        vertical: 8.h,
+                      ),
+                      leading: Container(
+                        padding: EdgeInsets.all(4.w),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.auto_awesome_rounded, color: AppColors.primary),
+                      ),
+                      title: Text(
+                        'توليد أسئلة بالذكاء الاصطناعي',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      subtitle: Text(
+                        'قم بإنشاء اختبار من هذا الباب مباشرة',
+                        style: TextStyle(
+                          color: AppColors.primary.withValues(alpha: 0.7),
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                      onTap: () {
+                        final subjectName = _subject?['title'] ?? 'المادة';
+                        final chapterName = chapter['title'] ?? 'الباب';
+                        final prompt = 'قم بإنشاء اختبار شامل عن باب "$chapterName" في مادة "$subjectName" يحتوي على أسئلة متنوعة.';
+                        
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AIAssistantChatScreen(
+                              initialPrompt: prompt,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

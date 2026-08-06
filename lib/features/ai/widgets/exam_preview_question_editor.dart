@@ -56,13 +56,13 @@ class ExamPreviewQuestionEditor extends StatelessWidget {
                   controller: controllers['marks'],
                   keyboardType: TextInputType.number,
                   style: TextStyle(
-                    color: AppColors.textOnDark,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 13.sp,
                   ),
                   decoration: InputDecoration(
                     labelText: 'الدرجة',
                     labelStyle: TextStyle(
-                      color: AppColors.textOnDarkHint,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                       fontSize: 11.sp,
                     ),
                     isDense: true,
@@ -86,7 +86,7 @@ class ExamPreviewQuestionEditor extends StatelessWidget {
           TextField(
             controller: controllers['text'],
             maxLines: null,
-            style: TextStyle(color: AppColors.textOnDark, fontSize: 14.sp),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14.sp),
             decoration: InputDecoration(
               labelText: 'نص السؤال',
               filled: true,
@@ -102,7 +102,7 @@ class ExamPreviewQuestionEditor extends StatelessWidget {
           Text(
             'حدد الإجابة الصحيحة واكتب الخيارات:',
             style: TextStyle(
-              color: AppColors.textOnDarkSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
               fontSize: 12.sp,
             ),
           ),
@@ -121,7 +121,7 @@ class ExamPreviewQuestionEditor extends StatelessWidget {
                       if (states.contains(WidgetState.selected)) {
                         return AppColors.success;
                       }
-                      return AppColors.textOnDarkHint;
+                      return Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5);
                     }),
                     onChanged: (val) {
                       if (val != null) {
@@ -135,7 +135,7 @@ class ExamPreviewQuestionEditor extends StatelessWidget {
                       style: TextStyle(
                         color: isCorrect
                             ? AppColors.success
-                            : AppColors.textOnDark,
+                            : Theme.of(context).colorScheme.onSurface,
                         fontSize: 13.sp,
                       ),
                       decoration: InputDecoration(
@@ -166,7 +166,7 @@ class ExamPreviewQuestionEditor extends StatelessWidget {
           TextField(
             controller: controllers['explanation'],
             maxLines: 2,
-            style: TextStyle(color: AppColors.textOnDark, fontSize: 13.sp),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 13.sp),
             decoration: InputDecoration(
               labelText: 'شرح الإجابة (اختياري)',
               filled: true,
@@ -186,7 +186,7 @@ class ExamPreviewQuestionEditor extends StatelessWidget {
                 onPressed: onCancel,
                 child: Text(
                   'إلغاء',
-                  style: TextStyle(color: AppColors.textOnDarkHint),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
                 ),
               ),
               SizedBox(width: 8.w),

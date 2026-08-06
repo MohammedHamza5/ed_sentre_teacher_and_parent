@@ -3,19 +3,15 @@ import 'dart:typed_data';
 import 'package:encrypt/encrypt.dart' as enc;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:uuid/uuid.dart';
 
 /// Manages secure, encrypted storage of files for offline access.
 class OfflineCacheManager {
   static const String _kEncryptionKeyId = 'offline_cache_encryption_key';
   final FlutterSecureStorage _secureStorage;
-  final Uuid _uuid;
 
   OfflineCacheManager({
     FlutterSecureStorage? secureStorage,
-    Uuid? uuid,
-  })  : _secureStorage = secureStorage ?? const FlutterSecureStorage(),
-        _uuid = uuid ?? const Uuid();
+  })  : _secureStorage = secureStorage ?? const FlutterSecureStorage();
 
   /// Retrieves or generates a robust 32-byte encryption key for AES-256.
   Future<enc.Key> _getEncryptionKey() async {

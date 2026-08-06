@@ -15,7 +15,7 @@ import '../widgets/knowledge_card.dart';
 
 // Navigation Screens
 import 'ai_generate_exam_screen.dart';
-import 'ai_chat_screen.dart';
+import '../../ai_assistant/screens/ai_assistant_chat_screen.dart';
 import 'ai_student_analysis_screen.dart';
 
 /// الشاشة الرئيسية للمساعد الذكي
@@ -131,7 +131,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
           Text(
             title,
             style: TextStyle(
-              color: AppColors.textOnDark,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
             ),
@@ -194,14 +194,14 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
           SizedBox(height: 12.h),
           _buildToolItem(
             icon: Icons.analytics_rounded,
-            label: 'تحليل أداء الطلاب',
-            description: 'تقارير ذكية عن نقاط قوة وضعف الطلاب (لا يستهلك الحد)',
+            label: 'مستشار المجموعات والطلاب',
+            description: 'تحليل شامل لنقاط القوة والضعف وتوصيات ذكية (لا يستهلك الحد)',
             gradient: const LinearGradient(
               colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
             ),
-            tag: 'قريباً',
+            tag: 'الذكاء التحليلي',
             onTap: _openStudentAnalysis,
-            isDisabled: true,
+            isDisabled: false,
             aiProvider: aiProvider,
           ),
         ],
@@ -294,7 +294,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
                     Text(
                       'قاعدة المعرفة فارغة',
                       style: TextStyle(
-                        color: AppColors.textOnDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
                         fontSize: 14.sp,
                       ),
@@ -303,7 +303,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
                     Text(
                       'أضف الملازم، الكتب، والتمارين هنا ليتمكن الذكاء الاصطناعي من استخراج الأسئلة منها.',
                       style: TextStyle(
-                        color: AppColors.textOnDarkSecondary,
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                         fontSize: 12.sp,
                         height: 1.5,
                       ),
@@ -339,18 +339,18 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
         backgroundColor: Theme.of(context).colorScheme.surface,
         title: Text(
           'حذف المحتوى',
-          style: TextStyle(color: AppColors.textOnDark, fontSize: 18.sp),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18.sp),
         ),
         content: Text(
           'هل أنت متأكد من حذف هذا المحتوى؟ لن يستخدمه الذكاء الاصطناعي بعد الآن.',
-          style: TextStyle(color: AppColors.textOnDarkSecondary),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               'إلغاء',
-              style: TextStyle(color: AppColors.textOnDarkSecondary),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
             ),
           ),
           TextButton(
@@ -412,7 +412,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
   void _openAIChat() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const AIChatScreen()),
+      MaterialPageRoute(builder: (_) => const AIAssistantChatScreen()),
     );
   }
 

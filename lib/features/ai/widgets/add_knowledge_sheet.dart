@@ -36,8 +36,8 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
     return InputDecoration(
       labelText: label,
       hintText: hint,
-      labelStyle: TextStyle(color: AppColors.textOnDarkSecondary),
-      hintStyle: TextStyle(color: AppColors.textOnDarkHint),
+      labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+      hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
       filled: true,
       fillColor: Theme.of(context).colorScheme.surface,
       border: OutlineInputBorder(
@@ -83,7 +83,7 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
               style: TextStyle(
                 fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textOnDark,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             SizedBox(height: 20.h),
@@ -94,7 +94,7 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textOnDark,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             SizedBox(height: 8.h),
@@ -111,7 +111,7 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
             // Title
             TextField(
               controller: _titleController,
-              style: TextStyle(color: AppColors.textOnDark),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               decoration: _inputDecoration(
                 'عنوان المحتوى',
                 hint: 'مثال: كتاب الرياضيات — الباب الأول',
@@ -125,7 +125,7 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
                 Expanded(
                   child: TextField(
                     controller: _subjectController,
-                    style: TextStyle(color: AppColors.textOnDark),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                     decoration: _inputDecoration('المادة'),
                   ),
                 ),
@@ -133,7 +133,7 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
                 Expanded(
                   child: TextField(
                     controller: _gradeController,
-                    style: TextStyle(color: AppColors.textOnDark),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                     decoration: _inputDecoration('الصف'),
                   ),
                 ),
@@ -147,7 +147,7 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textOnDark,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             SizedBox(height: 8.h),
@@ -168,7 +168,7 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
                     children: [
                       Icon(
                         _selectedFile == null ? Icons.upload_file : Icons.picture_as_pdf,
-                        color: _selectedFile == null ? AppColors.textOnDarkSecondary : const Color(0xFF8B5CF6),
+                        color: _selectedFile == null ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7) : const Color(0xFF8B5CF6),
                         size: 32.sp,
                       ),
                       SizedBox(height: 12.h),
@@ -178,7 +178,7 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
                             : _selectedFile!.path.split(Platform.pathSeparator).last,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: _selectedFile == null ? AppColors.textOnDarkSecondary : AppColors.textOnDark,
+                          color: _selectedFile == null ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7) : Theme.of(context).colorScheme.onSurface,
                           fontSize: 14.sp,
                         ),
                       ),
@@ -196,7 +196,7 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.textOnDarkSecondary,
+                      foregroundColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                       side: BorderSide(color: (Theme.of(context).dividerTheme.color ?? Colors.grey.shade300)),
                       padding: EdgeInsets.symmetric(vertical: 14.h),
                       shape: RoundedRectangleBorder(
@@ -273,7 +273,7 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
             Icon(
               icon,
               size: 16.sp,
-              color: isSelected ? Colors.white : AppColors.textOnDarkSecondary,
+              color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
             SizedBox(width: 6.w),
             Text(
@@ -281,7 +281,7 @@ class _AddKnowledgeSheetState extends State<AddKnowledgeSheet> {
               style: TextStyle(
                 color: isSelected
                     ? Colors.white
-                    : AppColors.textOnDarkSecondary,
+                    : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                 fontSize: 12.sp,
               ),

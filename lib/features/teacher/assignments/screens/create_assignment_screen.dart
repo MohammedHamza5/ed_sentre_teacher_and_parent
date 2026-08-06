@@ -23,7 +23,7 @@ import '../widgets/quiz_bottom_nav.dart';
 import '../widgets/quiz_questions_editor.dart';
 import '../../../../core/widgets/genius/shimmer_skeleton.dart';
 
-/// Ø´Ø§Ø´Ø© Ø¥Ù†Ø´Ø§Ø¡ ÙˆØ§Ø¬Ø¨/Ø§Ù…ØªØ­Ø§Ù†/ÙƒÙˆÙŠØ² - ØªØµÙ…ÙŠÙ… Ù…Ø¨Ø³Ù‘Ø· ÙˆÙ Ø¹Ø§Ù„
+/// شاشة إنشاء واجب/امتحان/كويز - تصميم مبسط وفعال
 class CreateAssignmentScreen extends StatefulWidget {
   final String type; // 'assignment', 'exam', 'quiz'
   final String? initialTitle;
@@ -139,11 +139,11 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
   String get _typeLabel {
     switch (widget.type) {
       case 'exam':
-        return 'Ø§Ù…ØªØ­Ø§Ù†';
+        return 'امتحان';
       case 'quiz':
-        return 'ÙƒÙˆÙŠØ²';
+        return 'كويز';
       default:
-        return 'ÙˆØ§Ø¬Ø¨';
+        return 'واجب';
     }
   }
 
@@ -189,7 +189,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(
-          'Ø¥Ù†Ø´Ø§Ø¡ $_typeLabel',
+          'إنشاء $_typeLabel',
           style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
         backgroundColor: Theme.of(context).colorScheme.surface,
@@ -232,13 +232,13 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                   // Title
                   AssignmentTextField(typeColor: _typeColor,
                     controller: _titleController,
-                    label: 'Ø§Ù„Ø¹Ù†ÙˆØ§Ù† *',
+                    label: 'العنوان *',
                     hint: widget.type == 'exam'
-                        ? 'Ù…Ø«Ø§Ù„: Ø§Ù…ØªØ­Ø§Ù† Ù†Ù‡Ø§ÙŠØ© Ø§Ù„Ø´Ù‡Ø±'
-                        : 'Ù…Ø«Ø§Ù„: ÙˆØ§Ø¬Ø¨ Ø§Ù„ÙØµÙ„ Ø§Ù„Ø«Ø§Ù†ÙŠ',
+                        ? 'مثال: امتحان نهاية الشهر'
+                        : 'مثال: واجب الفصل الثاني',
                     icon: Icons.title,
                     validator: (v) =>
-                        v?.isEmpty == true ? 'Ø£Ø¯Ø®Ù„ Ø§Ù„Ø¹Ù†ÙˆØ§Ù†' : null,
+                        v?.isEmpty == true ? 'أدخل العنوان' : null,
                   ),
                   SizedBox(height: 16.h),
 
@@ -246,8 +246,8 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                   if (widget.type == 'assignment') ...[
                     AssignmentTextField(typeColor: _typeColor,
                       controller: _descriptionController,
-                      label: 'Ø§Ù„ØªØ¹Ù„ÙŠÙ…Ø§Øª (Ø§Ø®ØªÙŠØ§Ø±ÙŠ)',
-                      hint: 'Ø£Ø¶Ù ØªØ¹Ù„ÙŠÙ…Ø§Øª Ù„Ù„Ø·Ù„Ø§Ø¨...',
+                      label: 'التعليمات (اختياري)',
+                      hint: 'أضف تعليمات للطلاب...',
                       icon: Icons.description,
                       maxLines: 3,
                     ),
@@ -317,13 +317,13 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
                   // Score
                   AssignmentTextField(typeColor: _typeColor,
                     controller: _maxScoreController,
-                    label: 'Ø§Ù„Ø¯Ø±Ø¬Ø© Ø§Ù„ÙƒÙ„ÙŠØ© *',
+                    label: 'الدرجة الكلية *',
                     hint: '100',
                     icon: Icons.grade,
                     keyboardType: TextInputType.number,
-                    suffix: 'Ø¯Ø±Ø¬Ø©',
+                    suffix: 'درجة',
                     validator: (v) =>
-                        v?.isEmpty == true ? 'Ø£Ø¯Ø®Ù„ Ø§Ù„Ø¯Ø±Ø¬Ø©' : null,
+                        v?.isEmpty == true ? 'أدخل الدرجة' : null,
                   ),
                   SizedBox(height: 32.h),
 
@@ -345,12 +345,12 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedGroups.isEmpty) {
-      _showError('Ø§Ø®ØªØ± Ù…Ø¬Ù…ÙˆØ¹Ø© ÙˆØ§Ø­Ø¯Ø© Ø¹Ù„Ù‰ Ø§Ù„Ø£Ù‚Ù„');
+      _showError('اختر مجموعة واحدة على الأقل');
       return;
     }
 
     if (_dueDate == null) {
-      _showError('Ø§Ø®ØªØ± Ø§Ù„Ù…ÙˆØ¹Ø¯');
+      _showError('اختر الموعد');
       return;
     }
 
@@ -358,7 +358,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
         _attachmentName == null &&
         _questions.isEmpty) {
       _showError(
-        'Ø£Ø¶Ù Ø£Ø³Ø¦Ù„Ø© ØªÙØ§Ø¹Ù„ÙŠØ© Ø£Ùˆ Ø§Ø±ÙØ¹ Ù…Ù„Ù Ø§Ù„Ø§Ù…ØªØ­Ø§Ù†',
+        'أضف أسئلة تفاعلية أو ارفع ملف الامتحان',
       );
       return;
     }
@@ -370,7 +370,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
       final repository = context.read<SupabaseRepository>();
       final centerId = centerProvider.currentCenterId;
 
-      if (centerId == null) throw Exception('Ø§Ù„Ø³Ù†ØªØ± ØºÙŠØ± Ù…Ø­Ø¯Ø¯');
+      if (centerId == null) throw Exception('السنتر غير محدد');
 
       final dueDateTime = _dueDate!.add(
         Duration(hours: _dueTime?.hour ?? 23, minutes: _dueTime?.minute ?? 59),
@@ -385,7 +385,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
       );
       if (publishDateTime.isAfter(dueDateTime)) {
         _showError(
-          'Ù…ÙˆØ¹Ø¯ Ø§Ù„Ø¸Ù‡ÙˆØ± ÙŠØ¬Ø¨ Ø£Ù† ÙŠØ³Ø¨Ù‚ Ù…ÙˆØ¹Ø¯ Ø§Ù„ØªØ³Ù„ÙŠÙ…',
+          'موعد الظهور يجب أن يسبق موعد التسليم',
         );
         setState(() => _isLoading = false);
         return;
@@ -460,7 +460,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('ØªÙ… Ù†Ø´Ø± $_typeLabel Ø¨Ù†Ø¬Ø§Ø­! ðŸŽ‰'),
+            content: Text('تم نشر $_typeLabel بنجاح! 🎉'),
             backgroundColor: Colors.green,
           ),
         );
@@ -469,7 +469,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
     } catch (e) {
       debugPrint("Error publishing: $e");
       if (mounted) {
-        _showError('ÙØ´Ù„ Ø§Ù„Ù†Ø´Ø±: $e');
+        _showError('فشل النشر: $e');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -482,9 +482,9 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
     );
   }
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // -------------------------------------------------------------------------
   // QUIZ SCREEN (With Questions Step)
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // -------------------------------------------------------------------------
 
   Widget _buildQuizScreen() {
     return Scaffold(
@@ -493,8 +493,8 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
       appBar: AppBar(
         title: Text(
           _currentStep == 0
-              ? 'Ø¥Ù†Ø´Ø§Ø¡ ÙƒÙˆÙŠØ² - Ø§Ù„Ù…Ø¹Ù„ÙˆÙ…Ø§Øª'
-              : 'Ø¥Ù†Ø´Ø§Ø¡ ÙƒÙˆÙŠØ² - Ø§Ù„Ø£Ø³Ø¦Ù„Ø©',
+              ? 'إنشاء كويز - المعلومات'
+              : 'إنشاء كويز - الأسئلة',
           style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
         backgroundColor: Theme.of(context).colorScheme.surface,
@@ -544,7 +544,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
         children: [
           // Type Header
           AssignmentTypeHeader(
-            typeLabel: 'ÙƒÙˆÙŠØ²',
+            typeLabel: 'كويز',
             type: 'quiz',
             typeColor: _typeColor,
             typeIcon: Icons.bolt,
@@ -563,11 +563,11 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
 
           AssignmentTextField(typeColor: _typeColor,
             controller: _titleController,
-            label: 'Ø¹Ù†ÙˆØ§Ù† Ø§Ù„ÙƒÙˆÙŠØ² *',
-            hint: 'Ù…Ø«Ø§Ù„: ÙƒÙˆÙŠØ² Ø§Ù„ÙˆØ­Ø¯Ø© Ø§Ù„Ø«Ø§Ù†ÙŠØ©',
+            label: 'عنوان الكويز *',
+            hint: 'مثال: كويز الوحدة الثانية',
             icon: Icons.title,
             validator: (v) =>
-                v?.isEmpty == true ? 'Ø£Ø¯Ø®Ù„ Ø§Ù„Ø¹Ù†ÙˆØ§Ù†' : null,
+                v?.isEmpty == true ? 'أدخل العنوان' : null,
           ),
           SizedBox(height: 16.h),
 
@@ -577,22 +577,22 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
               Expanded(
                 child: AssignmentTextField(typeColor: _typeColor,
                   controller: _durationController,
-                  label: 'Ø§Ù„Ù…Ø¯Ø© *',
+                  label: 'المدة *',
                   hint: '15',
                   icon: Icons.timer,
                   keyboardType: TextInputType.number,
-                  suffix: 'Ø¯Ù‚ÙŠÙ‚Ø©',
+                  suffix: 'دقيقة',
                 ),
               ),
               SizedBox(width: 12.w),
               Expanded(
                 child: AssignmentTextField(typeColor: _typeColor,
                   controller: _maxScoreController,
-                  label: 'Ø§Ù„Ø¯Ø±Ø¬Ø© *',
+                  label: 'الدرجة *',
                   hint: '20',
                   icon: Icons.grade,
                   keyboardType: TextInputType.number,
-                  suffix: 'Ø¯Ø±Ø¬Ø©',
+                  suffix: 'درجة',
                 ),
               ),
             ],
@@ -626,11 +626,11 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
   }
   void _goToQuestions() {
     if (_selectedGroups.isEmpty) {
-      _showError('Ø§Ø®ØªØ± Ù…Ø¬Ù…ÙˆØ¹Ø© ÙˆØ§Ø­Ø¯Ø© Ø¹Ù„Ù‰ Ø§Ù„Ø£Ù‚Ù„');
+      _showError('اختر مجموعة واحدة على الأقل');
       return;
     }
     if (_titleController.text.isEmpty) {
-      _showError('Ø£Ø¯Ø®Ù„ Ø¹Ù†ÙˆØ§Ù† Ø§Ù„ÙƒÙˆÙŠØ²');
+      _showError('أدخل عنوان الكويز');
       return;
     }
     setState(() => _currentStep = 1);
@@ -638,11 +638,11 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
 
   Future<void> _submitQuiz() async {
     if (_questions.isEmpty) {
-      _showError('Ø£Ø¶Ù Ø³Ø¤Ø§Ù„ ÙˆØ§Ø­Ø¯ Ø¹Ù„Ù‰ Ø§Ù„Ø£Ù‚Ù„');
+      _showError('أضف سؤال واحد على الأقل');
       return;
     }
     if (_dueDate == null) {
-      _showError('Ø§Ø®ØªØ± Ø§Ù„Ù…ÙˆØ¹Ø¯');
+      _showError('اختر الموعد');
       return;
     }
 
@@ -653,7 +653,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
       final repository = context.read<SupabaseRepository>();
       final centerId = centerProvider.currentCenterId;
 
-      if (centerId == null) throw Exception('Ø§Ù„Ø³Ù†ØªØ± ØºÙŠØ± Ù…Ø­Ø¯Ø¯');
+      if (centerId == null) throw Exception('السنتر غير محدد');
 
       final dueDateTime = _dueDate!.add(
         Duration(hours: _dueTime?.hour ?? 23, minutes: _dueTime?.minute ?? 59),
@@ -668,7 +668,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
       );
       if (publishDateTime.isAfter(dueDateTime)) {
         _showError(
-          'Ù…ÙˆØ¹Ø¯ Ø§Ù„Ø¸Ù‡ÙˆØ± ÙŠØ¬Ø¨ Ø£Ù† ÙŠØ³Ø¨Ù‚ Ù…ÙˆØ¹Ø¯ Ø§Ù„ØªØ³Ù„ÙŠÙ…',
+          'موعد الظهور يجب أن يسبق موعد التسليم',
         );
         setState(() => _isLoading = false);
         return;
@@ -677,7 +677,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
       for (final group in _selectedGroups) {
         final data = {
           'title': _titleController.text,
-          'description': 'ÙƒÙˆÙŠØ² Ø³Ø±ÙŠØ¹ - ${_questions.length} Ø£Ø³Ø¦Ù„Ø©',
+          'description': 'كويز سريع - ${_questions.length} أسئلة',
           'center_id': centerId,
           'group_id': group.id,
           'course_id': group.courseId,
@@ -698,7 +698,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('ØªÙ… Ù†Ø´Ø± Ø§Ù„ÙƒÙˆÙŠØ² Ø¨Ù†Ø¬Ø§Ø­! ðŸŽ‰'),
+            content: Text('تم نشر الكويز بنجاح! 🎉'),
             backgroundColor: Colors.green,
           ),
         );
@@ -707,7 +707,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
     } catch (e) {
       debugPrint("Error publishing quiz: $e");
       if (mounted) {
-        _showError('ÙØ´Ù„ Ø§Ù„Ù†Ø´Ø±: $e');
+        _showError('فشل النشر: $e');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

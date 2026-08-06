@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../core/config/app_colors.dart';
+import '../../../../shared/models/exam_models.dart';
+import '../../question_bank/services/question_bank_local_service.dart';
+import '../../question_bank/widgets/import_from_bank_dialog.dart';
 
 class QuizQuestionsEditor extends StatefulWidget {
   final List<Map<String, dynamic>> questions;
@@ -37,6 +39,55 @@ class _QuizQuestionsEditorState extends State<QuizQuestionsEditor> {
   void _removeQuestionAt(int index) {
     final updated = List<Map<String, dynamic>>.from(widget.questions)..removeAt(index);
     widget.onQuestionsChanged(updated);
+  }
+
+  void _importFromBank() async {
+    final ExamQuestion? importedQuestion = await showDialog<ExamQuestion>(
+      context: context,
+      builder: (context) => ImportFromBankDialog(typeColor: widget.typeColor),
+    );
+
+    if (importedQuestion != null) {
+      final qMap = <String, dynamic>{
+        'question': importedQuestion.text,
+        'type': importedQuestion.type.name,
+        'marks': importedQuestion.marks,
+      };
+      
+      if (importedQuestion.options != null && importedQuestion.options!.isNotEmpty) {
+        qMap['options'] = importedQuestion.options!;
+        if (importedQuestion.correctAnswer != null) {
+          qMap['correct'] = importedQuestion.options!.indexOf(importedQuestion.correctAnswer!);
+        }
+      } else if (importedQuestion.correctAnswer != null) {
+         qMap['correct_answer'] = importedQuestion.correctAnswer!;
+      }
+
+      final updated = List<Map<String, dynamic>>.from(widget.questions)..add(qMap);
+      widget.onQuestionsChanged(updated);
+    }
+  }
+
+  void _saveToBank(int index) async {
+    final q = widget.questions[index];
+    final examQ = ExamQuestion(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      assignmentId: 'bank',
+      text: q['question'] ?? '',
+      type: q['type'] == 'mcq' ? QuestionType.mcq : QuestionType.essay,
+      marks: (q['marks'] as num?)?.toDouble() ?? 5.0,
+      options: (q['options'] as List?)?.map((e) => e.toString()).toList(),
+      correctAnswer: q['correct'] != null && q['options'] != null 
+          ? (q['correct'] >= 0 ? q['options'][q['correct']] : null) 
+          : q['correct_answer'],
+      orderIndex: 0,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+    await QuestionBankLocalService().saveQuestion(examQ);
+    if(mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم الحفظ في البنك 🌟', style: TextStyle(color: Colors.white)), backgroundColor: Colors.green));
+    }
   }
 
   @override
@@ -119,15 +170,33 @@ class _QuizQuestionsEditorState extends State<QuizQuestionsEditor> {
 
         SizedBox(height: 16.h),
 
-        // Add Question Button
-        OutlinedButton.icon(
-          onPressed: _addQuestion,
-          icon: Icon(Icons.add_circle_outline, color: widget.typeColor),
-          label: Text('إضافة سؤال', style: TextStyle(color: widget.typeColor)),
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(color: widget.typeColor),
-            padding: EdgeInsets.symmetric(vertical: 16.h),
-          ),
+        // Add & Import Question Buttons
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _addQuestion,
+                icon: Icon(Icons.add_circle_outline, color: widget.typeColor),
+                label: Text('إضافة سؤال', style: TextStyle(color: widget.typeColor, fontSize: 13.sp)),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: widget.typeColor),
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                ),
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _importFromBank,
+                icon: Icon(Icons.inventory_2_outlined, color: widget.typeColor),
+                label: Text('من البنك', style: TextStyle(color: widget.typeColor, fontSize: 13.sp)),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: widget.typeColor),
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -166,6 +235,15 @@ class _QuizQuestionsEditorState extends State<QuizQuestionsEditor> {
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.save_alt_rounded,
+                  color: widget.typeColor,
+                  size: 20.sp,
+                ),
+                onPressed: () => _saveToBank(index),
+                tooltip: 'حفظ في البنك',
               ),
               IconButton(
                 icon: Icon(
@@ -555,7 +633,7 @@ class _QuestionDialogState extends State<QuestionDialog> {
         SizedBox(height: 8.h),
         TextField(
           controller: _correctAnswerController,
-          style: TextStyle(color: AppColors.textOnDark),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           decoration: InputDecoration(
             hintText: 'اكتب الإجابة الصحيحة للتصحيح التلقائي',
             hintStyle: TextStyle(

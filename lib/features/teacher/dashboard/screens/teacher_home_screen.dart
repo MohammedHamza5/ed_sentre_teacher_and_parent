@@ -6,13 +6,10 @@ import 'package:provider/provider.dart';
 import '../../../auth/provider/auth_provider.dart';
 import '../../../../core/providers/center_provider.dart';
 import '../../provider/teacher_provider.dart';
-import '../../../ai/provider/ai_provider.dart';
 import '../../../../shared/models/models.dart';
 import '../../../../core/config/app_colors.dart';
 import '../../../../core/theming/app_spacing.dart';
 import '../../../../core/widgets/genius/staggered_list_animator.dart';
-import '../../../ai/widgets/weakness_card.dart';
-import '../../../ai/services/ai_weakness_detector.dart';
 import '../../../../shared/widgets/app_drawer.dart';
 
 // 🟢 Modular Sub-Widgets (Section 1.2 & 2.2 Complexity Compliance)
@@ -20,6 +17,7 @@ import '../widgets/dashboard_section_label.dart';
 import '../widgets/teacher_hero_dashboard.dart';
 import '../widgets/teacher_quick_actions.dart';
 import '../widgets/teacher_today_classes.dart';
+import '../widgets/teacher_proactive_assistant.dart';
 
 /// 🟢 Teacher Home Screen - Decomposed, Adaptive Light/Dark Mode, High-Contrast Power Operator Identity
 class TeacherHomeScreen extends StatefulWidget {
@@ -31,7 +29,6 @@ class TeacherHomeScreen extends StatefulWidget {
 
 class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
   List<GroupModel> _todayGroups = [];
-  List<WeaknessInsight> _weaknessInsights = [];
   bool _isLoading = true;
 
   @override
@@ -46,7 +43,6 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
     final authProvider = context.read<AuthProvider>();
     final centerProvider = context.read<CenterProvider>();
     final teacherProvider = context.read<TeacherProvider>();
-    final aiProvider = context.read<AIProvider>();
 
     if (authProvider.teacherProfile != null &&
         centerProvider.availableCenters.isEmpty) {
@@ -76,24 +72,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
       }).toList();
 
       if (_todayGroups.isNotEmpty) {
-        final firstGroupId = _todayGroups.first.id;
-        final groupStudents = teacherProvider.getStudentsForGroup(firstGroupId);
-
-        if (groupStudents.isNotEmpty) {
-          final studentId = groupStudents.first['id'];
-
-          Future.microtask(() async {
-            try {
-              final insights = await aiProvider.analyzeStudentWeaknesses(
-                studentId: studentId,
-                centerId: centerProvider.currentCenterId!,
-              );
-              if (mounted) setState(() => _weaknessInsights = insights);
-            } catch (e) {
-              debugPrint('AI insight load error: $e');
-            }
-          });
-        }
+        // AI proactive assistant handles its own loading now.
       }
     }
 
@@ -210,15 +189,18 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
 
                     AppSpacing.gapH24,
 
-                    // 2. AI Recommendation Section
-                    if (_weaknessInsights.isNotEmpty) ...[
+                    // 2. AI Proactive Assistant
+                    if (_todayGroups.isNotEmpty) ...[
                       const DashboardSectionLabel(
-                        title: 'رؤى الذكاء الاصطناعي',
+                        title: 'تحليل الأداء الاستباقي',
                         icon: Icons.psychology_outlined,
                         iconColor: AppColors.teal,
                       ),
                       AppSpacing.gapH12,
-                      _buildAISection(),
+                      TeacherProactiveAssistant(
+                        groupId: _todayGroups.first.id,
+                        centerId: centerProvider.currentCenterId!,
+                      ),
                       AppSpacing.gapH24,
                     ],
 
@@ -256,29 +238,4 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
       ),
     );
   }
-
-  Widget _buildAISection() {
-    return SizedBox(
-      height: 160.h,
-      child: ListView.separated(
-        physics: const BouncingScrollPhysics(),
-        scrollDirection: Axis.horizontal,
-        clipBehavior: Clip.none,
-        itemCount: _weaknessInsights.length,
-        separatorBuilder: (c, i) => AppSpacing.gapW12,
-        itemBuilder: (context, index) {
-          return Hero(
-            tag: 'ai_insight_${_weaknessInsights[index].subjectName}_$index',
-            child: Material(
-              color: Colors.transparent,
-              child: WeaknessCard(
-                insight: _weaknessInsights[index],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
 }
-

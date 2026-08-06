@@ -7,13 +7,11 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../provider/teacher_provider.dart';
-import '../../../../core/widgets/genius/glass_card.dart';
 import '../../../../core/widgets/genius/genius_text_field.dart';
 import '../../../../core/widgets/genius/shimmer_skeleton.dart';
-import '../../../../core/config/app_colors.dart';
-import '../../../../core/config/app_colors.dart';
 import '../widgets/student_report_bottom_sheet.dart';
 import '../widgets/export_center_bottom_sheet.dart';
+import '../widgets/audio_journal_bottom_sheet.dart';
 /// 🎨 Teacher Students Screen - Forest Dark Edition
 class TeacherStudentsScreen extends StatefulWidget {
   const TeacherStudentsScreen({super.key});
@@ -74,6 +72,15 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
     final Uri launchUri = Uri(scheme: 'tel', path: phoneNumber);
     if (await canLaunchUrl(launchUri)) {
       await launchUrl(launchUri);
+    }
+  }
+
+  Future<void> _openWhatsApp(String phoneNumber) async {
+    final cleanPhone = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+    if (cleanPhone.isEmpty) return;
+    final Uri launchUri = Uri.parse('https://wa.me/$cleanPhone');
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri, mode: LaunchMode.externalApplication);
     }
   }
 
@@ -270,7 +277,10 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
 
     final teacherProvider = context.read<TeacherProvider>();
     final teacherName = teacherProvider.teacherProfile?.fullName ?? 'المعلم';
-    final subjectName = teacherProvider.teacherProfile?.subject ?? 'عام';
+    final specializations = teacherProvider.teacherProfile?.specializations;
+    final subjectName = (specializations != null && specializations.isNotEmpty) 
+        ? specializations.first 
+        : 'عام';
     
     final query = _searchController.text.trim();
     final groupName = query.isNotEmpty ? 'بحث_$query' : 'كل_الطلاب';
@@ -292,7 +302,7 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.navyCard,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
@@ -300,130 +310,265 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
     );
   }
 
+  void _showAudioJournalSheet(Map<String, dynamic> student) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (context) => AudioJournalBottomSheet(student: student),
+    );
+  }
+
   Widget _buildStudentCard(Map<String, dynamic> student) {
+    final String studentName = student['student_name'] ?? 'طالب';
+    final String? studentCode = student['student_code']?.toString();
+    final String? phone = student['parent_phone']?.toString() ?? student['student_phone']?.toString();
+    final String groupName = student['group_name'] ?? 'بدون مجموعة';
+    final String courseName = student['course_name'] ?? 'المادة الدراسية';
+
     return Padding(
-      padding: EdgeInsets.only(bottom: 14.h),
-      child: GestureDetector(
-        onTap: () => _showStudentReportSheet(student),
-        child: GlassCard(
-          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
-          padding: EdgeInsets.all(16.w),
-          child: Row(
-            children: [
-              // Avatar
-              Container(
-                padding: EdgeInsets.all(2.w),
+      padding: EdgeInsets.only(bottom: 16.h),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(22.r),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.06),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.35),
+          ),
+        ),
+        child: Column(
+          children: [
+            // Top Section: Info + Quick Actions
+            Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Avatar with Gradient Ring
+                  Container(
+                    padding: EdgeInsets.all(2.5.w),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(context).colorScheme.tertiary,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Container(
+                      padding: EdgeInsets.all(2.w),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Theme.of(context).colorScheme.surface,
+                      ),
+                      child: CircleAvatar(
+                        radius: 26.r,
+                        backgroundColor: Theme.of(context)
+                            .colorScheme
+                            .primaryContainer
+                            .withValues(alpha: 0.4),
+                        child: student['student_avatar'] != null
+                            ? ClipOval(
+                                child: CachedNetworkImage(
+                                  imageUrl: student['student_avatar'],
+                                  width: 52.r,
+                                  height: 52.r,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (_, __, ___) => Icon(
+                                    Icons.person_rounded,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                              )
+                            : Text(
+                                studentName.isNotEmpty ? studentName[0] : 'م',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontSize: 20.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 14.w),
+
+                  // Name & Tags Column
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                studentName,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16.sp,
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                    ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (studentCode != null && studentCode.isNotEmpty) ...[
+                              SizedBox(width: 6.w),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 8.w,
+                                  vertical: 3.h,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  border: Border.all(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withValues(alpha: 0.25),
+                                  ),
+                                ),
+                                child: Text(
+                                  '#$studentCode',
+                                  style: TextStyle(
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        SizedBox(height: 10.h),
+
+                        // Chips Row
+                        Wrap(
+                          spacing: 6.w,
+                          runSpacing: 6.h,
+                          children: [
+                            _buildTag(
+                              icon: Icons.groups_rounded,
+                              text: groupName,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            _buildTag(
+                              icon: Icons.menu_book_rounded,
+                              text: courseName,
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Quick Action Buttons Cluster
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildActionButton(
+                        icon: Icons.mic_rounded,
+                        color: const Color(0xFF3B82F6),
+                        onTap: () => _showAudioJournalSheet(student),
+                        tooltip: 'ملاحظة صوتية',
+                      ),
+                      if (phone != null && phone.isNotEmpty) ...[
+                        SizedBox(width: 6.w),
+                        _buildActionButton(
+                          icon: Icons.chat_outlined,
+                          color: const Color(0xFF22C55E),
+                          onTap: () => _openWhatsApp(phone),
+                          tooltip: 'واتساب',
+                        ),
+                        SizedBox(width: 6.w),
+                        _buildActionButton(
+                          icon: Icons.phone_forwarded_rounded,
+                          color: const Color(0xFF0EA5E9),
+                          onTap: () => _makePhoneCall(phone),
+                          tooltip: 'اتصال',
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Bottom Full-Width CTA Banner
+            InkWell(
+              onTap: () => _showStudentReportSheet(student),
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(22.r)),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color:
-                        (Theme.of(context).dividerTheme.color ??
-                        Colors.grey.shade300),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(22.r),
+                  ),
+                  border: Border(
+                    top: BorderSide(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .outlineVariant
+                          .withValues(alpha: 0.2),
+                    ),
                   ),
                 ),
-                child: CircleAvatar(
-                  radius: 26.r,
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  child: student['student_avatar'] != null
-                      ? ClipOval(
-                          child: CachedNetworkImage(
-                            imageUrl: student['student_avatar'],
-                            width: 52.r,
-                            height: 52.r,
-                            fit: BoxFit.cover,
-                            errorWidget: (_, __, ___) => Icon(
-                              Icons.person_rounded,
-                              color:
-                                  (Theme.of(context).textTheme.bodySmall?.color ??
-                                  Colors.grey),
-                            ),
-                          ),
-                        )
-                      : Text(
-                          (student['student_name'] ?? 'م')[0],
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
-              ),
-              SizedBox(width: 16.w),
-
-              // Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      student['student_name'] ?? 'طالب',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 8.h),
-                    Wrap(
-                      spacing: 8.w,
-                      runSpacing: 6.h,
+                    Row(
                       children: [
-                        _buildTag(
-                          icon: Icons.class_outlined,
-                          text: student['group_name'] ?? 'لا توجد مجموعة',
-                          color: Colors.orange,
+                        Icon(
+                          Icons.analytics_rounded,
+                          size: 16.sp,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
-                        if (student['course_name'] != null)
-                          _buildTag(
-                            icon: Icons.book_outlined,
-                            text: student['course_name'],
-                            color: Colors.purple,
+                        SizedBox(width: 8.w),
+                        Text(
+                          'عرض التقرير الشامل وتقييم المستوى',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
+                        ),
                       ],
+                    ),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 12.sp,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ],
                 ),
               ),
-
-              // Actions
-              Row(
-                children: [
-                  _buildActionButton(
-                    icon: Icons.analytics_rounded,
-                    color: Colors.amber,
-                    onTap: () => _showStudentReportSheet(student),
-                  ),
-                  SizedBox(width: 8.w),
-                  if (student['student_phone'] != null)
-                    _buildActionButton(
-                      icon: Icons.phone_rounded,
-                      color: Colors.green,
-                      onTap: () => _makePhoneCall(student['student_phone']),
-                    ),
-                  if (student['student_phone'] != null)
-                    SizedBox(width: 8.w),
-                  Container(
-                    padding: EdgeInsets.all(8.w),
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                    child: Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 14.sp,
-                      color:
-                          (Theme.of(context).textTheme.bodySmall?.color ??
-                          Colors.grey),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -433,20 +578,26 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
     required IconData icon,
     required Color color,
     VoidCallback? onTap,
-    double size = 20,
+    String? tooltip,
+    double size = 18,
   }) {
-    return GestureDetector(
+    final child = GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(10.w),
+        padding: EdgeInsets.all(9.w),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
+          color: color.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: Icon(icon, color: color, size: size.sp),
       ),
     );
+
+    if (tooltip != null) {
+      return Tooltip(message: tooltip, child: child);
+    }
+    return child;
   }
 
   Widget _buildTag({

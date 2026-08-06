@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../core/config/app_colors.dart';
-
 /// Interactive tool card for the AI tools grid.
 class AIToolCard extends StatelessWidget {
   final IconData icon;
@@ -70,7 +68,7 @@ class AIToolCard extends StatelessWidget {
                   child: Icon(
                     icon,
                     color: isDisabled
-                        ? AppColors.textOnDarkHint
+                        ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
                         : Colors.white,
                     size: 24.sp,
                   ),
@@ -87,8 +85,8 @@ class AIToolCard extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           fontSize: 14.sp,
                           color: isDisabled
-                              ? AppColors.textOnDarkHint
-                              : AppColors.textOnDark,
+                              ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
+                              : Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       SizedBox(height: 2.h),
@@ -96,7 +94,7 @@ class AIToolCard extends StatelessWidget {
                         description,
                         style: TextStyle(
                           fontSize: 11.sp,
-                          color: AppColors.textOnDarkSecondary,
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -123,7 +121,7 @@ class AIToolCard extends StatelessWidget {
                       fontSize: 10.sp,
                       fontWeight: FontWeight.bold,
                       color: isDisabled
-                          ? AppColors.textOnDarkHint
+                          ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
                           : gradient.colors.first,
                     ),
                   ),
@@ -132,8 +130,8 @@ class AIToolCard extends StatelessWidget {
                 Icon(
                   isDisabled ? Icons.lock_rounded : Icons.chevron_right,
                   color: isDisabled
-                      ? AppColors.textOnDarkHint
-                      : AppColors.textOnDarkSecondary,
+                      ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
+                      : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                   size: 18.sp,
                 ),
               ],

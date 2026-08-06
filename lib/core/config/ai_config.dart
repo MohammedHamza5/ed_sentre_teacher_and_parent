@@ -1,5 +1,6 @@
 enum EdSentreTask {
   teacherGenerateExam,
+  teacherGenerateDeepExam,
   teacherGenerateAssignment,
   teacherGradeEssay,
   teacherAnalyzeClassPerformance,
@@ -14,10 +15,15 @@ class AiConfig {
   static const String modelFast = 'qwen-turbo';
   static const String defaultModel = modelSmart;
 
+  /// Daily quota limits per teacher (Free Tier Safe Plan)
+  static const int kDailyExamLimit = 10;
+  static const int kDailyChatLimit = 100;
+
   /// Task costs in credits
   static const Map<EdSentreTask, int> taskCosts = {
     EdSentreTask.teacherChatAssistant: 2,
     EdSentreTask.teacherGenerateExam: 15,
+    EdSentreTask.teacherGenerateDeepExam: 25,
     EdSentreTask.teacherGenerateAssignment: 10,
     EdSentreTask.teacherGradeEssay: 5,
     EdSentreTask.teacherAnalyzeClassPerformance: 10,
@@ -31,6 +37,7 @@ class AiConfig {
     switch (task) {
       // Qwen-Max — complex generation & analysis
       case EdSentreTask.teacherGenerateExam:
+      case EdSentreTask.teacherGenerateDeepExam:
       case EdSentreTask.teacherGradeEssay:
       case EdSentreTask.teacherAnalyzeClassPerformance:
         return modelMax;

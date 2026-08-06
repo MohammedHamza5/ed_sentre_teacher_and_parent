@@ -127,6 +127,7 @@ class _UploadMaterialDialogState extends State<UploadMaterialDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
       child: Container(
         padding: EdgeInsets.all(24.w),
@@ -173,7 +174,7 @@ class _UploadMaterialDialogState extends State<UploadMaterialDialog> {
                     child: Container(
                       padding: EdgeInsets.all(20.w),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(
                           color: _selectedFile != null
@@ -312,11 +313,11 @@ class _UploadMaterialDialogState extends State<UploadMaterialDialog> {
       onSelected: (val) {
         if (val) setState(() => _selectedType = id);
       },
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       selectedColor: Theme.of(context).colorScheme.primary,
       labelStyle: TextStyle(
         color: isSelected
-            ? Colors.white
+            ? Theme.of(context).colorScheme.onPrimary
             : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),

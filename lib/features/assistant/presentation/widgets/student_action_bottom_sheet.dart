@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import '../../../../core/providers/center_provider.dart';
+import '../../../auth/provider/auth_provider.dart';
+import '../../domain/repositories/assistant_repository.dart';
 import '../cubits/student_action/student_action_cubit.dart';
 import '../cubits/student_action/student_action_state.dart';
 
@@ -21,18 +25,62 @@ class StudentActionBottomSheet extends StatefulWidget {
     required String studentName,
     required String sessionId,
   }) {
+    StudentActionCubit? existingCubit;
+    try {
+      existingCubit = context.read<StudentActionCubit>();
+    } catch (_) {}
+
+    final authProvider = () {
+      try {
+        return context.read<AuthProvider>();
+      } catch (_) {
+        return null;
+      }
+    }();
+
+    final centerProvider = () {
+      try {
+        return context.read<CenterProvider>();
+      } catch (_) {
+        return null;
+      }
+    }();
+
+    // NOTE: CenterProvider.currentCenterId is the primary source for the teacher/assistant role.
+    // defaultCenterId on UserModel is a fallback. If both are null the RPC will reject the call.
+    final centerId = centerProvider?.currentCenterId ??
+        authProvider?.currentUser?.defaultCenterId ??
+        authProvider?.currentUser?.lastSelectedCenterId ??
+        '';
+
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => BlocProvider.value(
-        value: context.read<StudentActionCubit>()..fetchStatus(studentId),
-        child: StudentActionBottomSheet(
-          studentId: studentId,
-          studentName: studentName,
-          sessionId: sessionId,
-        ),
-      ),
+      builder: (_) {
+        if (existingCubit != null) {
+          return BlocProvider.value(
+            value: existingCubit..fetchStatus(studentId),
+            child: StudentActionBottomSheet(
+              studentId: studentId,
+              studentName: studentName,
+              sessionId: sessionId,
+            ),
+          );
+        }
+
+        return BlocProvider(
+          create: (_) => StudentActionCubit(
+            GetIt.I<AssistantRepository>(),
+            centerId,
+          )..fetchStatus(studentId),
+          child: StudentActionBottomSheet(
+            studentId: studentId,
+            studentName: studentName,
+            sessionId: sessionId,
+          ),
+        );
+      },
     );
   }
 
@@ -229,6 +277,68 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
                             ),
                           ),
                         ],
+                      ),
+                    );
+                  }
+
+                  if (state is StudentActionFailure) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444).withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: const Color(0xFFEF4444).withOpacity(0.3),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.warning_amber_rounded,
+                              color: Color(0xFFEF4444),
+                              size: 36,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'تعذّر التحقق من بيانات الطالب',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFFEF4444),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              state.message,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurface.withOpacity(0.6),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            OutlinedButton.icon(
+                              onPressed: () => context
+                                  .read<StudentActionCubit>()
+                                  .fetchStatus(widget.studentId),
+                              icon: const Icon(Icons.refresh_rounded, size: 18),
+                              label: const Text('إعادة المحاولة'),
+                              style: OutlinedButton.styleFrom(
+                                minimumSize: const Size(double.infinity, 44),
+                                foregroundColor: colorScheme.primary,
+                                side: BorderSide(
+                                  color: colorScheme.primary.withOpacity(0.4),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   }

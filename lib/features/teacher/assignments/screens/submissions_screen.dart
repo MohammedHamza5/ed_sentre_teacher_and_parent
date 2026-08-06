@@ -12,6 +12,7 @@ import '../widgets/submissions/submissions_empty_state.dart';
 import '../widgets/submissions/submissions_search_bar.dart';
 import 'exam_answer_review_screen.dart';
 import 'grading_review_screen.dart';
+import 'flash_grading_screen.dart';
 
 /// Teacher Submissions / Grading Screen - Premium Edition 🚀
 class SubmissionsScreen extends StatefulWidget {
@@ -132,6 +133,33 @@ class _SubmissionsScreenState extends State<SubmissionsScreen>
     }
   }
 
+  void _openFlashGrading() {
+    final List<Map<String, dynamic>> combined = [
+      ..._submissions.map((s) => {
+        'student_user_id': s.studentUserId,
+        'student_name': s.studentName ?? 'طالب',
+        'score': s.score,
+        'submission_id': s.id,
+      }),
+      ..._missingStudents.map((s) => {
+        'student_user_id': s['student_user_id'],
+        'student_name': s['student_name'] ?? 'طالب',
+        'score': null,
+        'submission_id': null,
+      })
+    ];
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FlashGradingScreen(
+          assignment: widget.assignment,
+          studentsToGrade: combined,
+        ),
+      ),
+    ).then((_) => _loadData()); // Refresh data when back
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -170,7 +198,7 @@ class _SubmissionsScreenState extends State<SubmissionsScreen>
                   headerSliverBuilder: (context, innerBoxIsScrolled) {
                     return [
                       SliverAppBar(
-                        expandedHeight: 280.h,
+                        expandedHeight: 340.h,
                         pinned: true,
                         backgroundColor: const Color(
                           0xFF0F172A,
@@ -195,6 +223,25 @@ class _SubmissionsScreenState extends State<SubmissionsScreen>
                                       avgPercentage: _avgPercentage,
                                       avgScore: _avgScore,
                                       maxScore: _maxScore,
+                                    ),
+                                    SizedBox(height: 16.h),
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                                      child: ElevatedButton.icon(
+                                        onPressed: _openFlashGrading,
+                                        icon: Icon(Icons.flash_on_rounded, color: Colors.amberAccent),
+                                        label: Text('الرصد السريع (Flash Grading)', style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold)),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.white.withValues(alpha: 0.1),
+                                          foregroundColor: Colors.white,
+                                          minimumSize: Size(double.infinity, 45.h),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12.r),
+                                            side: BorderSide(color: Colors.amberAccent.withValues(alpha: 0.5)),
+                                          ),
+                                          elevation: 0,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),

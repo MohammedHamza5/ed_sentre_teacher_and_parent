@@ -2,7 +2,7 @@ name: ed_sentre_techer_and_parent
 description: "EdSentre - Teacher & Parent Mobile App for Educational Center Management"
 publish_to: "none"
 
-version: 1.0.1+4
+version: 1.0.1+6
 
 environment:
   sdk: ^3.8.1
@@ -79,6 +79,7 @@ dependencies:
   flutter_secure_storage: ^10.3.1
   uuid: ^4.6.0
   shorebird_code_push: ^2.0.7
+  fpdart: ^1.2.0
 
 dependency_overrides:
   vector_math: ^2.2.0
@@ -89,9 +90,8 @@ dev_dependencies:
 
   flutter_lints: ^5.0.0
   build_runner: ^2.4.13
-  hive_generator: ^2.0.1
-  freezed: ^3.0.0-0.0.dev
-  json_serializable: ^6.9.0
+  freezed: ^3.2.3
+  json_serializable: ^6.11.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -151,7 +151,7 @@ class BulkExportPdfService {
       // فتح واجهة المشاركة القياسية للجهاز (إرسال واتساب، تليجرام، حفظ في الملفات)
       await Share.shareXFiles([XFile(file.path)], text: 'مرفق كشف أكسل لبيانات المجموعة: $groupName');
     } catch (e) {
-      print('خطأ أثناء تصدير الإكسل: $e');
+      // Ignored in production, or use custom logger
     }
   }
 }

@@ -65,7 +65,7 @@ class KnowledgeCard extends StatelessWidget {
                 Text(
                   item['title'] ?? 'بدون عنوان',
                   style: TextStyle(
-                    color: AppColors.textOnDark,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                     fontSize: 14.sp,
                   ),
@@ -78,7 +78,7 @@ class KnowledgeCard extends StatelessWidget {
                       Text(
                         item['subject_name'],
                         style: TextStyle(
-                          color: AppColors.textOnDarkSecondary,
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                           fontSize: 11.sp,
                         ),
                       ),
@@ -95,7 +95,7 @@ class KnowledgeCard extends StatelessWidget {
                     Text(
                       _formatDate(item['created_at']),
                       style: TextStyle(
-                        color: AppColors.textOnDarkHint,
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                         fontSize: 11.sp,
                       ),
                     ),

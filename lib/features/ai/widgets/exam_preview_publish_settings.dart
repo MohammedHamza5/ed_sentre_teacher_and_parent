@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/config/app_colors.dart';
 import '../../../../shared/models/models.dart';
@@ -56,19 +56,21 @@ class ExamPreviewPublishSettings extends StatelessWidget {
           Text(
             'إعدادات النشر',
             style: TextStyle(
-              color: AppColors.textOnDark,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 16.sp,
               fontWeight: FontWeight.bold,
             ),
           ),
           SizedBox(height: 16.h),
           _buildInput(
+            context: context,
             controller: titleController,
             label: 'عنوان الامتحان',
             icon: Icons.title,
           ),
           SizedBox(height: 12.h),
           _buildInput(
+            context: context,
             controller: descriptionController,
             label: 'وصف (اختياري)',
             icon: Icons.description,
@@ -76,6 +78,7 @@ class ExamPreviewPublishSettings extends StatelessWidget {
           ),
           SizedBox(height: 12.h),
           _buildInput(
+            context: context,
             controller: durationController,
             label: 'المدة (بالدقائق)',
             icon: Icons.timer,
@@ -85,7 +88,7 @@ class ExamPreviewPublishSettings extends StatelessWidget {
           Text(
             'المجموعات المستهدفة (يمكنك اختيار أكثر من مجموعة أو سنة دراسية)',
             style: TextStyle(
-              color: AppColors.textOnDarkSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
               fontSize: 13.sp,
             ),
           ),
@@ -119,7 +122,7 @@ class ExamPreviewPublishSettings extends StatelessWidget {
                         Text(
                           gradeName,
                           style: TextStyle(
-                            color: AppColors.textOnDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
                           ),
@@ -174,13 +177,13 @@ class ExamPreviewPublishSettings extends StatelessWidget {
                             }
                             onSelectionChanged(newSelection);
                           },
-                          selectedColor: const Color(0xFF8B5CF6).withOpacity(0.2),
+                          selectedColor: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
                           checkmarkColor: const Color(0xFF8B5CF6),
                           backgroundColor: Theme.of(context).colorScheme.surface,
                           labelStyle: TextStyle(
                             color: isSelected
                                 ? const Color(0xFF8B5CF6)
-                                : AppColors.textOnDarkSecondary,
+                                : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                             fontSize: 12.sp,
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                           ),
@@ -201,11 +204,13 @@ class ExamPreviewPublishSettings extends StatelessWidget {
             }),
           SizedBox(height: 16.h),
           _buildSwitch(
+            context,
             'إظهار الإجابات بعد الحل',
             showAnswersAfter,
             onShowAnswersChanged,
           ),
           _buildSwitch(
+            context,
             'ترتيب الأسئلة عشوائي',
             shuffleQuestions,
             onShuffleChanged,
@@ -216,6 +221,7 @@ class ExamPreviewPublishSettings extends StatelessWidget {
   }
 
   Widget _buildInput({
+    required BuildContext context,
     required TextEditingController controller,
     required String label,
     required IconData icon,
@@ -226,13 +232,13 @@ class ExamPreviewPublishSettings extends StatelessWidget {
       controller: controller,
       maxLines: maxLines,
       keyboardType: keyboardType,
-      style: TextStyle(color: AppColors.textOnDark, fontSize: 14.sp),
+      style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14.sp),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: AppColors.textOnDarkHint),
+        labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
         prefixIcon: Icon(icon, color: AppColors.primary),
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: Theme.of(context).brightness == Brightness.dark ? AppColors.navy : AppColors.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide.none,
@@ -241,12 +247,12 @@ class ExamPreviewPublishSettings extends StatelessWidget {
     );
   }
 
-  Widget _buildSwitch(String label, bool value, ValueChanged<bool> onChanged) {
+  Widget _buildSwitch(BuildContext context, String label, bool value, ValueChanged<bool> onChanged) {
     return SwitchListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(
         label,
-        style: TextStyle(color: AppColors.textOnDarkSecondary, fontSize: 13.sp),
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7), fontSize: 13.sp),
       ),
       value: value,
       onChanged: onChanged,

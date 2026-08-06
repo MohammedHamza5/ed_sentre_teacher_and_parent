@@ -20,6 +20,7 @@ import '../../../../shared/widgets/log_viewer_screen.dart';
 
 // Teacher Screens
 import '../../features/teacher/dashboard/screens/teacher_home_screen.dart';
+import '../../features/teacher/question_bank/screens/personal_question_bank_screen.dart';
 import '../../features/teacher/schedule/screens/teacher_schedule_screen.dart';
 import '../../features/teacher/attendance/screens/teacher_attendance_screen.dart';
 import '../../features/teacher/students/screens/teacher_students_screen.dart';
@@ -36,6 +37,7 @@ import '../../features/teacher/payments/screens/teacher_payments_screen.dart';
 import '../../features/ai/screens/ai_assistant_screen.dart';
 
 // Parent Screens
+import '../../features/parent/curriculum/screens/parent_curriculum_screen.dart';
 import '../../features/parent/dashboard/screens/parent_home_screen.dart';
 import '../../features/parent/attendance/screens/parent_attendance_screen.dart';
 import '../../features/parent/grades/screens/parent_grades_screen.dart';
@@ -235,6 +237,12 @@ class AppRouter {
                 builder: (context, state) => const TeacherMaterialsScreen(),
               ),
               GoRoute(
+                path: 'question-bank',
+                name: 'teacher-question-bank',
+                parentNavigatorKey: _rootNavigatorKey,
+                builder: (context, state) => const PersonalQuestionBankScreen(),
+              ),
+              GoRoute(
                 path: 'reports',
                 name: 'teacher-reports',
                 parentNavigatorKey: _rootNavigatorKey,
@@ -289,6 +297,12 @@ class AppRouter {
                 name: 'parent-attendance',
                 parentNavigatorKey: _rootNavigatorKey,
                 builder: (context, state) => const ParentAttendanceScreen(),
+              ),
+              GoRoute(
+                path: 'curriculum',
+                name: 'parent-curriculum',
+                parentNavigatorKey: _rootNavigatorKey,
+                builder: (context, state) => const ParentCurriculumScreen(),
               ),
               GoRoute(
                 path: 'grades',
@@ -616,6 +630,8 @@ class _AssistantShellScreenState extends State<AssistantShellScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: assistantScaffoldKey,
+      drawer: const AssistantAppDrawer(),
       extendBody: true,
       body: SafeArea(
         bottom: false,

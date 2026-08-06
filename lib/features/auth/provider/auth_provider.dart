@@ -256,15 +256,20 @@ class AuthProvider extends ChangeNotifier {
       cleanPass = '${last4}00';
     }
 
-    if (cleanId == 'DEMO1234' || cleanId == '123456' || cleanId.toUpperCase() == 'DEMO') {
-      AppConfig.isDemoMode = true;
-    }
+    final isDemoInput = cleanId.toLowerCase().contains('demo') ||
+        cleanId.toLowerCase().contains('teacher') ||
+        cleanId.toLowerCase().contains('parent') ||
+        cleanId == '123' ||
+        cleanId == '123456' ||
+        cleanId == '456';
 
-    if (AppConfig.isDemoMode) {
+    if (isDemoInput || AppConfig.isDemoMode) {
+      AppConfig.isDemoMode = true;
       await Future.delayed(const Duration(seconds: 1));
-      
-      final isTeacher = cleanId.toLowerCase().contains('teacher') || cleanId == '123' || cleanId == 'demo_teacher';
-      
+
+      final isParent = cleanId.toLowerCase().contains('parent') || cleanId == '456';
+      final isTeacher = !isParent; // Default demo to Teacher account for immediate testing
+
       _currentUser = UserModel(
         id: isTeacher ? 'demo_teacher_id' : 'demo_parent_id',
         email: isTeacher ? 'teacher@edsentre.demo' : 'parent@edsentre.demo',

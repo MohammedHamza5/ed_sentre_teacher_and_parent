@@ -12,7 +12,7 @@ class AIDailyUsagePulse extends StatelessWidget {
   const AIDailyUsagePulse({
     super.key,
     required this.used,
-    this.limit = 5,
+    this.limit = 10,
     required this.pulseAnimation,
   });
 
@@ -104,7 +104,7 @@ class AIDailyUsagePulse extends StatelessWidget {
                       Text(
                         'الاستخدام اليومي',
                         style: TextStyle(
-                          color: AppColors.textOnDark,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 15.sp,
                           fontWeight: FontWeight.bold,
                         ),

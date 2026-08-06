@@ -33,9 +33,7 @@ import 'firebase_options.dart';
 // NOTE: يجب أن تكون top-level function وليست method داخل class
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   debugPrint('🔔 [FCM Background] ${message.notification?.title}');
 }
 
@@ -84,7 +82,9 @@ void main() async {
         options: DefaultFirebaseOptions.currentPlatform,
       );
       if (!kIsWeb) {
-        FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+        FirebaseMessaging.onBackgroundMessage(
+          _firebaseMessagingBackgroundHandler,
+        );
       }
 
       // Initialize Supabase
@@ -147,7 +147,9 @@ class EdSentreApp extends StatelessWidget {
             Provider<SupabaseRepository>.value(value: repository),
 
             // ✅ App Settings — Theme و اللغة وغيرها
-            ChangeNotifierProvider<AppSettingsProvider>.value(value: appSettings),
+            ChangeNotifierProvider<AppSettingsProvider>.value(
+              value: appSettings,
+            ),
 
             // Auth Provider
             ChangeNotifierProvider(create: (_) => AuthProvider(repository)),
@@ -175,62 +177,63 @@ class EdSentreApp extends StatelessWidget {
             ),
           ],
 
-      // ✅ Consumer<AppSettingsProvider> يضمن إعادة بناء MaterialApp
-      //    فوراً عند تغيير الـ ThemeMode من شاشة الإعدادات
-      child: Consumer<AppSettingsProvider>(
-        builder: (context, settings, _) {
-          return ScreenUtilInit(
-            designSize: const Size(375, 812), // iPhone X design size
-            minTextAdapt: true,
-            splitScreenMode: true,
-            builder: (context, child) {
-              return MaterialApp.router(
-                title: 'EdSentre',
-
-                // ✅ ThemeMode ديناميكي بدلاً من ThemeMode.dark الثابت
-                theme: AppTheme.lightTheme,
-                darkTheme: AppTheme.darkTheme,
-                themeMode: settings.themeMode,
-
-                // Localization - RTL for Arabic
-                locale: const Locale('ar'),
-                supportedLocales: const [Locale('ar'), Locale('en')],
-                localizationsDelegates: const [
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],
-
-                // Router
-                routerConfig: AppRouter.router,
-
-                // Builder for RTL support + Network Banner
+          // ✅ Consumer<AppSettingsProvider> يضمن إعادة بناء MaterialApp
+          //    فوراً عند تغيير الـ ThemeMode من شاشة الإعدادات
+          child: Consumer<AppSettingsProvider>(
+            builder: (context, settings, _) {
+              return ScreenUtilInit(
+                designSize: const Size(375, 812), // iPhone X design size
+                minTextAdapt: true,
+                splitScreenMode: true,
                 builder: (context, child) {
-                  return Directionality(
-                    textDirection: TextDirection.rtl,
-                    child: Column(
-                      children: [
-                        // شريط حالة الشبكة
-                        ListenableBuilder(
-                          listenable: NetworkMonitor.instance,
-                          builder: (context, _) {
-                            return NetworkStatusBanner(
-                              isConnected: NetworkMonitor.instance.isConnected,
-                            );
-                          },
+                  return MaterialApp.router(
+                    title: 'EdSentre',
+
+                    // ✅ ThemeMode ديناميكي بدلاً من ThemeMode.dark الثابت
+                    theme: AppTheme.lightTheme,
+                    darkTheme: AppTheme.darkTheme,
+                    themeMode: settings.themeMode,
+
+                    // Localization - RTL for Arabic
+                    locale: const Locale('ar'),
+                    supportedLocales: const [Locale('ar'), Locale('en')],
+                    localizationsDelegates: const [
+                      GlobalMaterialLocalizations.delegate,
+                      GlobalWidgetsLocalizations.delegate,
+                      GlobalCupertinoLocalizations.delegate,
+                    ],
+
+                    // Router
+                    routerConfig: AppRouter.router,
+
+                    // Builder for RTL support + Network Banner
+                    builder: (context, child) {
+                      return Directionality(
+                        textDirection: TextDirection.rtl,
+                        child: Column(
+                          children: [
+                            // شريط حالة الشبكة
+                            ListenableBuilder(
+                              listenable: NetworkMonitor.instance,
+                              builder: (context, _) {
+                                return NetworkStatusBanner(
+                                  isConnected:
+                                      NetworkMonitor.instance.isConnected,
+                                );
+                              },
+                            ),
+                            // المحتوى الرئيسي
+                            Expanded(child: child ?? const SizedBox()),
+                          ],
                         ),
-                        // المحتوى الرئيسي
-                        Expanded(child: child ?? const SizedBox()),
-                      ],
-                    ),
+                      );
+                    },
                   );
                 },
               );
             },
-          );
-        },
-      ),
-    );
+          ),
+        );
       },
     );
   }

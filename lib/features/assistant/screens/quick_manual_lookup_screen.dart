@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:provider/provider.dart';
 import 'dart:async';
 import '../presentation/cubits/manual_lookup/manual_lookup_cubit.dart';
 import '../presentation/cubits/manual_lookup/manual_lookup_state.dart';
 import '../../../../features/auth/provider/auth_provider.dart';
+import '../../../../shared/widgets/app_drawer.dart';
+import '../../../../shared/widgets/drawer/drawer_logout_dialog.dart';
 import '../domain/repositories/assistant_repository.dart';
 import '../presentation/widgets/student_action_bottom_sheet.dart';
 
@@ -54,12 +55,27 @@ class _QuickManualLookupScreenState extends State<QuickManualLookupScreen> {
       value: _cubit,
       child: Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.menu_rounded),
+            tooltip: 'القائمة',
+            onPressed: openAssistantDrawer,
+          ),
           title: const Text(
             'البحث اليدوي السريع',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           centerTitle: true,
           elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+              tooltip: 'تسجيل الخروج',
+              onPressed: () => confirmDrawerLogout(
+                context,
+                context.read<AuthProvider>(),
+              ),
+            ),
+          ],
         ),
         body: Column(
           children: [

@@ -2,6 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:provider/provider.dart';
+import '../../../features/auth/provider/auth_provider.dart';
+import '../../../shared/widgets/app_drawer.dart';
+import '../../../shared/widgets/drawer/drawer_logout_dialog.dart';
 import '../presentation/widgets/student_action_bottom_sheet.dart';
 
 class AssistantCameraScanScreen extends StatefulWidget {
@@ -77,12 +81,27 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu_rounded),
+          tooltip: 'القائمة',
+          onPressed: openAssistantDrawer,
+        ),
         title: const Text(
           'لوحة المساعد الميداني',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+            tooltip: 'تسجيل الخروج',
+            onPressed: () => confirmDrawerLogout(
+              context,
+              context.read<AuthProvider>(),
+            ),
+          ),
+        ],
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -268,9 +287,18 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
                     ),
                   ),
 
-                  // Action Buttons (Torch & Switch)
+                  // Action Buttons (Menu, Torch, Switch, Logout)
                   Row(
                     children: [
+                      _buildHeaderButton(
+                        onTap: openAssistantDrawer,
+                        child: const Icon(
+                          Icons.menu_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
                       _buildHeaderButton(
                         onTap: () => _scannerController.toggleTorch(),
                         child: ValueListenableBuilder(
@@ -289,12 +317,24 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       _buildHeaderButton(
                         onTap: () => _scannerController.switchCamera(),
                         child: const Icon(
                           Icons.flip_camera_ios_rounded,
                           color: Colors.white,
+                          size: 22,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildHeaderButton(
+                        onTap: () => confirmDrawerLogout(
+                          context,
+                          context.read<AuthProvider>(),
+                        ),
+                        child: const Icon(
+                          Icons.logout_rounded,
+                          color: Colors.redAccent,
                           size: 22,
                         ),
                       ),

@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../presentation/cubits/live_rooms/live_rooms_cubit.dart';
 import '../presentation/cubits/live_rooms/live_rooms_state.dart';
 import '../../../../features/auth/provider/auth_provider.dart';
+import '../../../../shared/widgets/app_drawer.dart';
+import '../../../../shared/widgets/drawer/drawer_logout_dialog.dart';
 import '../domain/repositories/assistant_repository.dart';
 
 class LiveCenterRoomsScreen extends StatefulWidget {
@@ -41,6 +43,11 @@ class _LiveCenterRoomsScreenState extends State<LiveCenterRoomsScreen> {
       value: _cubit,
       child: Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.menu_rounded),
+            tooltip: 'القائمة',
+            onPressed: openAssistantDrawer,
+          ),
           title: const Text(
             'حالة القاعات المباشرة',
             style: TextStyle(fontWeight: FontWeight.bold),
@@ -52,6 +59,14 @@ class _LiveCenterRoomsScreenState extends State<LiveCenterRoomsScreen> {
               icon: const Icon(Icons.refresh_rounded),
               tooltip: 'تحديث البيانات',
               onPressed: () => _cubit.fetchLiveRooms(),
+            ),
+            IconButton(
+              icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+              tooltip: 'تسجيل الخروج',
+              onPressed: () => confirmDrawerLogout(
+                context,
+                context.read<AuthProvider>(),
+              ),
             ),
           ],
         ),

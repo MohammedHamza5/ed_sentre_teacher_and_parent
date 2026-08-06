@@ -26,8 +26,7 @@ mixin TeacherScheduleMixin on BaseRepository {
             classrooms(name),
             groups!inner(id, group_name, courses(id, name))
           ''')
-          .eq('center_id', centerId)
-          .eq('teacher_id', teacherId);
+          .eq('center_id', centerId);
 
       if (dayOfWeek != null) {
         final dayInt = DayOfWeek.fromString(dayOfWeek).value;

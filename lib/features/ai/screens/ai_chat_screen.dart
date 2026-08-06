@@ -221,10 +221,10 @@ class _AIChatScreenState extends State<AIChatScreen> {
       appBar: AppBar(
         title: Text(
           'المساعد الذكي 💬',
-          style: TextStyle(color: AppColors.textOnDark, fontSize: 18.sp),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18.sp),
         ),
         backgroundColor: Theme.of(context).colorScheme.surface,
-        foregroundColor: AppColors.textOnDark,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         elevation: 0,
         actions: [
           // زر المحادثات السابقة
@@ -294,7 +294,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
-              color: AppColors.textOnDark,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           SizedBox(height: 8.h),
@@ -302,7 +302,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
             'اكتب سؤالك أو اختر اقتراحاً أدناه',
             style: TextStyle(
               fontSize: 14.sp,
-              color: AppColors.textOnDarkSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -338,7 +338,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
           return ActionChip(
             label: Text(
               suggestions[index],
-              style: TextStyle(fontSize: 12.sp, color: AppColors.textOnDark),
+              style: TextStyle(fontSize: 12.sp, color: Theme.of(context).colorScheme.onSurface),
             ),
             backgroundColor: Theme.of(context).colorScheme.surface,
             side: BorderSide(
@@ -405,7 +405,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
           message['content'] ?? '',
           style: TextStyle(
             fontSize: 14.sp,
-            color: isUser ? Colors.white : AppColors.textOnDark,
+            color: isUser ? Colors.white : Theme.of(context).colorScheme.onSurface,
             height: 1.5,
           ),
         ),
@@ -545,7 +545,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
                         IconButton(
                           icon: Icon(
                             Icons.attach_file,
-                            color: AppColors.textOnDarkSecondary,
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                           onPressed: (_isTyping || _isUploadingFile)
                               ? null
@@ -556,13 +556,13 @@ class _AIChatScreenState extends State<AIChatScreen> {
                           child: TextField(
                             controller: _messageController,
                             style: TextStyle(
-                              color: AppColors.textOnDark,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: 14.sp,
                             ),
                             decoration: InputDecoration(
                               hintText: 'اكتب سؤالك...',
                               hintStyle: TextStyle(
-                                color: AppColors.textOnDarkSecondary,
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                               ),
                               border: InputBorder.none,
                               contentPadding: EdgeInsets.symmetric(
@@ -674,7 +674,7 @@ class _ConversationHistorySheetState extends State<_ConversationHistorySheet> {
                     children: [
                       Icon(
                         Icons.history_rounded,
-                        color: AppColors.textOnDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                         size: 24.sp,
                       ),
                       SizedBox(width: 10.w),
@@ -683,7 +683,7 @@ class _ConversationHistorySheetState extends State<_ConversationHistorySheet> {
                         style: TextStyle(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textOnDark,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const Spacer(),
@@ -715,7 +715,7 @@ class _ConversationHistorySheetState extends State<_ConversationHistorySheet> {
                             'لا توجد محادثات سابقة',
                             style: TextStyle(
                               fontSize: 14.sp,
-                              color: AppColors.textOnDarkSecondary,
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                             ),
                           ),
                         )
@@ -801,7 +801,7 @@ class _ConversationHistorySheetState extends State<_ConversationHistorySheet> {
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: FontWeight.w600,
-              color: AppColors.textOnDark,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -810,13 +810,13 @@ class _ConversationHistorySheetState extends State<_ConversationHistorySheet> {
             '$messageCount رسالة • $timeAgo',
             style: TextStyle(
               fontSize: 11.sp,
-              color: AppColors.textOnDarkSecondary,
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
           trailing: Icon(
             Icons.arrow_forward_ios,
             size: 14.sp,
-            color: AppColors.textOnDarkHint,
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
           ),
         ),
       ),
