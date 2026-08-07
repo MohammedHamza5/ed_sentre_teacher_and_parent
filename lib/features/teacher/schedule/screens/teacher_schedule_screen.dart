@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../../../core/config/app_colors.dart';
 import '../../../auth/provider/auth_provider.dart';
 import '../../../../core/providers/center_provider.dart';
 import '../../provider/teacher_provider.dart';
@@ -126,7 +125,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         centerTitle: true,
-        iconTheme: const IconThemeData(color: AppColors.textDisplay),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
         actions: [
           IconButton(
             icon: Icon(

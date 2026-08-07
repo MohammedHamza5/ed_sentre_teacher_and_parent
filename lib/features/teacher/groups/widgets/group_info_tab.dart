@@ -11,7 +11,8 @@ class GroupInfoTab extends StatelessWidget {
 
   const GroupInfoTab({super.key, required this.group});
 
-  Widget _buildInfoPill({
+  Widget _buildInfoPill(
+    BuildContext context, {
     required String label,
     required String value,
     required IconData icon,
@@ -19,9 +20,9 @@ class GroupInfoTab extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.themeSurface,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: context.themeBorder),
       ),
       child: Stack(
         clipBehavior: Clip.none,
@@ -32,7 +33,7 @@ class GroupInfoTab extends StatelessWidget {
             child: Icon(
               icon,
               size: 28.sp,
-              color: AppColors.textMuted.withValues(alpha: 0.2),
+              color: context.themeTextSecondary.withValues(alpha: 0.2),
             ),
           ),
           Column(
@@ -43,7 +44,7 @@ class GroupInfoTab extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  color: AppColors.textMuted,
+                  color: context.themeTextSecondary,
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -52,7 +53,7 @@ class GroupInfoTab extends StatelessWidget {
               Text(
                 value,
                 style: TextStyle(
-                  color: AppColors.textDisplay,
+                  color: context.themeTextPrimary,
                   fontWeight: FontWeight.bold,
                   fontSize: 14.sp,
                 ),
@@ -112,6 +113,7 @@ class GroupInfoTab extends StatelessWidget {
                       return SizedBox(
                         width: itemWidth,
                         child: _buildInfoPill(
+                          context,
                           label: e.$1,
                           value: e.$2,
                           icon: e.$3,

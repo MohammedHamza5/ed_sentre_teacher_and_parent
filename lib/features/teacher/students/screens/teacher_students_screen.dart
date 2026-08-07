@@ -414,6 +414,7 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
                         Row(
                           children: [
                             Expanded(
+                              flex: 2,
                               child: Text(
                                 studentName,
                                 style: Theme.of(context)
@@ -430,30 +431,35 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
                             ),
                             if (studentCode != null && studentCode.isNotEmpty) ...[
                               SizedBox(width: 6.w),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 8.w,
-                                  vertical: 3.h,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(12.r),
-                                  border: Border.all(
+                              Flexible(
+                                flex: 1,
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 8.w,
+                                    vertical: 3.h,
+                                  ),
+                                  decoration: BoxDecoration(
                                     color: Theme.of(context)
                                         .colorScheme
                                         .primary
-                                        .withValues(alpha: 0.25),
+                                        .withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    border: Border.all(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary
+                                          .withValues(alpha: 0.25),
+                                    ),
                                   ),
-                                ),
-                                child: Text(
-                                  '#$studentCode',
-                                  style: TextStyle(
-                                    fontSize: 11.sp,
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).colorScheme.primary,
+                                  child: Text(
+                                    '#$studentCode',
+                                    style: TextStyle(
+                                      fontSize: 11.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ),

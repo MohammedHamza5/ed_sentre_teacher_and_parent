@@ -109,13 +109,13 @@ class _PersonalQuestionBankScreenState extends State<PersonalQuestionBankScreen>
                   padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                   child: TextField(
                     onChanged: _filterQuestions,
-                    style: TextStyle(color: AppColors.textDisplay),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                     decoration: InputDecoration(
                       hintText: 'ابحث عن سؤال أو وسم...',
                       hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
                       prefixIcon: Icon(Icons.search_rounded, color: AppColors.primary),
                       filled: true,
-                      fillColor: AppColors.surface.withValues(alpha: 0.5),
+                      fillColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16.r),
                         borderSide: BorderSide.none,

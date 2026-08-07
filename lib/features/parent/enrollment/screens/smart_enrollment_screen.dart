@@ -115,7 +115,7 @@ class _SmartEnrollmentScreenState extends State<SmartEnrollmentScreen>
         ),
         centerTitle: true,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        iconTheme: const IconThemeData(color: AppColors.textDisplay),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,

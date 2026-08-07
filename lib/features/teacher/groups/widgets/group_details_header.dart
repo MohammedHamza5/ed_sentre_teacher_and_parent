@@ -18,13 +18,17 @@ class GroupDetailsHeader extends StatelessWidget {
     required this.tabBarHeight,
   });
 
-  Widget _buildHeaderChip({required IconData icon, required String label}) {
+  Widget _buildHeaderChip(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+  }) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.6),
+        color: context.themeSurface.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: context.themeBorder),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -34,7 +38,7 @@ class GroupDetailsHeader extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: AppColors.textDisplay,
+              color: context.themeTextPrimary,
               fontSize: 12.sp,
               fontWeight: FontWeight.w700,
             ),
@@ -75,16 +79,19 @@ class GroupDetailsHeader extends StatelessWidget {
                       runSpacing: 12.h,
                       children: [
                         _buildHeaderChip(
+                          context,
                           icon: Icons.people_alt_rounded,
                           label: '${group.currentStudents} طالب',
                         ),
                         _buildHeaderChip(
+                          context,
                           icon: Icons.attach_money_rounded,
                           label: '${group.monthlyFee ?? 0} ج.م',
                         ),
                         if (group.groupCode != null &&
                             group.groupCode!.isNotEmpty)
                           _buildHeaderChip(
+                            context,
                             icon: Icons.qr_code_rounded,
                             label: group.groupCode!,
                           ),

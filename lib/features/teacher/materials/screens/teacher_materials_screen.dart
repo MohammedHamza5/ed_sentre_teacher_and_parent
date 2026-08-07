@@ -3,7 +3,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/config/app_colors.dart';
 import '../../../../core/providers/center_provider.dart';
 import '../../../auth/provider/auth_provider.dart';
 import '../../../../shared/data/supabase_repository.dart';
@@ -175,7 +174,7 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
       floating: false,
       pinned: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
-      iconTheme: const IconThemeData(color: AppColors.textDisplay),
+      iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       title: Text(
         'المكتبة الرقمية',
         style: TextStyle(

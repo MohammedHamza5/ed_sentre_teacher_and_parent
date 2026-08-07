@@ -345,7 +345,7 @@ class _SubjectDetailManagementScreenState
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textDisplay),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddChapterSheet,

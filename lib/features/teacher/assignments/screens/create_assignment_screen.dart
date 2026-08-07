@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:ed_sentre_techer_and_parent/core/config/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -195,7 +194,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
         backgroundColor: Theme.of(context).colorScheme.surface,
         foregroundColor: Theme.of(context).colorScheme.onSurface,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textDisplay),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       ),
       body: _isLoadingGroups
           ? Padding(
@@ -500,7 +499,7 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
         backgroundColor: Theme.of(context).colorScheme.surface,
         foregroundColor: Theme.of(context).colorScheme.onSurface,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textDisplay),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       ),
       body: _isLoadingGroups
           ? Padding(

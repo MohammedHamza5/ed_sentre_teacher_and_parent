@@ -5,8 +5,13 @@ import '../utils/payment_utils.dart';
 
 class TeacherPaymentsSummaryCards extends StatelessWidget {
   final Map<String, dynamic> salaryData;
+  final bool isIndependent;
 
-  const TeacherPaymentsSummaryCards({super.key, required this.salaryData});
+  const TeacherPaymentsSummaryCards({
+    super.key,
+    required this.salaryData,
+    this.isIndependent = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +28,7 @@ class TeacherPaymentsSummaryCards extends StatelessWidget {
       totalCollected += (item['collected'] as num?)?.toDouble() ?? 0;
       centerShare += (item['center_share'] as num?)?.toDouble() ?? 0;
     }
+    if (isIndependent) centerShare = 0;
 
     return Column(
       children: [
@@ -44,7 +50,7 @@ class TeacherPaymentsSummaryCards extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                'إجمالي نصيبك',
+                isIndependent ? 'إجمالي الدخل المحصّل' : 'إجمالي نصيبك',
                 style: TextStyle(
                   fontSize: 16.sp,
                   color: Colors.white.withValues(alpha: 0.85),
@@ -116,18 +122,31 @@ class TeacherPaymentsSummaryCards extends StatelessWidget {
               ),
               SizedBox(width: 12.w),
               Expanded(
-                child: _buildStatCard(
-                  context,
-                  title: 'نصيب السنتر',
-                  value: formatCurrency(centerShare),
-                  icon: Icons.account_balance_rounded,
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.error,
-                      Theme.of(context).colorScheme.error.withValues(alpha: 0.8),
-                    ],
-                  ),
-                ),
+                child: isIndependent
+                    ? _buildStatCard(
+                        context,
+                        title: 'المتبقي لدى الطلاب',
+                        value: formatCurrency(expectedGrossPreview - grossPreview),
+                        icon: Icons.pending_actions_rounded,
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.orange.shade700,
+                            Colors.orange.shade600,
+                          ],
+                        ),
+                      )
+                    : _buildStatCard(
+                        context,
+                        title: 'نصيب السنتر',
+                        value: formatCurrency(centerShare),
+                        icon: Icons.account_balance_rounded,
+                        gradient: LinearGradient(
+                          colors: [
+                            Theme.of(context).colorScheme.error,
+                            Theme.of(context).colorScheme.error.withValues(alpha: 0.8),
+                          ],
+                        ),
+                      ),
               ),
             ],
           ).animate(delay: 100.ms).fadeIn().slideY(begin: 0.1),

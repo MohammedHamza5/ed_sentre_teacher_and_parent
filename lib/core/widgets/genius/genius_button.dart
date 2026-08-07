@@ -78,7 +78,7 @@ class _GeniusButtonState extends State<GeniusButton> {
             ),
           )
         else if (widget.icon != null) ...[
-          Icon(widget.icon, size: 20, color: _getTextColor(isDisabled)),
+          Icon(widget.icon, size: 20, color: _getTextColor(context, isDisabled)),
           const SizedBox(width: 8),
         ],
         if (!widget.isLoading)
@@ -88,7 +88,7 @@ class _GeniusButtonState extends State<GeniusButton> {
               fontSize: 16,
               letterSpacing: 0.5,
               fontWeight: FontWeight.bold,
-              color: _getTextColor(isDisabled),
+              color: _getTextColor(context, isDisabled),
             ),
           ),
       ],
@@ -123,7 +123,7 @@ class _GeniusButtonState extends State<GeniusButton> {
     );
   }
 
-  Color _getTextColor(bool isDisabled) {
+  Color _getTextColor(BuildContext context, bool isDisabled) {
     if (isDisabled) return AppColors.textDisabled;
     switch (widget.variant) {
       case GeniusButtonVariant.primary:
@@ -132,7 +132,7 @@ class _GeniusButtonState extends State<GeniusButton> {
       case GeniusButtonVariant.secondary:
         return AppColors.accentVivid;
       case GeniusButtonVariant.glass:
-        return AppColors.textDisplay;
+        return Theme.of(context).colorScheme.onSurface;
     }
   }
 

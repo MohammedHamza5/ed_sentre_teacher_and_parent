@@ -252,7 +252,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
         centerTitle: true,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textDisplay),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
         flexibleSpace: ClipRRect(
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),

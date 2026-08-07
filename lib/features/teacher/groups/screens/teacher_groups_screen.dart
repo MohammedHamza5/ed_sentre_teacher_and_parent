@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart' as intl;
 
-import '../../../../core/config/app_colors.dart';
 import '../../../../core/widgets/genius/glass_card.dart';
 import '../../../../core/widgets/genius/genius_button.dart';
 import '../../../../shared/models/models.dart';
@@ -111,7 +110,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         centerTitle: true,
-        iconTheme: const IconThemeData(color: AppColors.textDisplay),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),

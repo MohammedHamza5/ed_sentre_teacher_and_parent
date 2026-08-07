@@ -87,18 +87,17 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
 
   Widget _buildStatusChip(BuildContext context, String value, String label) {
     final isSelected = statusFilter == value;
+    final borderColor = Theme.of(context).dividerTheme.color ?? Colors.grey.shade300;
     return GestureDetector(
       onTap: () => onStatusChanged(value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.surface,
+          color: isSelected ? AppColors.primary : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
-            color: isSelected
-                ? AppColors.primary
-                : AppColors.divider,
+            color: isSelected ? AppColors.primary : borderColor,
           ),
         ),
         child: Text(
@@ -116,13 +115,14 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
   }
 
   Widget _buildGroupDropdown(BuildContext context) {
+    final borderColor = Theme.of(context).dividerTheme.color ?? Colors.grey.shade300;
     return Container(
       height: 48.h,
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 0.h),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: borderColor),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
@@ -150,6 +150,7 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
 
   Widget _buildSortToggle(BuildContext context) {
     bool isNewest = sortOrder == 'newest';
+    final borderColor = Theme.of(context).dividerTheme.color ?? Colors.grey.shade300;
     return InkWell(
       onTap: onSortToggle,
       borderRadius: BorderRadius.circular(12.r),
@@ -157,9 +158,9 @@ class TeacherAssignmentsFilterPanel extends StatelessWidget {
         height: 48.h,
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: AppColors.divider),
+          border: Border.all(color: borderColor),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

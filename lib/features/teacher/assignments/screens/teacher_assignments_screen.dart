@@ -224,8 +224,8 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                   controller: _tabController,
                   indicatorColor: Theme.of(context).colorScheme.primary,
                   indicatorWeight: 3,
-                  labelColor: Colors.white,
-                  unselectedLabelColor: Colors.white.withValues(alpha: 0.5),
+                  labelColor: Theme.of(context).colorScheme.onSurface,
+                  unselectedLabelColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   labelStyle: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14.sp,
@@ -239,7 +239,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen>
                 ),
                 actions: [
                   IconButton(
-                    icon: Icon(Icons.refresh, color: Colors.white),
+                    icon: Icon(Icons.refresh, color: Theme.of(context).colorScheme.onSurface),
                     onPressed: _triggerRefresh,
                   ),
                   Padding(

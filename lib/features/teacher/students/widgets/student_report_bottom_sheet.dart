@@ -216,7 +216,7 @@ $notesText
                     label: Text(rating),
                     selected: isSelected,
                     selectedColor: AppColors.primary,
-                    backgroundColor: AppColors.surface.withValues(alpha: 0.5),
+                    backgroundColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
                     labelStyle: TextStyle(
                       color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -244,14 +244,14 @@ $notesText
                   hintText: 'اكتب هنا أي توجيه لولي الأمر بخصوص مستواه أو أخباره...',
                   hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12.sp),
                   filled: true,
-                  fillColor: AppColors.surface.withValues(alpha: 0.5),
+                  fillColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide(color: AppColors.divider),
+                    borderSide: BorderSide(color: Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide(color: AppColors.divider),
+                    borderSide: BorderSide(color: Theme.of(context).dividerTheme.color ?? Colors.grey.shade300),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),

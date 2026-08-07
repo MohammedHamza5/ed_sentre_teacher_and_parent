@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../core/config/app_colors.dart';
 
 class TeacherAssignmentsHeader extends StatelessWidget {
   final Map<String, dynamic> stats;
@@ -37,13 +38,8 @@ class TeacherAssignmentsHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(context).colorScheme.surface,
-            Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
-          ],
-        ),
+      decoration: const BoxDecoration(
+        gradient: AppColors.teacherGradient,
       ),
       child: Stack(
         children: [

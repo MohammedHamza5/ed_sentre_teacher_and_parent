@@ -69,7 +69,10 @@ class _GeniusTextFieldState extends State<GeniusTextField> {
       obscureText: widget.isPassword ? _obscureText : false,
       keyboardType: widget.keyboardType,
       onChanged: widget.onChanged,
-      style: const TextStyle(color: AppColors.textDisplay, fontSize: 16),
+      style: TextStyle(
+        color: Theme.of(context).colorScheme.onSurface,
+        fontSize: 16,
+      ),
       decoration: InputDecoration(
         labelText: widget.label,
         hintText: widget.hint,

@@ -209,11 +209,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             SizedBox(height: 22.h),
                           ],
 
-                          _buildTextField(
-                            controller: _identifierController,
-                            label: 'كود الدعوة، رقم الهاتف، أو الإيميل',
-                            hint: 'أدخل كود الدعوة (مثال: T-100) أو حسابك كمدير مستقل',
-                            icon: Icons.badge_outlined,
+                            _buildTextField(
+                              controller: _identifierController,
+                              label: 'رقم الهاتف، الإيميل، أو كود الدعوة',
+                              hint: 'أدخل بيانات تسجيل الدخول أو كود الدعوة',
+                              icon: Icons.badge_outlined,
                             keyboardType: TextInputType.text,
                             action: TextInputAction.next,
                             validator: (value) {
@@ -382,7 +382,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 SizedBox(height: 8.h),
                                 Text(
                                   '• 🎓 المعلم المستقل: سجل الدخول مباشرة ببيانات حسابك الإداري (الإيميل/الهاتف وكلمة المرور).\n'
-                                  '• 👨‍🏫 المعلمين وأولياء الأمور: أدخل كود الدعوة وأنشئ كلمة سر خاصة بك تتيح لك الدخول بها دائماً.\n'
+                                  '• 👨‍🏫 معلمي المراكز وأولياء الأمور: أدخل كود الدعوة وأنشئ كلمة سر خاصة بك تتيح لك الدخول بها دائماً.\n'
                                   '• 👨‍💼 المساعدين: أدخل رقم الهاتف (كلمة المرور الإفتراضية هي آخر 4 أرقام من رقم الهاتف).',
                                   style: TextStyle(
                                     fontSize: 12.sp,

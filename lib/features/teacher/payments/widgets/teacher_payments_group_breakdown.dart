@@ -6,8 +6,13 @@ import '../utils/payment_utils.dart';
 
 class TeacherPaymentsGroupBreakdown extends StatelessWidget {
   final Map<String, dynamic> salaryData;
+  final bool isIndependent;
 
-  const TeacherPaymentsGroupBreakdown({super.key, required this.salaryData});
+  const TeacherPaymentsGroupBreakdown({
+    super.key,
+    required this.salaryData,
+    this.isIndependent = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -171,7 +176,14 @@ class TeacherPaymentsGroupBreakdown extends StatelessWidget {
           SizedBox(height: 16.h),
 
           // Revenue Progress Bar
-          _buildRevenueBar(context, teacherTotal, centerTotal),
+          if (isIndependent)
+            _buildRevenueBar(
+              context, 
+              collected, 
+              expectedTeacherTotal > collected ? expectedTeacherTotal - collected : 0,
+            )
+          else
+            _buildRevenueBar(context, teacherTotal, centerTotal),
 
           SizedBox(height: 16.h),
 
@@ -192,19 +204,19 @@ class TeacherPaymentsGroupBreakdown extends StatelessWidget {
                 Colors.green,
               ),
               SizedBox(width: 6.w),
-              _buildDetailChip(
-                context,
-                'نصيبك المتوقع',
-                '${formatCurrency(expectedTeacherTotal)} ج.م',
-                Colors.orange.shade700,
-              ),
-              SizedBox(width: 6.w),
-              _buildDetailChip(
-                context,
-                'السنتر',
-                '${formatCurrency(centerTotal)} ج.م',
-                Theme.of(context).colorScheme.error,
-              ),
+              isIndependent
+                  ? _buildDetailChip(
+                      context,
+                      'متبقي لم يُحصّل',
+                      '${formatCurrency(expectedTeacherTotal > collected ? expectedTeacherTotal - collected : 0)} ج.م',
+                      Colors.orange.shade600,
+                    )
+                  : _buildDetailChip(
+                      context,
+                      'السنتر',
+                      '${formatCurrency(centerTotal)} ج.م',
+                      Theme.of(context).colorScheme.error,
+                    ),
             ],
           ),
         ],
@@ -234,7 +246,7 @@ class TeacherPaymentsGroupBreakdown extends StatelessWidget {
                 ),
                 SizedBox(width: 6.w),
                 Text(
-                  'نصيبك',
+                  isIndependent ? 'المحصل' : 'نصيبك',
                   style: TextStyle(
                     fontSize: 11.sp,
                     color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
@@ -248,13 +260,13 @@ class TeacherPaymentsGroupBreakdown extends StatelessWidget {
                   width: 10.w,
                   height: 10.w,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.error,
+                    color: isIndependent ? Colors.orange.shade600 : Theme.of(context).colorScheme.error,
                     borderRadius: BorderRadius.circular(3.r),
                   ),
                 ),
                 SizedBox(width: 6.w),
                 Text(
-                  'السنتر',
+                  isIndependent ? 'المتبقي' : 'السنتر',
                   style: TextStyle(
                     fontSize: 11.sp,
                     color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
@@ -282,7 +294,7 @@ class TeacherPaymentsGroupBreakdown extends StatelessWidget {
                   flex: ((1 - teacherRatio) * 100).toInt().clamp(1, 99),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.error,
+                      color: isIndependent ? Colors.orange.shade600 : Theme.of(context).colorScheme.error,
                     ),
                   ),
                 ),

@@ -16,6 +16,7 @@ import '../widgets/teacher_payments_summary_cards.dart';
 import '../widgets/teacher_payments_group_breakdown.dart';
 import '../widgets/teacher_payments_bonuses.dart';
 import '../widgets/teacher_payments_status.dart';
+import '../../../auth/provider/auth_provider.dart';
 
 class TeacherPaymentsScreen extends StatefulWidget {
   const TeacherPaymentsScreen({super.key});
@@ -60,6 +61,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
   Widget build(BuildContext context) {
     final bonuses = _salaryData['bonuses'] as List? ?? [];
     final deductions = _salaryData['deductions'] as List? ?? [];
+    final isIndependent = context.read<AuthProvider>().currentUser?.defaultCenterId == null;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -98,11 +100,17 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                   _buildEmptyState()
                 else ...[
                   // Summary Cards
-                  TeacherPaymentsSummaryCards(salaryData: _salaryData),
+                  TeacherPaymentsSummaryCards(
+                    salaryData: _salaryData,
+                    isIndependent: isIndependent,
+                  ),
                   SizedBox(height: 28.h),
 
                   // Per-Group Breakdown
-                  TeacherPaymentsGroupBreakdown(salaryData: _salaryData),
+                  TeacherPaymentsGroupBreakdown(
+                    salaryData: _salaryData,
+                    isIndependent: isIndependent,
+                  ),
                   SizedBox(height: 28.h),
 
                   // Bonuses & Deductions
@@ -113,7 +121,10 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
                   SizedBox(height: 28.h),
 
                   // Salary Status
-                  TeacherPaymentsStatus(salaryData: _salaryData),
+                  TeacherPaymentsStatus(
+                    salaryData: _salaryData,
+                    isIndependent: isIndependent,
+                  ),
                 ],
 
                 SizedBox(height: 100.h),

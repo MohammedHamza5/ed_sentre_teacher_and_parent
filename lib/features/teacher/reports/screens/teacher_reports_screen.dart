@@ -5,7 +5,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/config/app_colors.dart';
 import '../../../../core/providers/center_provider.dart';
 import '../../provider/teacher_provider.dart';
 import '../../../../shared/data/supabase_repository.dart';
@@ -106,7 +105,7 @@ class _TeacherReportsScreenState extends State<TeacherReportsScreen> {
         centerTitle: true,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textDisplay),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
         flexibleSpace: ClipRRect(
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),

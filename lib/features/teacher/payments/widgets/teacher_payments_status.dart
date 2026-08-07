@@ -5,8 +5,13 @@ import '../../../../shared/widgets/premium_widgets.dart';
 
 class TeacherPaymentsStatus extends StatelessWidget {
   final Map<String, dynamic> salaryData;
+  final bool isIndependent;
 
-  const TeacherPaymentsStatus({super.key, required this.salaryData});
+  const TeacherPaymentsStatus({
+    super.key,
+    required this.salaryData,
+    this.isIndependent = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,22 +25,24 @@ class TeacherPaymentsStatus extends StatelessWidget {
     switch (status) {
       case 'paid':
         statusColor = const Color(0xFF4CAF50);
-        statusText = 'تم الصرف ✅';
+        statusText = isIndependent ? 'أرباح محصلة ✅' : 'تم الصرف ✅';
         statusIcon = Icons.check_circle_rounded;
         break;
       case 'approved':
         statusColor = const Color(0xFF2196F3);
-        statusText = 'معتمد - في انتظار الصرف';
+        statusText = isIndependent ? 'أرباح محصلة مؤخراً' : 'معتمد - في انتظار الصرف';
         statusIcon = Icons.verified_rounded;
         break;
       case 'pending':
         statusColor = const Color(0xFFFFA726);
-        statusText = 'قيد المراجعة';
+        statusText = isIndependent ? 'في انتظار التحصيل النهائي' : 'قيد المراجعة';
         statusIcon = Icons.hourglass_empty_rounded;
         break;
       default:
         statusColor = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7);
-        statusText = salaryId != null ? 'محسوب — لم يُصرف بعد' : 'لم يُحسب بعد';
+        statusText = salaryId != null 
+          ? (isIndependent ? 'أرباح مسجلة' : 'محسوب — لم يُصرف بعد') 
+          : (isIndependent ? 'لا توجد أرباح محسوبة بعد' : 'لم يُحسب بعد');
         statusIcon = Icons.info_outline_rounded;
     }
 
