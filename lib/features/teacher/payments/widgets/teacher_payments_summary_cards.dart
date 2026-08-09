@@ -66,7 +66,7 @@ class TeacherPaymentsSummaryCards extends StatelessWidget {
                   letterSpacing: 1.2,
                 ),
               ),
-              if (salaryType == 'percentage') ...[
+              if (salaryType == 'percentage' || salaryType == 'independent') ...[
                 SizedBox(height: 8.h),
                 Text(
                   'المتوقع قبل التحصيل: ${formatCurrency(expectedGrossPreview)} ج.م',
@@ -84,11 +84,13 @@ class TeacherPaymentsSummaryCards extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
-                  salaryType == 'percentage'
-                      ? 'نسبة ${percentage.toInt()}%'
-                      : salaryType == 'per_session'
-                          ? 'بالحصة'
-                          : 'راتب ثابت',
+                  salaryType == 'independent'
+                      ? 'إيراداتك الكاملة'
+                      : salaryType == 'percentage'
+                          ? 'نسبة ${percentage.toInt()}%'
+                          : salaryType == 'per_session'
+                              ? 'بالحصة'
+                              : 'راتب ثابت',
                   style: TextStyle(
                     fontSize: 13.sp,
                     color: Colors.white,
@@ -103,7 +105,7 @@ class TeacherPaymentsSummaryCards extends StatelessWidget {
         SizedBox(height: 16.h),
 
         // Secondary Stats
-        if (salaryType == 'percentage') ...[
+        if (salaryType == 'percentage' || salaryType == 'independent') ...[
           Row(
             children: [
               Expanded(

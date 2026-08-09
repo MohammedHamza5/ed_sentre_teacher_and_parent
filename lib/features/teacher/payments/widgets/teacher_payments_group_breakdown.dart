@@ -17,7 +17,7 @@ class TeacherPaymentsGroupBreakdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final salaryType = salaryData['salary_type'] ?? 'fixed';
-    final items = salaryType == 'percentage'
+    final items = (salaryType == 'percentage' || salaryType == 'independent')
         ? (salaryData['percentage_items'] as List? ?? [])
         : salaryType == 'per_session'
             ? (salaryData['sessions'] as List? ?? [])
@@ -40,7 +40,7 @@ class TeacherPaymentsGroupBreakdown extends StatelessWidget {
           final index = entry.key;
           final item = entry.value as Map<String, dynamic>;
 
-          if (salaryType == 'percentage') {
+          if (salaryType == 'percentage' || salaryType == 'independent') {
             return _buildPercentageGroupCard(context, item, index);
           } else {
             return _buildSessionGroupCard(context, item, index);

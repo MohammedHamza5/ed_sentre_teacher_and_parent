@@ -220,7 +220,7 @@ class TeacherProvider extends ChangeNotifier {
   TeacherEnrollmentModel? get currentEnrollment => _currentEnrollment;
 
   /// Calculate Financials for a Group
-  Map<String, double> calculateGroupFinancials(GroupModel group) {
+  Map<String, double> calculateGroupFinancials(GroupModel group, {bool isIndependent = false}) {
     if (_currentEnrollment == null) {
       return {'total_income': 0, 'center_share': 0, 'teacher_share': 0};
     }
@@ -232,7 +232,10 @@ class TeacherProvider extends ChangeNotifier {
     double teacherShare = 0;
     double centerShare = 0;
 
-    if (_currentEnrollment!.salaryType == 'percentage') {
+    if (isIndependent || _currentEnrollment!.salaryType == 'independent') {
+      teacherShare = totalIncome;
+      centerShare = 0;
+    } else if (_currentEnrollment!.salaryType == 'percentage') {
       final percentage = _currentEnrollment!.salaryAmount ?? 0;
       teacherShare = totalIncome * (percentage / 100);
       centerShare = totalIncome - teacherShare;
@@ -249,15 +252,15 @@ class TeacherProvider extends ChangeNotifier {
   }
 
   /// إجمالي الدخل المتوقع من جميع المجموعات
-  double get totalProjectedIncome {
+  double totalProjectedIncome({bool isIndependent = false}) {
     double total = 0;
     if (_groups.isNotEmpty) {
       for (final group in _groups) {
-        total += calculateGroupFinancials(group)['teacher_share'] ?? 0;
+        total += calculateGroupFinancials(group, isIndependent: isIndependent)['teacher_share'] ?? 0;
       }
     }
     // NOTE: If fixed salary, add it once (the looped calculation returns 0)
-    if (_currentEnrollment?.salaryType == 'fixed') {
+    if (_currentEnrollment?.salaryType == 'fixed' && !isIndependent) {
       total += _currentEnrollment!.salaryAmount ?? 0;
     }
     return total;

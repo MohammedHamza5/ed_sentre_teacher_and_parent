@@ -9,6 +9,7 @@ import '../../../../core/widgets/genius/glass_card.dart';
 import '../../../../core/widgets/genius/genius_button.dart';
 import '../../../../shared/models/models.dart';
 import '../../provider/teacher_provider.dart';
+import '../../../auth/provider/auth_provider.dart';
 
 /// 🎨 Teacher Groups Screen - Forest Dark Edition
 class TeacherGroupsScreen extends StatefulWidget {
@@ -175,7 +176,8 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
   }
 
   Widget _buildSmartSummaryCard(TeacherProvider provider) {
-    final totalIncome = provider.totalProjectedIncome;
+    final isIndependent = context.read<AuthProvider>().currentUser?.defaultCenterId == null;
+    final totalIncome = provider.totalProjectedIncome(isIndependent: isIndependent);
     final totalStudents = provider.groups.fold(
       0,
       (sum, g) => sum + g.currentStudents,
@@ -288,7 +290,8 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
     TeacherProvider provider,
     int index,
   ) {
-    final financials = provider.calculateGroupFinancials(group);
+    final isIndependent = context.read<AuthProvider>().currentUser?.defaultCenterId == null;
+    final financials = provider.calculateGroupFinancials(group, isIndependent: isIndependent);
     final schedules = group.schedules;
     final canMonitor = _isMonitorWindowActive(group);
 
@@ -496,7 +499,9 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                     ),
                     SizedBox(height: 6.h),
                     Text(
-                      'نسبتك من اجمالي الدخل (${intl.NumberFormat.currency(symbol: 'ج.م', decimalDigits: 0).format(financials['total_income'])})',
+                      isIndependent 
+                          ? 'إجمالي الإيرادات المتوقعة (${intl.NumberFormat.currency(symbol: 'ج.م', decimalDigits: 0).format(financials['total_income'])})'
+                          : 'نسبتك من اجمالي الدخل (${intl.NumberFormat.currency(symbol: 'ج.م', decimalDigits: 0).format(financials['total_income'])})',
                       style: TextStyle(
                         color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                         fontSize: 11.sp,
