@@ -32,7 +32,7 @@ class TeacherParentUpdateBanner extends StatelessWidget {
             gradient: LinearGradient(
               colors: [
                 Theme.of(context).colorScheme.primaryContainer,
-                Theme.of(context).colorScheme.primaryContainer.withOpacity(0.85),
+                Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.85),
               ],
               begin: Alignment.topRight,
               end: Alignment.bottomLeft,
@@ -40,13 +40,13 @@ class TeacherParentUpdateBanner extends StatelessWidget {
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
             ],
             border: Border.all(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
               width: 1.5,
             ),
           ),
@@ -77,7 +77,7 @@ class TeacherParentUpdateBanner extends StatelessWidget {
               Text(
                 info.changelogAr ?? 'تحسينات جديدة على سرعة واستقرار مزامنة الجداول والتقارير الأكاديمية.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.9),
+                      color: Theme.of(context).colorScheme.onPrimaryContainer.withValues(alpha: 0.9),
                     ),
               ),
               if (!isConnected && status == UpdateStatus.available) ...[
@@ -105,7 +105,7 @@ class TeacherParentUpdateBanner extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: updateProvider.progress > 0 ? updateProvider.progress : null,
                     minHeight: 8.h,
-                    backgroundColor: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.1),
+                    backgroundColor: Theme.of(context).colorScheme.onPrimaryContainer.withValues(alpha: 0.1),
                     valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
                   ),
                 ),

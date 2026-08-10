@@ -112,10 +112,10 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
             decoration: BoxDecoration(
               color: theme.cardColor,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: colorScheme.outline.withOpacity(0.12)),
+              border: Border.all(color: colorScheme.outline.withValues(alpha: 0.12)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
+                  color: Colors.black.withValues(alpha: 0.06),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -128,7 +128,7 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
                   width: 90,
                   height: 90,
                   decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.12),
+                    color: colorScheme.primary.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -150,7 +150,7 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
                 Text(
                   'كاميرا المسح السريع مخصصة لتطبيقات الهواتف والتابلت. أثناء التواجد على الويب، يمكنك إنجاز نفس المهام بالسرعة المطلوبة عبر أدوات البحث والقاعات المتطورة:',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurface.withOpacity(0.7),
+                    color: colorScheme.onSurface.withValues(alpha: 0.7),
                     height: 1.6,
                     fontSize: 15,
                   ),
@@ -189,7 +189,7 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 56),
                     side: BorderSide(
-                      color: colorScheme.primary.withOpacity(0.5),
+                      color: colorScheme.primary.withValues(alpha: 0.5),
                       width: 1.5,
                     ),
                     foregroundColor: colorScheme.primary,
@@ -199,7 +199,7 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Divider(color: colorScheme.outline.withOpacity(0.1)),
+                Divider(color: colorScheme.outline.withValues(alpha: 0.1)),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -215,7 +215,7 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurface.withOpacity(0.6),
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -262,9 +262,9 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.65),
+                      color: Colors.black.withValues(alpha: 0.65),
                       borderRadius: BorderRadius.circular(30),
-                      border: Border.all(color: Colors.white.withOpacity(0.15)),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
@@ -357,9 +357,9 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
+                  color: Colors.black.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(25),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 ),
                 child: const Text(
                   'قم بتوجيه كاميرا الهاتف نحو كود الطالب (QR Code)',
@@ -377,7 +377,7 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
           // Processing Overlay
           if (_isProcessing)
             Container(
-              color: Colors.black.withOpacity(0.75),
+              color: Colors.black.withValues(alpha: 0.75),
               child: Center(
                 child: Container(
                   padding: const EdgeInsets.all(28),
@@ -411,7 +411,7 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
     required Widget child,
   }) {
     return Material(
-      color: Colors.black.withOpacity(0.65),
+      color: Colors.black.withValues(alpha: 0.65),
       shape: const CircleBorder(),
       child: InkWell(
         onTap: onTap,
@@ -422,7 +422,7 @@ class _AssistantCameraScanScreenState extends State<AssistantCameraScanScreen> {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withOpacity(0.15)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
           ),
           child: child,
         ),

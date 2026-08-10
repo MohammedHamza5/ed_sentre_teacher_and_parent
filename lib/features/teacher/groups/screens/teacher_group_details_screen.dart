@@ -77,6 +77,11 @@ class _TeacherGroupDetailsScreenState extends State<TeacherGroupDetailsScreen>
       if (_students.isEmpty) {
         _students = teacherProvider.getStudentsForGroup(widget.groupId);
       }
+      if (_group != null) {
+        _group = _group!.copyWith(
+          currentStudents: _students.isNotEmpty ? _students.length : _group!.currentStudents,
+        );
+      }
     } catch (e) {
       debugPrint('Error loading group details: $e');
       _error = e.toString();

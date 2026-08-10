@@ -14,9 +14,12 @@ mixin TeacherGroupsMixin on BaseRepository {
     String teacherId,
     String centerId,
   ) async {
-    debugPrint(
-      '🔎 [Repo] getTeacherGroups: Teacher=$teacherId, Center=$centerId',
-    );
+    debugPrint('═══════════════════════════════════════════════════════════');
+    debugPrint('🔍 [DEBUG TRACKING] getTeacherGroups:');
+    debugPrint('   👉 Teacher ID: $teacherId');
+    debugPrint('   👉 Center ID: $centerId');
+    debugPrint('   👉 Auth UID: ${client.auth.currentUser?.id}');
+    debugPrint('   👉 Auth Email: ${client.auth.currentUser?.email}');
     try {
       // NOTE: In Independent Teacher architecture, all groups in centerId belong to the teacher
       var response = await client
@@ -27,9 +30,8 @@ mixin TeacherGroupsMixin on BaseRepository {
           .isFilter('deleted_at', null)
           .order('day_of_week');
 
-      debugPrint(
-        '✅ [Repo] getTeacherGroups: Found ${(response as List).length} groups',
-      );
+      debugPrint('   ✅ Raw Response Count: ${(response as List).length}');
+      debugPrint('   ✅ Raw Data: $response');
 
       final groupModels = (response)
           .map(
@@ -40,10 +42,25 @@ mixin TeacherGroupsMixin on BaseRepository {
           )
           .toList();
 
+      debugPrint('   ✅ Parsed GroupModels Count: ${groupModels.length}');
+
       if (groupModels.isNotEmpty) {
         final groupIds = groupModels.map((g) => g.id).toList();
 
-        // NOTE: Query 'schedules' directly — 'group_schedules' table does not exist
+        // 1. Query 'course_prices' for unified pricing fallback
+        List coursePrices = [];
+        try {
+          final pricesResponse = await client
+              .from('course_prices')
+              .select('subject_name, monthly_price, session_price, grade_level, teacher_id')
+              .eq('center_id', centerId)
+              .eq('is_active', true);
+          coursePrices = pricesResponse as List;
+        } catch (e) {
+          debugPrint('⚠️ [Repo] Course prices query failed: $e');
+        }
+
+        // 2. Query 'schedules' directly — 'group_schedules' table does not exist
         List allScheduleRows = [];
         try {
           final schedulesResponse = await client
@@ -61,10 +78,41 @@ mixin TeacherGroupsMixin on BaseRepository {
         }).toList();
 
         for (var i = 0; i < groupModels.length; i++) {
+          final current = groupModels[i];
           final groupSchedules = allSchedules
-              .where((s) => s.groupId == groupModels[i].id)
+              .where((s) => s.groupId == current.id)
               .toList();
-          groupModels[i] = groupModels[i].copyWith(schedules: groupSchedules);
+
+          double? effectiveMonthlyFee = current.monthlyFee;
+          double? effectiveSessionPrice = current.sessionPrice;
+
+          // If monthly fee is not set on the group row, fallback to unified course_prices
+          if ((effectiveMonthlyFee == null || effectiveMonthlyFee <= 0) && coursePrices.isNotEmpty) {
+            Map<String, dynamic>? matchingPrice;
+            for (var cp in coursePrices) {
+              final subjectName = (cp['subject_name'] as String?)?.trim().toLowerCase();
+              final courseName = (current.courseName ?? '').trim().toLowerCase();
+              final groupName = current.groupName.trim().toLowerCase();
+              if (subjectName != null &&
+                  (subjectName == courseName ||
+                      groupName.contains(subjectName) ||
+                      courseName.contains(subjectName))) {
+                matchingPrice = cp as Map<String, dynamic>?;
+                break;
+              }
+            }
+
+            if (matchingPrice != null) {
+              effectiveMonthlyFee = (matchingPrice['monthly_price'] as num?)?.toDouble();
+              effectiveSessionPrice = (matchingPrice['session_price'] as num?)?.toDouble();
+            }
+          }
+
+          groupModels[i] = current.copyWith(
+            schedules: groupSchedules,
+            monthlyFee: effectiveMonthlyFee,
+            sessionPrice: effectiveSessionPrice,
+          );
         }
       }
 
@@ -101,7 +149,14 @@ mixin TeacherGroupsMixin on BaseRepository {
       final groups =
           preloadedGroups ?? await getTeacherGroups(teacherId, centerId);
 
-      if (groups.isEmpty) return [];
+      debugPrint('🔍 [DEBUG TRACKING] getTeacherStudents:');
+      debugPrint('   👉 Teacher ID: $teacherId, Center ID: $centerId');
+      debugPrint('   👉 Groups Count: ${groups.length}');
+
+      if (groups.isEmpty) {
+        debugPrint('   ⚠️ No groups found, returning empty students list.');
+        return [];
+      }
       final groupIds = groups.map((g) => g.id).toList();
 
       var query = client
@@ -131,6 +186,7 @@ mixin TeacherGroupsMixin on BaseRepository {
       final response = await query;
 
       final data = List<Map<String, dynamic>>.from(response as List);
+      debugPrint('   ✅ Fetched Students Enrollments Count: ${data.length}');
 
       return data.map((e) {
         final student = e['students'] as Map<String, dynamic>;
@@ -152,6 +208,7 @@ mixin TeacherGroupsMixin on BaseRepository {
 
         return {
           'id': student['id'],
+          'student_id': student['id'],
           'user_id': student['user_id'],
           'student_user_id': student['user_id'],
           'student_name': student['full_name'],
@@ -170,6 +227,7 @@ mixin TeacherGroupsMixin on BaseRepository {
       return [];
     }
   }
+
 
   /// Add a new student and enroll them in a group
   Future<void> addStudent({

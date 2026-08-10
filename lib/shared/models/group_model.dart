@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'enums.dart';
 
 /// Group Model - Maps to public.groups table
@@ -54,34 +55,42 @@ class GroupModel {
   final List<ScheduleItem> schedules;
 
   factory GroupModel.fromJson(Map<String, dynamic> json) {
-    return GroupModel(
-      id: json['id'] as String,
-      centerId: json['center_id'] as String,
-      courseId: json['course_id'] as String,
-      teacherId: json['teacher_id'] as String?,
-      groupName: json['group_name'] as String? ?? 'مجموعة',
-      groupCode: json['group_code'] as String?,
-      gradeLevel: json['grade_level'] as String?,
-      description: json['description'] as String?,
-      maxStudents: json['max_students'] as int? ?? 30,
-      currentStudents: json['current_students'] as int? ?? 0,
-      dayOfWeek: json['day_of_week'] as int?,
-      startTime: json['start_time'] as String?,
-      endTime: json['end_time'] as String?,
-      monthlyFee: (json['monthly_fee'] as num?)?.toDouble(),
-      sessionPrice: (json['session_price'] as num?)?.toDouble(),
-      status: json['status'] as String? ?? 'active',
-      isActive: json['is_active'] as bool? ?? true,
-      createdAt: DateTime.parse(
-        json['created_at'] as String? ?? DateTime.now().toIso8601String(),
-      ),
-      updatedAt: DateTime.parse(
-        json['updated_at'] as String? ?? DateTime.now().toIso8601String(),
-      ),
-      courseName: json['course_name'] as String?,
-      teacherName: json['teacher_name'] as String?,
-      schedules: [], // Populated manually or via separate join
-    );
+    try {
+      debugPrint('🛠️ [GroupModel] Parsing group: ${json['id']} - ${json['group_name']}');
+      return GroupModel(
+        id: json['id'] as String,
+        centerId: json['center_id'] as String,
+        courseId: json['course_id'] as String,
+        teacherId: json['teacher_id'] as String?,
+        groupName: json['group_name'] as String? ?? 'مجموعة',
+        groupCode: json['group_code'] as String?,
+        gradeLevel: json['grade_level'] as String?,
+        description: json['description'] as String?,
+        maxStudents: json['max_students'] as int? ?? 30,
+        currentStudents: json['current_students'] as int? ?? 0,
+        dayOfWeek: json['day_of_week'] as int?,
+        startTime: json['start_time'] as String?,
+        endTime: json['end_time'] as String?,
+        monthlyFee: json['monthly_fee'] != null ? double.tryParse(json['monthly_fee'].toString()) : null,
+        sessionPrice: json['session_price'] != null ? double.tryParse(json['session_price'].toString()) : null,
+        status: json['status'] as String? ?? 'active',
+        isActive: json['is_active'] as bool? ?? true,
+        createdAt: DateTime.parse(
+          json['created_at'] as String? ?? DateTime.now().toIso8601String(),
+        ),
+        updatedAt: DateTime.parse(
+          json['updated_at'] as String? ?? DateTime.now().toIso8601String(),
+        ),
+        courseName: json['course_name'] as String?,
+        teacherName: json['teacher_name'] as String?,
+        schedules: [], // Populated manually or via separate join
+      );
+    } catch (e, st) {
+      debugPrint('❌ [GroupModel] Error parsing group JSON: $e');
+      debugPrint('   👉 JSON Data: $json');
+      debugPrint('   👉 StackTrace: $st');
+      rethrow;
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -108,7 +117,7 @@ class GroupModel {
     };
   }
 
-  bool get isFull => currentStudents >= maxStudents;
+  bool get isFull => maxStudents > 0 && currentStudents >= maxStudents;
 
   DayOfWeek? get day =>
       dayOfWeek != null ? DayOfWeek.fromInt(dayOfWeek!) : null;
@@ -118,6 +127,10 @@ class GroupModel {
     String? startTime,
     String? endTime,
     int? dayOfWeek,
+    int? currentStudents,
+    int? maxStudents,
+    double? monthlyFee,
+    double? sessionPrice,
   }) {
     return GroupModel(
       id: id,
@@ -128,13 +141,13 @@ class GroupModel {
       groupCode: groupCode,
       gradeLevel: gradeLevel,
       description: description,
-      maxStudents: maxStudents,
-      currentStudents: currentStudents,
+      maxStudents: maxStudents ?? this.maxStudents,
+      currentStudents: currentStudents ?? this.currentStudents,
       dayOfWeek: dayOfWeek ?? this.dayOfWeek,
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
-      monthlyFee: monthlyFee,
-      sessionPrice: sessionPrice,
+      monthlyFee: monthlyFee ?? this.monthlyFee,
+      sessionPrice: sessionPrice ?? this.sessionPrice,
       status: status,
       isActive: isActive,
       createdAt: createdAt,

@@ -124,7 +124,7 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -149,7 +149,7 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
                   width: 44,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: colorScheme.onSurface.withOpacity(0.2),
+                    color: colorScheme.onSurface.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(2.5),
                   ),
                 ),
@@ -160,17 +160,17 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: colorScheme.outline.withOpacity(0.1),
+                    color: colorScheme.outline.withValues(alpha: 0.1),
                   ),
                 ),
                 child: Row(
                   children: [
                     CircleAvatar(
                       radius: 26,
-                      backgroundColor: colorScheme.primary.withOpacity(0.15),
+                      backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
                       child: Icon(
                         Icons.person_outline_rounded,
                         color: colorScheme.primary,
@@ -192,7 +192,7 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
                           Text(
                             'تسجيل الحضور السريع',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurface.withOpacity(0.6),
+                              color: colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -273,7 +273,7 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
                                 ? 'جاري تسجيل الحضور...'
                                 : 'جاري التحقق من الوضع المالي...',
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onSurface.withOpacity(0.7),
+                              color: colorScheme.onSurface.withValues(alpha: 0.7),
                             ),
                           ),
                         ],
@@ -287,10 +287,10 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEF4444).withOpacity(0.08),
+                          color: const Color(0xFFEF4444).withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: const Color(0xFFEF4444).withOpacity(0.3),
+                            color: const Color(0xFFEF4444).withValues(alpha: 0.3),
                             width: 1.5,
                           ),
                         ),
@@ -315,7 +315,7 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
                             Text(
                               state.message,
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurface.withOpacity(0.6),
+                                color: colorScheme.onSurface.withValues(alpha: 0.6),
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -330,7 +330,7 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
                                 minimumSize: const Size(double.infinity, 44),
                                 foregroundColor: colorScheme.primary,
                                 side: BorderSide(
-                                  color: colorScheme.primary.withOpacity(0.4),
+                                  color: colorScheme.primary.withValues(alpha: 0.4),
                                 ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -374,10 +374,10 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: errorColor.withOpacity(0.08),
+              color: errorColor.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: errorColor.withOpacity(0.3),
+                color: errorColor.withValues(alpha: 0.3),
                 width: 1.5,
               ),
             ),
@@ -386,7 +386,7 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: errorColor.withOpacity(0.15),
+                    color: errorColor.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -403,7 +403,7 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
                       Text(
                         'يوجد مستحقات مالية (${state.monthYear})',
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: errorColor.withOpacity(0.9),
+                          color: errorColor.withValues(alpha: 0.9),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -428,7 +428,7 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
             'سداد الرسوم الآن (اختياري)',
             style: theme.textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface.withOpacity(0.8),
+              color: colorScheme.onSurface.withValues(alpha: 0.8),
             ),
           ),
           const SizedBox(height: 12),
@@ -443,7 +443,7 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
                 borderSide: BorderSide(
-                  color: colorScheme.outline.withOpacity(0.3),
+                  color: colorScheme.outline.withValues(alpha: 0.3),
                 ),
               ),
               focusedBorder: OutlineInputBorder(
@@ -501,10 +501,10 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: successColor.withOpacity(0.08),
+              color: successColor.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: successColor.withOpacity(0.3),
+                color: successColor.withValues(alpha: 0.3),
                 width: 1.5,
               ),
             ),
@@ -513,7 +513,7 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: successColor.withOpacity(0.15),
+                    color: successColor.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -538,7 +538,7 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
                       Text(
                         'لا توجد أي مديونيات متأخرة، يرجى السماح بالدخول.',
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurface.withOpacity(0.7),
+                          color: colorScheme.onSurface.withValues(alpha: 0.7),
                         ),
                       ),
                     ],
@@ -557,7 +557,7 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
             backgroundColor: colorScheme.primary,
             foregroundColor: colorScheme.onPrimary,
             elevation: 2,
-            shadowColor: colorScheme.primary.withOpacity(0.3),
+            shadowColor: colorScheme.primary.withValues(alpha: 0.3),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -590,8 +590,8 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
   }) {
     return Material(
       color: isPrimary
-          ? colorScheme.primary.withOpacity(0.12)
-          : colorScheme.surfaceContainerHighest.withOpacity(0.5),
+          ? colorScheme.primary.withValues(alpha: 0.12)
+          : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: onTap,
@@ -602,8 +602,8 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isPrimary
-                  ? colorScheme.primary.withOpacity(0.4)
-                  : colorScheme.outline.withOpacity(0.2),
+                  ? colorScheme.primary.withValues(alpha: 0.4)
+                  : colorScheme.outline.withValues(alpha: 0.2),
             ),
           ),
           child: Text(
@@ -613,7 +613,7 @@ class _StudentActionBottomSheetState extends State<StudentActionBottomSheet> {
               fontWeight: isPrimary ? FontWeight.bold : FontWeight.w600,
               color: isPrimary
                   ? colorScheme.primary
-                  : colorScheme.onSurface.withOpacity(0.8),
+                  : colorScheme.onSurface.withValues(alpha: 0.8),
             ),
           ),
         ),

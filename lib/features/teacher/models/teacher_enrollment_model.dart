@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Teacher Enrollment Model - Maps to public.teacher_enrollments table
 class TeacherEnrollmentModel {
   final String id;
@@ -21,18 +23,26 @@ class TeacherEnrollmentModel {
   });
 
   factory TeacherEnrollmentModel.fromJson(Map<String, dynamic> json) {
-    return TeacherEnrollmentModel(
-      id: json['id'] as String,
-      teacherUserId: json['teacher_user_id'] as String,
-      teacherId: json['teacher_id'] as String,
-      centerId: json['center_id'] as String,
-      status: json['status'] as String? ?? 'active',
-      salaryType: json['salary_type'] as String?,
-      salaryAmount: (json['salary_amount'] as num?)?.toDouble(),
-      createdAt: DateTime.parse(
-        json['created_at'] as String? ?? DateTime.now().toIso8601String(),
-      ),
-    );
+    try {
+      debugPrint('🛠️ [TeacherEnrollmentModel] Parsing enrollment: ${json['id']}');
+      return TeacherEnrollmentModel(
+        id: json['id'] as String,
+        teacherUserId: json['teacher_user_id'] as String,
+        teacherId: json['teacher_id'] as String,
+        centerId: json['center_id'] as String,
+        status: json['status'] as String? ?? 'active',
+        salaryType: json['salary_type'] as String?,
+        salaryAmount: json['salary_amount'] != null ? double.tryParse(json['salary_amount'].toString()) : null,
+        createdAt: DateTime.parse(
+          json['created_at'] as String? ?? DateTime.now().toIso8601String(),
+        ),
+      );
+    } catch (e, st) {
+      debugPrint('❌ [TeacherEnrollmentModel] Error parsing JSON: $e');
+      debugPrint('   👉 JSON Data: $json');
+      debugPrint('   👉 StackTrace: $st');
+      rethrow;
+    }
   }
 
   Map<String, dynamic> toJson() {

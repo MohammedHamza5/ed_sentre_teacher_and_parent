@@ -88,7 +88,7 @@ class _QuickManualLookupScreenState extends State<QuickManualLookupScreen> {
                     theme.scaffoldBackgroundColor,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -104,7 +104,7 @@ class _QuickManualLookupScreenState extends State<QuickManualLookupScreen> {
                   hintText:
                       'ابحث برقم الهاتف أو اسم الطالب (3 أحرف على الأقل)...',
                   hintStyle: TextStyle(
-                    color: colorScheme.onSurface.withOpacity(0.4),
+                    color: colorScheme.onSurface.withValues(alpha: 0.4),
                     fontSize: 14,
                     fontWeight: FontWeight.normal,
                   ),
@@ -124,8 +124,8 @@ class _QuickManualLookupScreenState extends State<QuickManualLookupScreen> {
                         )
                       : null,
                   filled: true,
-                  fillColor: colorScheme.surfaceContainerHighest.withOpacity(
-                    0.5,
+                  fillColor: colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.5,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -134,7 +134,7 @@ class _QuickManualLookupScreenState extends State<QuickManualLookupScreen> {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide(
-                      color: colorScheme.outline.withOpacity(0.15),
+                      color: colorScheme.outline.withValues(alpha: 0.15),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
@@ -180,7 +180,7 @@ class _QuickManualLookupScreenState extends State<QuickManualLookupScreen> {
                           Text(
                             'جاري البحث عن الطلاب...',
                             style: TextStyle(
-                              color: colorScheme.onSurface.withOpacity(0.6),
+                              color: colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -219,11 +219,11 @@ class _QuickManualLookupScreenState extends State<QuickManualLookupScreen> {
                             color: theme.cardColor,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: colorScheme.outline.withOpacity(0.12),
+                              color: colorScheme.outline.withValues(alpha: 0.12),
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.03),
+                                color: Colors.black.withValues(alpha: 0.03),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -251,7 +251,7 @@ class _QuickManualLookupScreenState extends State<QuickManualLookupScreen> {
                                     CircleAvatar(
                                       radius: 24,
                                       backgroundColor: colorScheme.primary
-                                          .withOpacity(0.12),
+                                          .withValues(alpha: 0.12),
                                       child: Text(
                                         student.fullName.isNotEmpty
                                             ? student.fullName[0].toUpperCase()
@@ -283,7 +283,7 @@ class _QuickManualLookupScreenState extends State<QuickManualLookupScreen> {
                                                 Icons.phone_android_rounded,
                                                 size: 14,
                                                 color: colorScheme.onSurface
-                                                    .withOpacity(0.5),
+                                                    .withValues(alpha: 0.5),
                                               ),
                                               const SizedBox(width: 4),
                                               Text(
@@ -293,7 +293,7 @@ class _QuickManualLookupScreenState extends State<QuickManualLookupScreen> {
                                                 style: TextStyle(
                                                   fontSize: 13,
                                                   color: colorScheme.onSurface
-                                                      .withOpacity(0.6),
+                                                      .withValues(alpha: 0.6),
                                                   fontWeight: FontWeight.w500,
                                                 ),
                                               ),
@@ -305,8 +305,8 @@ class _QuickManualLookupScreenState extends State<QuickManualLookupScreen> {
                                     Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        color: colorScheme.primary.withOpacity(
-                                          0.08,
+                                        color: colorScheme.primary.withValues(
+                                          alpha: 0.08,
                                         ),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
@@ -354,7 +354,7 @@ class _QuickManualLookupScreenState extends State<QuickManualLookupScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 40, color: color),
@@ -372,7 +372,7 @@ class _QuickManualLookupScreenState extends State<QuickManualLookupScreen> {
             Text(
               subtitle,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurface.withOpacity(0.6),
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
                 height: 1.5,
               ),
               textAlign: TextAlign.center,

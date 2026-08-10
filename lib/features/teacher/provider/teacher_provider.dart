@@ -47,9 +47,11 @@ class TeacherProvider extends ChangeNotifier {
   int get totalUniqueStudents {
     final uniqueIds = <String>{};
     for (var s in _students) {
-      if (s['student_id'] != null) uniqueIds.add(s['student_id']);
+      final id = s['student_id'] ?? s['id'] ?? s['user_id'] ?? s['student_user_id'];
+      if (id != null) uniqueIds.add(id.toString());
     }
-    return uniqueIds.length;
+    if (uniqueIds.isNotEmpty) return uniqueIds.length;
+    return statsTotalStudents;
   }
 
   int get totalActiveGroups => _groups.length;
@@ -67,43 +69,46 @@ class TeacherProvider extends ChangeNotifier {
   // ═══════════════════════════════════════════════════════════════════════
 
   /// تحميل بيانات المعلم الكاملة
-  Future<void> loadTeacherData(String userId) async {
+  Future<void> loadTeacherData([String? userId]) async {
+    final effectiveUserId =
+        userId ?? _teacherProfile?.userId ?? _repository.client.auth.currentUser?.id;
+
+    if (effectiveUserId == null) {
+      debugPrint('⚠️ [TeacherProvider] loadTeacherData: No user ID and no active auth session');
+      return;
+    }
+
     _isLoading = true;
     _error = null;
     notifyListeners();
 
-    log.debug('loadTeacherData: Starting for $userId', tag: 'TeacherProvider');
+    debugPrint('🚀 [TeacherProvider] loadTeacherData started for userId: $effectiveUserId');
 
     try {
-      _teacherProfile = await _repository.getTeacherByUserId(userId);
+      _teacherProfile = await _repository.getTeacherByUserId(effectiveUserId);
+      debugPrint('   👉 Teacher Profile: id=${_teacherProfile?.id}, name=${_teacherProfile?.fullName}');
 
       if (_teacherProfile == null) {
-        log.warning('Teacher profile NOT FOUND', tag: 'TeacherProvider');
+        debugPrint('   ❌ Teacher profile NOT FOUND in DB for userId: $effectiveUserId');
         _error = 'لم يتم العثور على بيانات المعلم';
         _isLoading = false;
         notifyListeners();
         return;
       }
-      log.debug(
-        'Profile loaded: ${_teacherProfile?.id}',
-        tag: 'TeacherProvider',
-      );
 
-      // NOTE: Repository يتولى تجربة الاحتمالات الأربعة تلقائياً
-      // راجع teacher_repository_mixin.dart للتفاصيل.
       _centers = await _repository.getTeacherCentersEnrolled(
-        userId,
+        effectiveUserId,
         teacherTableId: _teacherProfile?.id,
       );
-      log.debug('Centers loaded: ${_centers.length}', tag: 'TeacherProvider');
+      debugPrint('   👉 Centers Loaded (${_centers.length}): ${_centers.map((c) => "${c.name} (${c.id})").toList()}');
 
       if (_centers.isNotEmpty) {
         await selectCenter(_centers.first.id);
       } else {
-        log.warning('No centers found', tag: 'TeacherProvider');
+        debugPrint('   ⚠️ No centers found for this teacher');
       }
-    } catch (e) {
-      log.error('loadTeacherData failed', tag: 'TeacherProvider', error: e);
+    } catch (e, st) {
+      debugPrint('❌ [TeacherProvider] loadTeacherData failed: $e\n$st');
       _error = e.toString();
     }
 
@@ -127,24 +132,23 @@ class TeacherProvider extends ChangeNotifier {
       (c) => c.id == centerId,
       orElse: () => _centers.first,
     );
-    log.debug(
-      'Center selected: ${_selectedCenter?.name}',
-      tag: 'TeacherProvider',
-    );
+    debugPrint('🏢 [TeacherProvider] Center selected: ${_selectedCenter?.name} (${_selectedCenter?.id})');
 
-    await _loadCenterData();
+    await _loadCenterData(forceRefresh: true);
     notifyListeners();
   }
 
   /// تحميل بيانات السنتر (المجموعات، الطلاب، الإحصائيات)
-  /// NOTE: Optimized load order — groups first, then everything else in parallel.
   Future<void> _loadCenterData({bool forceRefresh = false}) async {
-    if (_selectedCenter == null || _teacherProfile == null) return;
+    if (_selectedCenter == null || _teacherProfile == null) {
+      debugPrint('⚠️ [TeacherProvider] _loadCenterData aborted: selectedCenter=$_selectedCenter, teacherProfile=$_teacherProfile');
+      return;
+    }
 
-    if (!forceRefresh && _lastFetchTime != null) {
+    if (!forceRefresh && _lastFetchTime != null && _groups.isNotEmpty) {
       final diff = DateTime.now().difference(_lastFetchTime!);
       if (diff.inMinutes < 3) {
-        log.debug('Data is fresh (${diff.inSeconds}s old). Bypassing network fetch.', tag: 'TeacherProvider');
+        debugPrint('⏱️ [TeacherProvider] Data is fresh (${diff.inSeconds}s old). Bypassing fetch.');
         return;
       }
     }
@@ -154,16 +158,15 @@ class TeacherProvider extends ChangeNotifier {
       final centerId = _selectedCenter!.id;
       final teacherUserId = _teacherProfile!.userId;
 
+      debugPrint('🔄 [TeacherProvider] _loadCenterData fetching for teacherId: $teacherId, centerId: $centerId');
+
       // 1. Load Groups first (needed by students query)
       try {
         _groups = await _repository.getTeacherGroups(teacherId, centerId);
-        log.debug(
-          'Groups loaded: ${_groups.length}',
-          tag: 'TeacherProvider',
-        );
+        debugPrint('   👉 Groups in Provider: ${_groups.length}');
         notifyListeners();
-      } catch (e) {
-        log.error('Groups load failed', tag: 'TeacherProvider', error: e);
+      } catch (e, st) {
+        debugPrint('❌ [TeacherProvider] Groups load failed: $e\n$st');
         _error = 'failed_to_load_data';
         return;
       }
@@ -171,6 +174,7 @@ class TeacherProvider extends ChangeNotifier {
       // 2. Load Students + Enrollment + Stats ALL in parallel
       // NOTE: Students uses preloaded groups to avoid duplicate getTeacherGroups call
       try {
+        final now = DateTime.now();
         final results = await Future.wait([
           _repository.getTeacherStudents(
             teacherId: teacherId,
@@ -187,11 +191,49 @@ class TeacherProvider extends ChangeNotifier {
             teacherUserId: teacherUserId,
             centerId: centerId,
           ),
+          _repository.getTeacherSalaryBreakdown(
+            teacherId: teacherId,
+            centerId: centerId,
+            month: now.month,
+            year: now.year,
+          ),
         ]);
 
         _students = results[0] as List<Map<String, dynamic>>;
         _currentEnrollment = results[1] as TeacherEnrollmentModel?;
         _dashboardStats = results[2] as Map<String, dynamic>;
+        _salaryData = results[3] as Map<String, dynamic>;
+        
+        _actualCollectedPerGroup.clear();
+        final salaryType = _salaryData!['salary_type'] ?? 'fixed';
+        final items = (salaryType == 'percentage' || salaryType == 'independent')
+            ? (_salaryData!['percentage_items'] as List? ?? [])
+            : salaryType == 'per_session'
+                ? (_salaryData!['sessions'] as List? ?? [])
+                : [];
+                
+        for (var item in items) {
+          final groupId = item['group_id'] as String?;
+          final groupName = item['group'] as String?;
+          final collected = (item['collected'] as num?)?.toDouble() ?? 0.0;
+          
+          if (groupId != null) {
+            _actualCollectedPerGroup[groupId] = collected;
+          } else if (groupName != null) {
+            final matchedGroup = _groups.where((g) => g.groupName == groupName).firstOrNull;
+            if (matchedGroup != null) {
+              _actualCollectedPerGroup[matchedGroup.id] = collected;
+            }
+          }
+        }
+
+        // Synchronize each group's student count with the actual active student enrollments
+        if (_groups.isNotEmpty && _students.isNotEmpty) {
+          _groups = _groups.map((group) {
+            final actualCount = _students.where((s) => s['group_id'] == group.id).length;
+            return group.copyWith(currentStudents: actualCount);
+          }).toList();
+        }
 
         _lastFetchTime = DateTime.now();
 
@@ -200,8 +242,8 @@ class TeacherProvider extends ChangeNotifier {
           tag: 'TeacherProvider',
         );
         notifyListeners();
-      } catch (e) {
-        log.error('Data load failed', tag: 'TeacherProvider', error: e);
+      } catch (e, st) {
+        log.error('Data load failed: $e', tag: 'TeacherProvider', error: e, stackTrace: st);
         // NOTE: Non-fatal — UI can still work with groups data
         log.warning('Partial data load, continuing...', tag: 'TeacherProvider');
       }
@@ -218,37 +260,69 @@ class TeacherProvider extends ChangeNotifier {
   /// Current Enrollment Data (Financials)
   TeacherEnrollmentModel? _currentEnrollment;
   TeacherEnrollmentModel? get currentEnrollment => _currentEnrollment;
+  
+  Map<String, dynamic>? _salaryData;
+  Map<String, dynamic>? get salaryData => _salaryData;
+  
+  Map<String, double> _actualCollectedPerGroup = {};
+  Map<String, double> get actualCollectedPerGroup => _actualCollectedPerGroup;
 
-  /// Calculate Financials for a Group
+  /// Calculate Financials for a Group (Projected vs Actual)
   Map<String, double> calculateGroupFinancials(GroupModel group, {bool isIndependent = false}) {
-    if (_currentEnrollment == null) {
-      return {'total_income': 0, 'center_share': 0, 'teacher_share': 0};
-    }
-
-    final studentCount = group.currentStudents;
+    // Dynamic student count fallback: check provider's students list if group.currentStudents is 0
+    final dynamicStudentCount = group.currentStudents > 0 
+        ? group.currentStudents 
+        : getStudentCountForGroup(group.id);
     final monthlyFee = group.monthlyFee ?? 0;
-    final totalIncome = studentCount * monthlyFee;
+    
+    // Projected
+    final projectedTotalIncome = dynamicStudentCount * monthlyFee;
+    double projectedTeacherShare = 0;
+    double projectedCenterShare = 0;
+    
+    // Actual
+    final actualTotalIncome = _actualCollectedPerGroup[group.id] ?? 0.0;
+    double actualTeacherShare = 0;
+    double actualCenterShare = 0;
 
-    double teacherShare = 0;
-    double centerShare = 0;
-
-    if (isIndependent || _currentEnrollment!.salaryType == 'independent') {
-      teacherShare = totalIncome;
-      centerShare = 0;
+    if (isIndependent || _currentEnrollment == null || _currentEnrollment!.salaryType == 'independent') {
+      projectedTeacherShare = projectedTotalIncome;
+      projectedCenterShare = 0;
+      
+      actualTeacherShare = actualTotalIncome;
+      actualCenterShare = 0;
     } else if (_currentEnrollment!.salaryType == 'percentage') {
       final percentage = _currentEnrollment!.salaryAmount ?? 0;
-      teacherShare = totalIncome * (percentage / 100);
-      centerShare = totalIncome - teacherShare;
+      projectedTeacherShare = projectedTotalIncome * (percentage / 100);
+      projectedCenterShare = projectedTotalIncome - projectedTeacherShare;
+      
+      actualTeacherShare = actualTotalIncome * (percentage / 100);
+      actualCenterShare = actualTotalIncome - actualTeacherShare;
     } else if (_currentEnrollment!.salaryType == 'fixed') {
-      teacherShare = 0;
-      centerShare = totalIncome;
+      projectedTeacherShare = 0;
+      projectedCenterShare = projectedTotalIncome;
+      
+      actualTeacherShare = 0;
+      actualCenterShare = actualTotalIncome;
     }
 
-    return {
-      'total_income': totalIncome,
-      'center_share': centerShare,
-      'teacher_share': teacherShare,
+    final result = {
+      // Projected
+      'total_income': projectedTotalIncome,
+      'center_share': projectedCenterShare,
+      'teacher_share': projectedTeacherShare,
+      // Actual
+      'actual_total': actualTotalIncome,
+      'actual_teacher_share': actualTeacherShare,
+      'actual_center_share': actualCenterShare,
     };
+    
+    debugPrint('💰 [Financials] Group ${group.groupName}: '
+        'Students=$dynamicStudentCount, Fee=$monthlyFee, '
+        'ProjectedTeacherShare=$projectedTeacherShare, '
+        'ActualTeacherShare=$actualTeacherShare');
+
+    return result;
   }
 
   /// إجمالي الدخل المتوقع من جميع المجموعات
@@ -263,6 +337,27 @@ class TeacherProvider extends ChangeNotifier {
     if (_currentEnrollment?.salaryType == 'fixed' && !isIndependent) {
       total += _currentEnrollment!.salaryAmount ?? 0;
     }
+    
+    return total;
+  }
+  
+  /// إجمالي الدخل المحصل فعلياً
+  double totalActualIncome({bool isIndependent = false}) {
+    double total = 0;
+    if (_groups.isNotEmpty) {
+      for (final group in _groups) {
+        total += calculateGroupFinancials(group, isIndependent: isIndependent)['actual_teacher_share'] ?? 0;
+      }
+    }
+    // NOTE: For fixed salary, the actual collected doesn't affect the fixed salary amount directly,
+    // but the center usually pays it at the end of the month. We can return 0 or the fixed amount.
+    // For a teacher, their "actual" fixed salary is determined by payment transfers, not student payments.
+    if (_currentEnrollment?.salaryType == 'fixed' && !isIndependent) {
+      // Here we might just return the fixed salary as projected, but "actual" means what's in their pocket.
+      // For now, we will return 0 since we track student payments, not teacher salaries.
+      total += 0;
+    }
+    
     return total;
   }
 

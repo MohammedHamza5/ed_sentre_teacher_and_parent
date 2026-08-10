@@ -82,7 +82,7 @@ class _LiveCenterRoomsScreenState extends State<LiveCenterRoomsScreen> {
                     Text(
                       'جاري التآزر مع القاعات الحية...',
                       style: TextStyle(
-                        color: colorScheme.onSurface.withOpacity(0.6),
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -124,7 +124,7 @@ class _LiveCenterRoomsScreenState extends State<LiveCenterRoomsScreen> {
                     const occupiedColor = Color(0xFF10B981);
                     final statusColor = room.isOccupied
                         ? occupiedColor
-                        : colorScheme.onSurface.withOpacity(0.4);
+                        : colorScheme.onSurface.withValues(alpha: 0.4);
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 16),
@@ -133,15 +133,15 @@ class _LiveCenterRoomsScreenState extends State<LiveCenterRoomsScreen> {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: room.isOccupied
-                              ? occupiedColor.withOpacity(0.4)
-                              : colorScheme.outline.withOpacity(0.12),
+                              ? occupiedColor.withValues(alpha: 0.4)
+                              : colorScheme.outline.withValues(alpha: 0.12),
                           width: room.isOccupied ? 1.5 : 1.0,
                         ),
                         boxShadow: [
                           BoxShadow(
                             color:
                                 (room.isOccupied ? occupiedColor : Colors.black)
-                                    .withOpacity(0.05),
+                                    .withValues(alpha: 0.05),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -181,10 +181,10 @@ class _LiveCenterRoomsScreenState extends State<LiveCenterRoomsScreen> {
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: statusColor.withOpacity(0.12),
+                                    color: statusColor.withValues(alpha: 0.12),
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
-                                      color: statusColor.withOpacity(0.3),
+                                      color: statusColor.withValues(alpha: 0.3),
                                     ),
                                   ),
                                   child: Row(
@@ -218,7 +218,7 @@ class _LiveCenterRoomsScreenState extends State<LiveCenterRoomsScreen> {
                             const SizedBox(height: 16),
                             Divider(
                               height: 1,
-                              color: colorScheme.outline.withOpacity(0.1),
+                              color: colorScheme.outline.withValues(alpha: 0.1),
                             ),
                             const SizedBox(height: 16),
 
@@ -253,7 +253,7 @@ class _LiveCenterRoomsScreenState extends State<LiveCenterRoomsScreen> {
                                             Icons.groups_rounded,
                                             size: 18,
                                             color: colorScheme.onSurface
-                                                .withOpacity(0.6),
+                                                .withValues(alpha: 0.6),
                                           ),
                                           const SizedBox(width: 6),
                                           Text(
@@ -261,7 +261,7 @@ class _LiveCenterRoomsScreenState extends State<LiveCenterRoomsScreen> {
                                             style: TextStyle(
                                               fontSize: 14,
                                               color: colorScheme.onSurface
-                                                  .withOpacity(0.7),
+                                                  .withValues(alpha: 0.7),
                                             ),
                                           ),
                                         ],
@@ -352,7 +352,7 @@ class _LiveCenterRoomsScreenState extends State<LiveCenterRoomsScreen> {
                                 width: double.infinity,
                                 decoration: BoxDecoration(
                                   color: colorScheme.surfaceContainerHighest
-                                      .withOpacity(0.3),
+                                      .withValues(alpha: 0.3),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Column(
@@ -360,8 +360,8 @@ class _LiveCenterRoomsScreenState extends State<LiveCenterRoomsScreen> {
                                     Icon(
                                       Icons.event_seat_outlined,
                                       size: 36,
-                                      color: colorScheme.onSurface.withOpacity(
-                                        0.4,
+                                      color: colorScheme.onSurface.withValues(
+                                        alpha: 0.4,
                                       ),
                                     ),
                                     const SizedBox(height: 8),
@@ -369,7 +369,7 @@ class _LiveCenterRoomsScreenState extends State<LiveCenterRoomsScreen> {
                                       'لا توجد حصة دراسية نشطة بهذه القاعة حالياً',
                                       style: TextStyle(
                                         color: colorScheme.onSurface
-                                            .withOpacity(0.6),
+                                            .withValues(alpha: 0.6),
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -405,7 +405,7 @@ class _LiveCenterRoomsScreenState extends State<LiveCenterRoomsScreen> {
         Text(
           label,
           style: TextStyle(
-            color: colorScheme.onSurface.withOpacity(0.6),
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
             fontSize: 15,
           ),
         ),
@@ -439,7 +439,7 @@ class _LiveCenterRoomsScreenState extends State<LiveCenterRoomsScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 40, color: color),
@@ -457,7 +457,7 @@ class _LiveCenterRoomsScreenState extends State<LiveCenterRoomsScreen> {
             Text(
               subtitle,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurface.withOpacity(0.6),
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
                 height: 1.5,
               ),
               textAlign: TextAlign.center,

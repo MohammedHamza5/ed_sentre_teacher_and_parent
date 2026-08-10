@@ -109,7 +109,7 @@ class _WatermarkPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final textStyle = TextStyle(
-      color: Colors.grey.withOpacity(0.15),
+      color: Colors.grey.withValues(alpha: 0.15),
       fontSize: 16,
       fontWeight: FontWeight.bold,
     );

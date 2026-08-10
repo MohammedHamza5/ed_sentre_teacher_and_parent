@@ -20,6 +20,27 @@ class TeacherGroupsScreen extends StatefulWidget {
 }
 
 class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _triggerLoad();
+    });
+  }
+
+  void _triggerLoad() {
+    final teacherProvider = context.read<TeacherProvider>();
+    final authProvider = context.read<AuthProvider>();
+    final userId = authProvider.currentUser?.id;
+    if (teacherProvider.groups.isEmpty) {
+      if (teacherProvider.selectedCenter != null) {
+        teacherProvider.refreshData(forceRefresh: true);
+      } else {
+        teacherProvider.loadTeacherData(userId);
+      }
+    }
+  }
+
   bool _isMonitorWindowActive(GroupModel group) {
     if (group.schedules.isEmpty) return false;
 
@@ -113,29 +134,41 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
         centerTitle: true,
         iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-          child: Column(
-            children: [
-              _buildSmartSummaryCard(provider),
-              SizedBox(height: 24.h),
-              if (groups.isEmpty)
-                _buildEmptyState()
-              else
-                ...groups.asMap().entries.map(
-                  (e) => _buildSmartGroupCard(e.value, provider, e.key),
+      body: provider.isLoading && groups.isEmpty
+          ? Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: () => provider.refreshData(forceRefresh: true),
+              color: Theme.of(context).colorScheme.primary,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
                 ),
-              SizedBox(height: 80.h),
-            ],
-          ),
-        ),
-      ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+                  child: Column(
+                    children: [
+                      _buildSmartSummaryCard(provider),
+                      SizedBox(height: 24.h),
+                      if (groups.isEmpty)
+                        _buildEmptyState(provider)
+                      else
+                        ...groups.asMap().entries.map(
+                          (e) => _buildSmartGroupCard(e.value, provider, e.key),
+                        ),
+                      SizedBox(height: 80.h),
+                    ],
+                  ),
+                ),
+              ),
+            ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(TeacherProvider provider) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -170,17 +203,32 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
             ).textTheme.bodyMedium?.copyWith(color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey)),
             textAlign: TextAlign.center,
           ).animate().fadeIn(delay: 300.ms),
+          SizedBox(height: 20.h),
+          OutlinedButton.icon(
+            onPressed: () => provider.refreshData(forceRefresh: true),
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('تحديث المجموعات'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
+              side: BorderSide(color: Theme.of(context).colorScheme.primary),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildSmartSummaryCard(TeacherProvider provider) {
-    final isIndependent = context.read<AuthProvider>().currentUser?.defaultCenterId == null;
-    final totalIncome = provider.totalProjectedIncome(isIndependent: isIndependent);
+    final isIndependent = context.read<AuthProvider>().currentUser?.role == UserRole.centerAdmin;
+    final totalProjected = provider.totalProjectedIncome(isIndependent: isIndependent);
+    final totalActual = provider.totalActualIncome(isIndependent: isIndependent);
+    
     final totalStudents = provider.groups.fold(
       0,
-      (sum, g) => sum + g.currentStudents,
+      (sum, g) => sum + (g.currentStudents > 0 ? g.currentStudents : provider.getStudentCountForGroup(g.id)),
     );
     final totalGroups = provider.groups.length;
 
@@ -197,24 +245,38 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'نظرة عامة (شهرية)',
+                    'نظرة عامة (المحصل / المتوقع)',
                     style: TextStyle(
                       color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
-                      fontSize: 14.sp,
+                      fontSize: 13.sp,
                     ),
                   ),
                   SizedBox(height: 8.h),
-                  Text(
-                    intl.NumberFormat.currency(
-                      symbol: 'ج.م',
-                      decimalDigits: 0,
-                    ).format(totalIncome),
-                    style: TextStyle(
-                      color: Colors.green,
-                      fontSize: 28.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ).animate().scale(duration: 500.ms),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        intl.NumberFormat.currency(
+                          symbol: '',
+                          decimalDigits: 0,
+                        ).format(totalActual),
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 28.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ).animate().scale(duration: 500.ms),
+                      Text(
+                        ' / ${intl.NumberFormat.currency(symbol: 'ج.م', decimalDigits: 0).format(totalProjected)}',
+                        style: TextStyle(
+                          color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ).animate().fadeIn(delay: 300.ms),
+                    ],
+                  ),
                 ],
               ),
               Container(
@@ -290,7 +352,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
     TeacherProvider provider,
     int index,
   ) {
-    final isIndependent = context.read<AuthProvider>().currentUser?.defaultCenterId == null;
+    final isIndependent = context.read<AuthProvider>().currentUser?.role == UserRole.centerAdmin;
     final financials = provider.calculateGroupFinancials(group, isIndependent: isIndependent);
     final schedules = group.schedules;
     final canMonitor = _isMonitorWindowActive(group);
@@ -345,7 +407,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                           ),
                           SizedBox(height: 4.h),
                           Text(
-                            '${group.courseName ?? 'مادة'} • ${group.currentStudents} طالب',
+                            '${group.courseName ?? 'مادة'} • ${group.currentStudents > 0 ? group.currentStudents : provider.getStudentCountForGroup(group.id)} طالب',
                             style: TextStyle(
                               color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                               fontSize: 13.sp,
@@ -469,10 +531,7 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                           ),
                         ),
                         Text(
-                          intl.NumberFormat.currency(
-                            symbol: 'ج.م',
-                            decimalDigits: 0,
-                          ).format(financials['teacher_share']),
+                          '${intl.NumberFormat.currency(symbol: '', decimalDigits: 0).format(financials['actual_teacher_share'])} / ${intl.NumberFormat.currency(symbol: 'ج.م', decimalDigits: 0).format(financials['teacher_share'])}',
                           style: TextStyle(
                             color: Colors.green,
                             fontSize: 15.sp,
@@ -486,10 +545,10 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                       borderRadius: BorderRadius.circular(8.r),
                       child: LinearProgressIndicator(
                         value:
-                            financials['teacher_share']! /
-                            (financials['total_income'] == 0
+                            financials['actual_teacher_share']! /
+                            (financials['teacher_share'] == 0
                                 ? 1
-                                : financials['total_income']!),
+                                : financials['teacher_share']!),
                         backgroundColor: Theme.of(context).colorScheme.surface,
                         valueColor: const AlwaysStoppedAnimation<Color>(
                           Colors.green,
@@ -500,8 +559,8 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                     SizedBox(height: 6.h),
                     Text(
                       isIndependent 
-                          ? 'إجمالي الإيرادات المتوقعة (${intl.NumberFormat.currency(symbol: 'ج.م', decimalDigits: 0).format(financials['total_income'])})'
-                          : 'نسبتك من اجمالي الدخل (${intl.NumberFormat.currency(symbol: 'ج.م', decimalDigits: 0).format(financials['total_income'])})',
+                          ? 'المُحصل فعلياً مقابل إجمالي الإيرادات المتوقعة (${intl.NumberFormat.currency(symbol: 'ج.م', decimalDigits: 0).format(financials['total_income'])})'
+                          : 'نصيبك المُحصل فعلياً مقابل النصيب المتوقع من اجمالي الدخل (${intl.NumberFormat.currency(symbol: 'ج.م', decimalDigits: 0).format(financials['total_income'])})',
                       style: TextStyle(
                         color: (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                         fontSize: 11.sp,
@@ -549,7 +608,10 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
   }
 
   Widget _buildStatusBadge(GroupModel group) {
-    bool isFull = group.currentStudents >= group.maxStudents;
+    // 0 or negative maxStudents means unlimited capacity in the management system
+    final bool isUnlimited = group.maxStudents <= 0;
+    final bool isFull = !isUnlimited && group.currentStudents >= group.maxStudents;
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(

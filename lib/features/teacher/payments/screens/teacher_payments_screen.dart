@@ -17,6 +17,7 @@ import '../widgets/teacher_payments_group_breakdown.dart';
 import '../widgets/teacher_payments_bonuses.dart';
 import '../widgets/teacher_payments_status.dart';
 import '../../../auth/provider/auth_provider.dart';
+import '../../../../shared/models/models.dart';
 
 class TeacherPaymentsScreen extends StatefulWidget {
   const TeacherPaymentsScreen({super.key});
@@ -61,7 +62,7 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
   Widget build(BuildContext context) {
     final bonuses = _salaryData['bonuses'] as List? ?? [];
     final deductions = _salaryData['deductions'] as List? ?? [];
-    final isIndependent = context.read<AuthProvider>().currentUser?.defaultCenterId == null;
+    final isIndependent = context.read<AuthProvider>().currentUser?.role == UserRole.centerAdmin;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
