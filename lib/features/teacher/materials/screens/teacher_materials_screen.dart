@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/providers/center_provider.dart';
 import '../../../auth/provider/auth_provider.dart';
@@ -669,10 +670,35 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
     }
   }
 
-  void _openMaterial(Map<String, dynamic> material) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('فتح ${material['title']}')));
+  Future<void> _openMaterial(Map<String, dynamic> material) async {
+    final url = material['file_url'];
+    if (url == null || url.toString().isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('الرابط غير متاح')),
+        );
+      }
+      return;
+    }
+
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('لا يمكن فتح هذا الرابط')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('حدث خطأ أثناء فتح الملف')),
+        );
+      }
+    }
   }
 
   void _handleMenuAction(String action, Map<String, dynamic> material) {

@@ -151,19 +151,15 @@ class _UploadMaterialDialogState extends State<UploadMaterialDialog> {
                 SizedBox(height: 24.h),
 
                 // Type Selector
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildTypeChip('pdf', 'ملف PDF', Icons.picture_as_pdf),
-                      SizedBox(width: 8.w),
-                      _buildTypeChip('video', 'فيديو', Icons.video_library),
-                      SizedBox(width: 8.w),
-                      _buildTypeChip('image', 'صورة', Icons.image),
-                      SizedBox(width: 8.w),
-                      _buildTypeChip('link', 'رابط خارجي', Icons.link),
-                    ],
-                  ),
+                Wrap(
+                  spacing: 8.w,
+                  runSpacing: 8.h,
+                  children: [
+                    _buildTypeChip('pdf', 'ملف PDF', Icons.picture_as_pdf),
+                    _buildTypeChip('video', 'فيديو', Icons.video_library),
+                    _buildTypeChip('image', 'صورة', Icons.image),
+                    _buildTypeChip('link', 'رابط خارجي', Icons.link),
+                  ],
                 ),
                 SizedBox(height: 24.h),
 
