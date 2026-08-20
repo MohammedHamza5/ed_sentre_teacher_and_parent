@@ -5,7 +5,9 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../../../features/auth/provider/auth_provider.dart';
+import '../../../../shared/data/supabase_repository.dart';
 import '../services/student_report_pdf_service.dart';
+import '../services/audio_journal_local_service.dart';
 
 class StudentReportBottomSheet extends StatefulWidget {
   final Map<String, dynamic> student;
@@ -26,6 +28,43 @@ class _StudentReportBottomSheetState extends State<StudentReportBottomSheet> {
     '⚠️ يحتاج متابعة فورية من ولي الأمر',
   ];
 
+  bool _isLoadingData = true;
+  int _attendancePercentage = 100;
+  int _examsAverage = 100;
+  int _homeworkCompletion = 100;
+  List<Map<String, dynamic>> _recentScores = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRealData();
+  }
+
+  Future<void> _loadRealData() async {
+    try {
+      final repo = context.read<SupabaseRepository>();
+      final studentId = widget.student['student_id']?.toString() ?? widget.student['id']?.toString() ?? '';
+      final studentUserId = widget.student['student_user_id']?.toString() ?? widget.student['user_id']?.toString() ?? '';
+      
+      final data = await repo.getStudentFullReportData(
+        studentId: studentId, 
+        studentUserId: studentUserId,
+      );
+
+      if (mounted) {
+        setState(() {
+          _attendancePercentage = data['attendancePercentage'] as int;
+          _examsAverage = data['examsAverage'] as int;
+          _homeworkCompletion = data['homeworkCompletion'] as int;
+          _recentScores = (data['recentScores'] as List).cast<Map<String, dynamic>>();
+          _isLoadingData = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingData = false);
+    }
+  }
+
   @override
   void dispose() {
     _notesController.dispose();
@@ -44,7 +83,24 @@ class _StudentReportBottomSheetState extends State<StudentReportBottomSheet> {
     return 'المادة الدراسية';
   }
 
+  Future<void> _saveNoteLocally() async {
+    if (_notesController.text.trim().isEmpty) return;
+    
+    final studentId = widget.student['student_id']?.toString() ?? widget.student['id']?.toString() ?? '';
+    if (studentId.isNotEmpty) {
+      final service = AudioJournalLocalService();
+      await service.saveNote(
+        studentId: studentId,
+        title: 'تقرير كتابي: $_selectedRating\n${_notesController.text.trim()}',
+        durationSeconds: 0, // 0 means text note
+      );
+    }
+  }
+
   Future<void> _generatePdf() async {
+    if (_isLoadingData) return;
+    await _saveNoteLocally();
+    
     final auth = context.read<AuthProvider>();
     final teacherName = _getTeacherName(auth);
     final subjectName = _getSubjectName(auth);
@@ -60,17 +116,17 @@ class _StudentReportBottomSheetState extends State<StudentReportBottomSheet> {
       subjectName: subjectName,
       teacherNotes: _notesController.text.trim(),
       evaluationRating: _selectedRating,
-      attendancePercentage: 94, // يمكن ربطه لاحقاً بديناميكية سجل الحضور الفعلي
-      examsAverage: 88,
-      homeworkCompletion: 90,
-      recentScores: [
-        {'title': 'اختبار الفصل الأول', 'score': 18, 'total': 20, 'grade': 'ممتاز'},
-        {'title': 'تقييم الحصة السريع', 'score': 9, 'total': 10, 'grade': 'ممتاز'},
-      ],
+      attendancePercentage: _attendancePercentage,
+      examsAverage: _examsAverage,
+      homeworkCompletion: _homeworkCompletion,
+      recentScores: _recentScores,
     );
   }
 
   Future<void> _sendViaWhatsApp() async {
+    if (_isLoadingData) return;
+    await _saveNoteLocally();
+
     final auth = context.read<AuthProvider>();
     final teacherName = _getTeacherName(auth);
     final subjectName = _getSubjectName(auth);
@@ -111,13 +167,10 @@ $notesText
         subjectName: subjectName,
         teacherNotes: _notesController.text.trim(),
         evaluationRating: _selectedRating,
-        attendancePercentage: 94,
-        examsAverage: 88,
-        homeworkCompletion: 90,
-        recentScores: [
-          {'title': 'اختبار الفصل الأول', 'score': 18, 'total': 20, 'grade': 'ممتاز'},
-          {'title': 'تقييم الحصة السريع', 'score': 9, 'total': 10, 'grade': 'ممتاز'},
-        ],
+        attendancePercentage: _attendancePercentage,
+        examsAverage: _examsAverage,
+        homeworkCompletion: _homeworkCompletion,
+        recentScores: _recentScores,
       );
 
       // 2. إرفاقه ومشاركته
@@ -266,32 +319,38 @@ $notesText
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {
+                      onPressed: _isLoadingData ? null : () {
                         Navigator.pop(context);
                         _generatePdf();
                       },
-                      icon: Icon(Icons.picture_as_pdf_rounded, size: 18.sp, color: Colors.white),
-                      label: Text('تصدير PDF', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      icon: _isLoadingData
+                          ? SizedBox(width: 18.sp, height: 18.sp, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : Icon(Icons.picture_as_pdf_rounded, size: 18.sp, color: Colors.white),
+                      label: Text(_isLoadingData ? 'جارِ التحضير...' : 'تصدير PDF', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                        disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
                       ),
                     ),
                   ),
                   SizedBox(width: 12.w),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {
+                      onPressed: _isLoadingData ? null : () {
                         Navigator.pop(context);
                         _sendViaWhatsApp();
                       },
-                      icon: Icon(Icons.send_rounded, size: 18.sp, color: Colors.white),
-                      label: Text('إرسال واتساب', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      icon: _isLoadingData
+                          ? SizedBox(width: 18.sp, height: 18.sp, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : Icon(Icons.send_rounded, size: 18.sp, color: Colors.white),
+                      label: Text(_isLoadingData ? 'جارِ التحضير...' : 'إرسال واتساب', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF25D366), // اللون الرسمي لواتساب
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                        disabledBackgroundColor: const Color(0xFF25D366).withValues(alpha: 0.5),
                       ),
                     ),
                   ),

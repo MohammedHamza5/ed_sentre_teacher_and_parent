@@ -3,6 +3,7 @@
 /// Shows per-group revenue, teacher share vs center share, and salary breakdown
 library;
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -26,16 +27,60 @@ class TeacherPaymentsScreen extends StatefulWidget {
   State<TeacherPaymentsScreen> createState() => _TeacherPaymentsScreenState();
 }
 
-class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
+class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen>
+    with RouteAware {
   Map<String, dynamic> _salaryData = {};
   bool _isLoading = true;
   int _selectedMonth = DateTime.now().month;
   int _selectedYear = DateTime.now().year;
 
+  /// Timer للتحديث التلقائي كل 30 ثانية (يلتقط أي تحصيل تم من تطبيق الإدارة)
+  Timer? _autoRefreshTimer;
+
+  /// RouteObserver للتعامل مع أحداث التنقل
+  static final RouteObserver<ModalRoute<void>> _routeObserver =
+      RouteObserver<ModalRoute<void>>();
+
+  /// Getter عام لإضافته لـ MaterialApp.navigatorObservers
+  static RouteObserver<ModalRoute<void>> get routeObserver => _routeObserver;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+      // تسجيل هذه الشاشة كـ RouteAware للتحديث التلقائي عند العودة إليها
+      final route = ModalRoute.of(context);
+      if (route != null) {
+        _routeObserver.subscribe(this, route);
+      }
+    });
+
+    // ← تحديث تلقائي كل 30 ثانية: يضمن أن أي تحصيل تم من تطبيق الإدارة
+    //   يظهر للمعلم دون الحاجة لإغلاق وفتح التطبيق
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      // نُحدّث فقط إذا كانت الشاشة الحالية هي شاشة الشهر الحالي (لا داعي لتحديث الأشهر الماضية)
+      final now = DateTime.now();
+      if (_selectedMonth == now.month && _selectedYear == now.year && mounted && !_isLoading) {
+        debugPrint('⏱️ [TeacherPayments] تحديث تلقائي دوري — فحص تحصيلات جديدة');
+        _loadData();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _autoRefreshTimer?.cancel(); // إيقاف التحديث التلقائي عند الخروج من الشاشة
+    _routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  /// يُستدعى تلقائياً عند العودة لهذه الشاشة من شاشة أخرى
+  /// المشكلة 2: يضمن تحديث بيانات المعلم بعد أي عملية تحصيل من تطبيق الإدارة
+  @override
+  void didPopNext() {
+    debugPrint('🔄 [TeacherPayments] العودة للشاشة — إعادة تحميل البيانات المالية');
+    _loadData();
   }
 
   Future<void> _loadData() async {
@@ -62,7 +107,8 @@ class _TeacherPaymentsScreenState extends State<TeacherPaymentsScreen> {
   Widget build(BuildContext context) {
     final bonuses = _salaryData['bonuses'] as List? ?? [];
     final deductions = _salaryData['deductions'] as List? ?? [];
-    final isIndependent = context.read<AuthProvider>().currentUser?.role == UserRole.centerAdmin;
+    final isIndependent = context.read<AuthProvider>().currentUser?.role == UserRole.centerAdmin ||
+        _salaryData['salary_type'] == 'independent';
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,

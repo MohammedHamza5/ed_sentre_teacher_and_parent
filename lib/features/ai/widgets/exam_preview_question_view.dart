@@ -21,7 +21,7 @@ class ExamPreviewQuestionView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final options = (question['options'] as List?)?.cast<String>() ?? [];
-    final correctIdx = question['correct_answer'] as int? ?? 0;
+    final correctIdx = (question['correct_answer'] as num?)?.toInt() ?? 0;
     final type = question['type']?.toString() ?? 'mcq';
     final explanation = question['explanation']?.toString() ?? '';
 

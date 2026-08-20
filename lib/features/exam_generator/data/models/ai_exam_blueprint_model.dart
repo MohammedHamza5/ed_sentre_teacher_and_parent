@@ -87,7 +87,7 @@ class AiExamBlueprintModel extends AiExamBlueprint {
           .map((e) => AiGeneratedQuestionModel.fromJson(e as Map<String, dynamic>))
           .toList(),
       totalMarks: (json['totalMarks'] as num?)?.toDouble() ?? 10.0,
-      estimatedTimeMinutes: json['estimatedTimeMinutes'] as int? ?? 30,
+      estimatedTimeMinutes: (json['estimatedTimeMinutes'] as num?)?.toInt() ?? 30,
       cognitiveLevelDistribution: (json['cognitiveLevelDistribution'] as Map<String, dynamic>? ?? {})
           .map((k, v) => MapEntry(k, (v as num).toDouble())),
     );

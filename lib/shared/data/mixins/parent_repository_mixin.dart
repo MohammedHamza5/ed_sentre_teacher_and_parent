@@ -273,15 +273,15 @@ mixin ParentRepositoryMixin on BaseRepository {
     required int month,
     required int year,
   }) async {
-    final response = await client.rpc(
-      'get_student_invoice_summary',
-      params: {
-        'p_student_id': studentId,
-        'p_center_id': centerId,
-        'p_month': month,
-        'p_year': year,
-      },
-    );
+      final response = await Supabase.instance.client.rpc(
+        'get_student_unified_financial_status',
+        params: {
+          'p_student_id': studentId,
+          'p_center_id': centerId,
+          if (month != null) 'p_month': month,
+          if (year != null) 'p_year': year,
+        },
+      );
 
     if (response is List && response.isNotEmpty) {
       return response.first as Map<String, dynamic>;

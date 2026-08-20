@@ -16,7 +16,7 @@ class ExamPreviewSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final totalMarks = questions.fold<int>(
       0,
-      (sum, q) => sum + (q['marks'] as int? ?? 2),
+      (sum, q) => sum + ((q['marks'] as num?)?.toInt() ?? 2),
     );
 
     return Container(

@@ -70,8 +70,16 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
 
   Future<void> _makePhoneCall(String phoneNumber) async {
     final Uri launchUri = Uri(scheme: 'tel', path: phoneNumber);
-    if (await canLaunchUrl(launchUri)) {
-      await launchUrl(launchUri);
+    try {
+      if (!await launchUrl(launchUri)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('تعذر إجراء المكالمة')),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error making call: $e');
     }
   }
 
@@ -79,8 +87,12 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
     final cleanPhone = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
     if (cleanPhone.isEmpty) return;
     final Uri launchUri = Uri.parse('https://wa.me/$cleanPhone');
-    if (await canLaunchUrl(launchUri)) {
-      await launchUrl(launchUri, mode: LaunchMode.externalApplication);
+    try {
+      if (!await launchUrl(launchUri, mode: LaunchMode.externalApplication)) {
+        await launchUrl(launchUri, mode: LaunchMode.platformDefault);
+      }
+    } catch (e) {
+      debugPrint('Error opening WhatsApp: $e');
     }
   }
 

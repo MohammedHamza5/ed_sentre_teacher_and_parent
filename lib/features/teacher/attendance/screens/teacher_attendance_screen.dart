@@ -13,6 +13,7 @@ import '../../../../shared/data/supabase_repository.dart';
 import '../../../../shared/models/group_model.dart';
 import '../../../../shared/widgets/premium_widgets.dart' show EmptyState;
 import '../../provider/teacher_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/widgets/genius/glass_card.dart';
 import '../../../../core/widgets/genius/shimmer_skeleton.dart';
@@ -33,12 +34,75 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
   String? _selectedGroupId;
   List<GroupModel> _myGroups = [];
   List<Map<String, dynamic>> _students = [];
+  RealtimeChannel? _realtimeChannel;
+  final Set<String> _recentlyUpdatedStudents = {};
 
   @override
   void initState() {
     super.initState();
     _selectedGroupId = widget.groupId;
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadInitialData());
+  }
+
+  @override
+  void dispose() {
+    _realtimeChannel?.unsubscribe();
+    super.dispose();
+  }
+
+  void _subscribeToRealtimeAttendance() {
+    _realtimeChannel?.unsubscribe();
+
+    final centerId = context.read<CenterProvider>().currentCenterId;
+    if (centerId == null || centerId.isEmpty) return;
+
+    _realtimeChannel = Supabase.instance.client
+        .channel('teacher_attendance_monitor_$centerId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'attendance',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'center_id',
+            value: centerId,
+          ),
+          callback: (payload) {
+            final record = payload.newRecord;
+            if (record.isEmpty) return;
+
+            final studentId = record['student_id']?.toString();
+            if (studentId == null) return;
+
+            final newStatus = record['status']?.toString() ?? 'present';
+            final rawCheckInTime =
+                record['check_in_time'] ?? record['created_at'];
+
+            if (!mounted) return;
+
+            final studentIndex = _students.indexWhere(
+              (s) => s['id'] == studentId || s['student_id'] == studentId,
+            );
+
+            if (studentIndex != -1) {
+              setState(() {
+                _students[studentIndex]['attendance_status'] = newStatus;
+                _students[studentIndex]['check_in_time'] = rawCheckInTime;
+                _recentlyUpdatedStudents.add(studentId);
+              });
+
+              // إزالة تأثير التوهج للحدث الجديد بعد 3 ثوانٍ
+              Future.delayed(const Duration(seconds: 3), () {
+                if (mounted) {
+                  setState(() {
+                    _recentlyUpdatedStudents.remove(studentId);
+                  });
+                }
+              });
+            }
+          },
+        )
+        .subscribe();
   }
 
   Future<void> _loadStudents(String groupId) async {
@@ -112,6 +176,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
             _selectedGroupId = _findNearestGroup()?.id ?? _myGroups.first.id;
           }
           await _refreshAttendance();
+          _subscribeToRealtimeAttendance();
         }
       }
     } catch (e) {
@@ -547,9 +612,12 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
   }
 
   Widget _buildStudentTile(Map<String, dynamic> student, int index) {
+    final studentId = student['id']?.toString() ?? student['student_id']?.toString() ?? '';
+    final isRecentlyUpdated = _recentlyUpdatedStudents.contains(studentId);
     final name = student['name'] as String? ?? 'طالب';
     final status = student['attendance_status'] as String? ?? 'pending';
-    final checkInTime = student['check_in_time'] as String?;
+    final rawCheckInTime = student['check_in_time'];
+    final formattedCheckIn = _formatCheckInTime(rawCheckInTime);
     final avatarUrl = student['avatar_url'] as String?;
 
     Color statusColor;
@@ -583,16 +651,26 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
       child: Semantics(
         label: '$name، الحالة: $statusText',
         container: true,
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 350),
           constraints: const BoxConstraints(minHeight: 56), // Touch target >= 48dp
           decoration: BoxDecoration(
-            color: context.themeCard,
+            color: isRecentlyUpdated
+                ? AppColors.statusSuccess.withValues(alpha: 0.15)
+                : context.themeCard,
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+            border: Border.all(
+              color: isRecentlyUpdated
+                  ? AppColors.statusSuccess
+                  : statusColor.withValues(alpha: 0.3),
+              width: isRecentlyUpdated ? 2 : 1,
+            ),
             boxShadow: [
               BoxShadow(
-                color: statusColor.withValues(alpha: 0.05),
-                blurRadius: 10,
+                color: isRecentlyUpdated
+                    ? AppColors.statusSuccess.withValues(alpha: 0.3)
+                    : statusColor.withValues(alpha: 0.05),
+                blurRadius: isRecentlyUpdated ? 14 : 10,
                 offset: const Offset(0, 3),
               ),
             ],
@@ -646,10 +724,13 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
                         fontWeight: FontWeight.w700,
                         fontSize: 15.sp,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    if (checkInTime != null) ...[
+                    if (formattedCheckIn != null) ...[
                       SizedBox(height: 4.h),
                       Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             Icons.schedule_rounded,
@@ -657,11 +738,15 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
                             color: context.themeTextSecondary,
                           ),
                           SizedBox(width: 4.w),
-                          Text(
-                            'تسجيل: $checkInTime',
-                            style: TextStyle(
-                              color: context.themeTextSecondary,
-                              fontSize: 11.5.sp,
+                          Flexible(
+                            child: Text(
+                              'تسجيل: $formattedCheckIn',
+                              style: TextStyle(
+                                color: context.themeTextSecondary,
+                                fontSize: 11.5.sp,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                           ),
                         ],
@@ -708,6 +793,25 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
         .slideX(begin: 0.08, end: 0),
       ),
     );
+  }
+
+  String? _formatCheckInTime(dynamic rawTime) {
+    if (rawTime == null) return null;
+    try {
+      DateTime dt;
+      if (rawTime is DateTime) {
+        dt = rawTime.toLocal();
+      } else {
+        dt = DateTime.parse(rawTime.toString()).toLocal();
+      }
+      final hour = dt.hour == 0 ? 12 : (dt.hour > 12 ? dt.hour - 12 : dt.hour);
+      final minute = dt.minute.toString().padLeft(2, '0');
+      final period = dt.hour >= 12 ? 'م' : 'ص';
+      return '$hour:$minute $period';
+    } catch (_) {
+      final str = rawTime.toString();
+      return str.length > 8 ? str.substring(0, 8) : str;
+    }
   }
 
   String _getDayName(int? dayIndex) {

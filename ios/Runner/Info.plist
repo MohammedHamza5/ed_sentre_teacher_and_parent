@@ -45,5 +45,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>نحتاج إلى صلاحية استخدام الميكروفون لتسجيل الملاحظات الصوتية (النوتة الصوتية السريعة) للطلاب.</string>
 </dict>
 </plist>

@@ -75,7 +75,7 @@ mixin TeacherProfileMixin on BaseRepository {
 
       if (existingEnrollment == null) {
         if (kDebugMode) {
-          debugPrint('➕ [TeacherProfileMixin] Creating active teacher enrollment in admin center...');
+          debugPrint('➕ [TeacherProfileMixin] Creating INDEPENDENT teacher enrollment in admin center...');
         }
         final userRecord = await client
             .from('users')
@@ -84,26 +84,42 @@ mixin TeacherProfileMixin on BaseRepository {
             .maybeSingle();
         final teacherName = userRecord?['full_name'] as String? ?? center['name'] as String? ?? 'مدرس مستقل';
 
+        // IMPORTANT: Any teacher created via the Admin (Desktop) app is ALWAYS
+        // an independent teacher who keeps 100% of collected revenue.
         await client.from('teacher_enrollments').insert({
           'center_id': centerId,
           'teacher_user_id': userId,
           'teacher_id': teacherId,
           'status': 'active',
           'teacher_name': teacherName,
+          'salary_type': 'independent',   // ← المدرس المستقل دائماً independent
+          'salary_amount': 100,           // ← 100% من الإيرادات له
         });
         if (kDebugMode) {
           debugPrint('✅ [TeacherProfileMixin] Active enrollment created successfully!');
         }
-      } else if (existingEnrollment['status'] != 'active') {
-        if (kDebugMode) {
-          debugPrint('🔄 [TeacherProfileMixin] Activating existing enrollment...');
-        }
-        await client
-            .from('teacher_enrollments')
-            .update({'status': 'active', 'teacher_id': teacherId})
-            .eq('id', existingEnrollment['id'] as String);
-        if (kDebugMode) {
-          debugPrint('✅ [TeacherProfileMixin] Enrollment status updated to active!');
+      } else {
+        // Enrollment exists — ensure it has the correct independent salary settings
+        final currentSalaryType = existingEnrollment['salary_type'] as String?;
+        final needsUpdate = existingEnrollment['status'] != 'active' ||
+            currentSalaryType != 'independent';
+
+        if (needsUpdate) {
+          if (kDebugMode) {
+            debugPrint('🔄 [TeacherProfileMixin] Fixing existing enrollment → setting independent salary...');
+          }
+          await client
+              .from('teacher_enrollments')
+              .update({
+                'status': 'active',
+                'teacher_id': teacherId,
+                'salary_type': 'independent',  // ← تصحيح القيم القديمة
+                'salary_amount': 100,
+              })
+              .eq('id', existingEnrollment['id'] as String);
+          if (kDebugMode) {
+            debugPrint('✅ [TeacherProfileMixin] Enrollment corrected → independent, 100%');
+          }
         }
       }
 

@@ -354,7 +354,7 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
     final strengths = result['strengths'] as List? ?? [];
     final weaknesses = result['weaknesses'] as List? ?? [];
     final suggestions = result['suggestions'] as List? ?? [];
-    final overallScore = result['overall_score'] as int? ?? 0;
+    final overallScore = (result['overall_score'] as num?)?.toInt() ?? 0;
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(16.w),

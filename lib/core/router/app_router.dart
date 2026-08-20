@@ -52,6 +52,9 @@ import '../../features/assistant/screens/assistant_camera_scan_screen.dart';
 import '../../features/assistant/screens/live_center_rooms_screen.dart';
 import '../../features/assistant/screens/quick_manual_lookup_screen.dart';
 
+// Attendance Card Scanner
+import '../../features/teacher/attendance/screens/teacher_card_scanner_screen.dart';
+
 /// App Router Configuration using GoRouter
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -186,7 +189,9 @@ class AppRouter {
                 path: 'scan',
                 name: 'teacher-scan',
                 parentNavigatorKey: _rootNavigatorKey,
-                builder: (context, state) => const AssistantCameraScanScreen(),
+                // NOTE: Routes to dedicated attendance scanner, NOT AI assistant camera.
+                // The AI camera is accessed separately via /assistant/scan.
+                builder: (context, state) => const TeacherCardScannerScreen(),
               ),
               GoRoute(
                 path: 'attendance/:groupId',

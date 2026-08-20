@@ -98,19 +98,8 @@ mixin TeacherAttendanceMixin on BaseRepository {
     DateTime? date,
   }) async {
     final targetDate = date ?? DateTime.now();
-    final startOfDay = DateTime(
-      targetDate.year,
-      targetDate.month,
-      targetDate.day,
-    ).toIso8601String();
-    final endOfDay = DateTime(
-      targetDate.year,
-      targetDate.month,
-      targetDate.day,
-      23,
-      59,
-      59,
-    ).toIso8601String();
+    final dateStr =
+        '${targetDate.year}-${targetDate.month.toString().padLeft(2, '0')}-${targetDate.day.toString().padLeft(2, '0')}';
 
     try {
       final studentsResponse = await client
@@ -135,8 +124,7 @@ mixin TeacherAttendanceMixin on BaseRepository {
           .from('attendance')
           .select('student_id, status, check_in_time')
           .eq('group_id', groupId)
-          .gte('attendance_date', startOfDay)
-          .lte('attendance_date', endOfDay);
+          .or('attendance_date.eq.$dateStr,date.eq.$dateStr');
 
       final attendanceRecords = List<Map<String, dynamic>>.from(
         attendanceResponse as List,

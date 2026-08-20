@@ -672,30 +672,69 @@ class _TeacherMaterialsScreenState extends State<TeacherMaterialsScreen> {
 
   Future<void> _openMaterial(Map<String, dynamic> material) async {
     final url = material['file_url'];
-    if (url == null || url.toString().isEmpty) {
+    if (url == null || url.toString().trim().isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('الرابط غير متاح')),
+          const SnackBar(content: Text('الرابط غير متاح')),
         );
       }
       return;
     }
 
     try {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
+      String urlStr = url.toString().trim();
+      if (!urlStr.startsWith('http://') &&
+          !urlStr.startsWith('https://') &&
+          !urlStr.startsWith('content://') &&
+          !urlStr.startsWith('file://')) {
+        urlStr = 'https://$urlStr';
+      }
+
+      Uri? uri = Uri.tryParse(urlStr);
+      uri ??= Uri.tryParse(Uri.encodeFull(urlStr));
+
+      if (uri == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('لا يمكن فتح هذا الرابط')),
+            const SnackBar(content: Text('رابط الملف غير صالحة')),
           );
         }
+        return;
+      }
+
+      bool launched = false;
+      try {
+        launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        debugPrint('Failed externalApplication launch: $e');
+      }
+
+      if (!launched) {
+        try {
+          launched = await launchUrl(uri, mode: LaunchMode.platformDefault);
+        } catch (e) {
+          debugPrint('Failed platformDefault launch: $e');
+        }
+      }
+
+      if (!launched) {
+        try {
+          launched = await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+        } catch (e) {
+          debugPrint('Failed inAppBrowserView launch: $e');
+        }
+      }
+
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('لا يمكن فتح هذا الرابط')),
+        );
       }
     } catch (e) {
+      debugPrint('Error opening material: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('حدث خطأ أثناء فتح الملف')),
+          SnackBar(content: Text('حدث خطأ أثناء فتح الملف: $e')),
         );
       }
     }

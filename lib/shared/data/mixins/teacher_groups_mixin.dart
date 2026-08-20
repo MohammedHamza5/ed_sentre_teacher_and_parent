@@ -93,10 +93,26 @@ mixin TeacherGroupsMixin on BaseRepository {
               final subjectName = (cp['subject_name'] as String?)?.trim().toLowerCase();
               final courseName = (current.courseName ?? '').trim().toLowerCase();
               final groupName = current.groupName.trim().toLowerCase();
-              if (subjectName != null &&
+              final cpGradeLevel = (cp['grade_level'] as String?)?.trim().toLowerCase();
+              final currentGradeLevel = (current.gradeLevel ?? '').trim().toLowerCase();
+
+              bool subjectMatches = subjectName != null &&
                   (subjectName == courseName ||
                       groupName.contains(subjectName) ||
-                      courseName.contains(subjectName))) {
+                      courseName.contains(subjectName));
+
+              bool gradeMatches = true;
+              if (cpGradeLevel != null && cpGradeLevel.isNotEmpty) {
+                if (currentGradeLevel.isNotEmpty) {
+                  gradeMatches = cpGradeLevel == currentGradeLevel || 
+                                 currentGradeLevel.contains(cpGradeLevel) || 
+                                 cpGradeLevel.contains(currentGradeLevel);
+                } else {
+                  gradeMatches = groupName.contains(cpGradeLevel);
+                }
+              }
+
+              if (subjectMatches && gradeMatches) {
                 matchingPrice = cp as Map<String, dynamic>?;
                 break;
               }
@@ -144,6 +160,7 @@ mixin TeacherGroupsMixin on BaseRepository {
     List<GroupModel>? preloadedGroups,
     int? limit,
     int? offset,
+    bool isIndependent = false,
   }) async {
     try {
       final groups =
@@ -152,75 +169,127 @@ mixin TeacherGroupsMixin on BaseRepository {
       debugPrint('🔍 [DEBUG TRACKING] getTeacherStudents:');
       debugPrint('   👉 Teacher ID: $teacherId, Center ID: $centerId');
       debugPrint('   👉 Groups Count: ${groups.length}');
+      debugPrint('   👉 isIndependent: $isIndependent');
 
-      if (groups.isEmpty) {
-        debugPrint('   ⚠️ No groups found, returning empty students list.');
-        return [];
-      }
-      final groupIds = groups.map((g) => g.id).toList();
+      List<Map<String, dynamic>> finalStudents = [];
+      Set<String> enrolledStudentIds = {};
 
-      var query = client
-          .from('student_group_enrollments')
-          .select('''
-            id,
-            group_id,
-            student_id,
-            status,
-            students!inner(
+      if (groups.isNotEmpty) {
+        final groupIds = groups.map((g) => g.id).toList();
+
+        var query = client
+            .from('student_group_enrollments')
+            .select('''
               id,
-              user_id,
-              full_name,
-              phone,
-              avatar_url,
-              student_code
-            )
-          ''')
-          .inFilter('group_id', groupIds)
-          .eq('status', 'active')
-          .order('id', ascending: false);
-      if (limit != null && offset != null) {
-        query = query.range(offset, offset + limit - 1);
-      } else if (limit != null) {
-        query = query.limit(limit);
+              group_id,
+              student_id,
+              status,
+              students!inner(
+                id,
+                user_id,
+                full_name,
+                phone,
+                avatar_url,
+                student_code
+              )
+            ''')
+            .inFilter('group_id', groupIds)
+            .eq('status', 'active')
+            .order('id', ascending: false);
+        if (limit != null && offset != null) {
+          query = query.range(offset, offset + limit - 1);
+        } else if (limit != null) {
+          query = query.limit(limit);
+        }
+        final response = await query;
+
+        final data = List<Map<String, dynamic>>.from(response as List);
+        debugPrint('   ✅ Fetched Students Enrollments Count: ${data.length}');
+
+        finalStudents.addAll(data.map((e) {
+          final student = e['students'] as Map<String, dynamic>;
+          final groupId = e['group_id'] as String;
+          enrolledStudentIds.add(student['id'] as String);
+
+          final group = groups.firstWhere(
+            (g) => g.id == groupId,
+            orElse: () => GroupModel(
+              id: groupId,
+              groupName: 'Unknown',
+              teacherId: teacherId,
+              centerId: centerId,
+              courseId: '',
+              isActive: true,
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            ),
+          );
+
+          return {
+            'id': student['id'],
+            'student_id': student['id'],
+            'user_id': student['user_id'],
+            'student_user_id': student['user_id'],
+            'student_name': student['full_name'],
+            'student_phone': student['phone'],
+            'student_avatar': student['avatar_url'],
+            'student_code': student['student_code'],
+            'group_id': group.id,
+            'group_name': group.groupName,
+            'course_name': group.courseName ?? 'مادة',
+            'enrollment_id': e['id'],
+          };
+        }));
       }
-      final response = await query;
 
-      final data = List<Map<String, dynamic>>.from(response as List);
-      debugPrint('   ✅ Fetched Students Enrollments Count: ${data.length}');
+      if (isIndependent) {
+        var query = client
+            .from('student_enrollments')
+            .select('''
+              id,
+              student_id,
+              status,
+              students!inner(
+                id,
+                user_id,
+                full_name,
+                phone,
+                avatar_url,
+                student_code
+              )
+            ''')
+            .eq('center_id', centerId)
+            .eq('status', 'active');
+            
+        final response2 = await query;
+        final data2 = List<Map<String, dynamic>>.from(response2 as List);
+        
+        for (var e in data2) {
+           final student = e['students'] as Map<String, dynamic>;
+           if (!enrolledStudentIds.contains(student['id'])) {
+              finalStudents.add({
+                'id': student['id'],
+                'student_id': student['id'],
+                'user_id': student['user_id'],
+                'student_user_id': student['user_id'],
+                'student_name': student['full_name'],
+                'student_phone': student['phone'],
+                'student_avatar': student['avatar_url'],
+                'student_code': student['student_code'],
+                'group_id': '',
+                'group_name': 'بدون مجموعة',
+                'course_name': 'عام',
+                'enrollment_id': e['id'],
+              });
+           }
+        }
+      }
 
-      return data.map((e) {
-        final student = e['students'] as Map<String, dynamic>;
-        final groupId = e['group_id'] as String;
-
-        final group = groups.firstWhere(
-          (g) => g.id == groupId,
-          orElse: () => GroupModel(
-            id: groupId,
-            groupName: 'Unknown',
-            teacherId: teacherId,
-            centerId: centerId,
-            courseId: '',
-            isActive: true,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-          ),
-        );
-
-        return {
-          'id': student['id'],
-          'student_id': student['id'],
-          'user_id': student['user_id'],
-          'student_user_id': student['user_id'],
-          'student_name': student['full_name'],
-          'student_phone': student['phone'],
-          'student_avatar': student['avatar_url'],
-          'student_code': student['student_code'],
-          'group_id': group.id,
-          'group_name': group.groupName,
-          'course_name': group.courseName ?? 'مادة',
-          'enrollment_id': e['id'],
-        };
-      }).toList();
+      if (finalStudents.isEmpty) {
+        debugPrint('   ⚠️ No students found.');
+      }
+      
+      return finalStudents;
     } catch (e, stack) {
       debugPrint('❌ [Repo] getTeacherStudents Error: $e');
       debugPrint('   Stack: $stack');

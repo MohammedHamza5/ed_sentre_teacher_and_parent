@@ -222,7 +222,8 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
   }
 
   Widget _buildSmartSummaryCard(TeacherProvider provider) {
-    final isIndependent = context.read<AuthProvider>().currentUser?.role == UserRole.centerAdmin;
+    final isIndependent = context.read<AuthProvider>().currentUser?.role == UserRole.centerAdmin ||
+        provider.salaryData?['salary_type'] == 'independent';
     final totalProjected = provider.totalProjectedIncome(isIndependent: isIndependent);
     final totalActual = provider.totalActualIncome(isIndependent: isIndependent);
     
@@ -352,7 +353,8 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
     TeacherProvider provider,
     int index,
   ) {
-    final isIndependent = context.read<AuthProvider>().currentUser?.role == UserRole.centerAdmin;
+    final isIndependent = context.read<AuthProvider>().currentUser?.role == UserRole.centerAdmin ||
+        provider.salaryData?['salary_type'] == 'independent';
     final financials = provider.calculateGroupFinancials(group, isIndependent: isIndependent);
     final schedules = group.schedules;
     final canMonitor = _isMonitorWindowActive(group);
@@ -593,7 +595,15 @@ class _TeacherGroupsScreenState extends State<TeacherGroupsScreen> {
                     Expanded(
                       child: GeniusButton(
                         label: 'مراسلة',
-                        onPressed: () => context.push('/teacher/messages'),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('ميزة المراسلة الجماعية قادمة قريباً 🚀'),
+                              behavior: SnackBarBehavior.floating,
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        },
                         variant: GeniusButtonVariant.glass,
                       ),
                     ),

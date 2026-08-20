@@ -105,37 +105,37 @@ class MockSupabaseRepository extends SupabaseRepository {
     };
   }
 
-  @override
-  Future<List<GroupModel>> getTeacherGroups(
-    String teacherId,
-    String centerId,
-  ) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    return _db.groups;
-  }
+  // @override
+  // Future<List<GroupModel>> getTeacherGroups(
+  //   String teacherId,
+  //   String centerId,
+  // ) async {
+  //   await Future.delayed(const Duration(milliseconds: 200));
+  //   return _db.groups;
+  // }
 
-  @override
-  Future<List<Map<String, dynamic>>> getTeacherStudents({
-    required String teacherId,
-    required String centerId,
-    int? limit,
-    int? offset,
-    List<GroupModel>? preloadedGroups,
-  }) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return _db.students
-        .map(
-          (s) => {
-            'id': 'link_${s.id}',
-            'student_id': s.id,
-            'group_id': _db.groups[s.id.hashCode % _db.groups.length].id,
-            'group_name':
-                _db.groups[s.id.hashCode % _db.groups.length].groupName,
-            'students': s.toJson(),
-          },
-        )
-        .toList();
-  }
+  // @override
+  // Future<List<Map<String, dynamic>>> getTeacherStudents({
+  //   required String teacherId,
+  //   required String centerId,
+  //   int? limit,
+  //   int? offset,
+  //   List<GroupModel>? preloadedGroups,
+  // }) async {
+  //   await Future.delayed(const Duration(milliseconds: 300));
+  //   return _db.students
+  //       .map(
+  //         (s) => {
+  //           'id': 'link_${s.id}',
+  //           'student_id': s.id,
+  //           'group_id': _db.groups[s.id.hashCode % _db.groups.length].id,
+  //           'group_name':
+  //               _db.groups[s.id.hashCode % _db.groups.length].groupName,
+  //           'students': s.toJson(),
+  //         },
+  //       )
+  //       .toList();
+  // }
 
   // ═══════════════════════════════════════════════════════════════════════
   // TEACHER ATTENDANCE & SCHEDULE
@@ -178,23 +178,23 @@ class MockSupabaseRepository extends SupabaseRepository {
     }
   }
 
-  @override
-  Future<List<Map<String, dynamic>>> getGroupAttendanceForToday(
-    String groupId, {
-    DateTime? date,
-  }) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    return _db.attendance
-        .where((a) => a.groupId == groupId)
-        .map(
-          (a) => {
-            'student_id': a.studentId,
-            'status': a.status.name,
-            'notes': a.notes,
-          },
-        )
-        .toList();
-  }
+  // @override
+  // Future<List<Map<String, dynamic>>> getGroupAttendanceForToday(
+  //   String groupId, {
+  //   DateTime? date,
+  // }) async {
+  //   await Future.delayed(const Duration(milliseconds: 200));
+  //   return _db.attendance
+  //       .where((a) => a.groupId == groupId)
+  //       .map(
+  //         (a) => {
+  //           'student_id': a.studentId,
+  //           'status': a.status.name,
+  //           'notes': a.notes,
+  //         },
+  //       )
+  //       .toList();
+  // }
 
   @override
   Future<List<Map<String, dynamic>>> getGroupAttendanceHistory({

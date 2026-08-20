@@ -115,21 +115,32 @@ class TeacherPaymentsGroupBreakdown extends StatelessWidget {
     );
   }
 
-  Widget _buildPercentageGroupCard(BuildContext context, Map<String, dynamic> item, int index) {
+  Widget _buildPercentageGroupCard(
+      BuildContext context, Map<String, dynamic> item, int index) {
     final groupName = item['group'] ?? 'مجموعة';
     final students = (item['students'] as num?)?.toInt() ?? 0;
     final collected = (item['collected'] as num?)?.toDouble() ?? 0;
     final percentage = (item['percentage'] as num?)?.toDouble() ?? 0;
     final teacherTotal = (item['total'] as num?)?.toDouble() ?? 0;
     final centerTotal = (item['center_share'] as num?)?.toDouble() ?? 0;
-    final expectedTeacherTotal = (item['expected_total'] as num?)?.toDouble() ?? teacherTotal;
+    final expectedTeacherTotal =
+        (item['expected_total'] as num?)?.toDouble() ?? teacherTotal;
+    final expectedRevenue =
+        (item['expected_revenue'] as num?)?.toDouble() ?? 0;
+
+    // Progress: collected vs expected
+    final progress = expectedRevenue > 0
+        ? (collected / expectedRevenue).clamp(0.0, 1.0)
+        : 0.0;
+    final remaining =
+        (expectedRevenue - collected).clamp(0.0, double.infinity);
 
     return PremiumCard(
       margin: EdgeInsets.only(bottom: 12.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Group Header
+          // ── Group Header ──────────────────────────────────────────────────
           Row(
             children: [
               Container(
@@ -138,77 +149,130 @@ class TeacherPaymentsGroupBreakdown extends StatelessWidget {
                   color: Theme.of(context).colorScheme.primary,
                   borderRadius: BorderRadius.circular(10.r),
                 ),
-                child: Icon(
-                  Icons.groups_rounded,
-                  color: Colors.white,
-                  size: 18.sp,
-                ),
+                child: Icon(Icons.groups_rounded,
+                    color: Colors.white, size: 18.sp),
               ),
               SizedBox(width: 12.w),
               Expanded(
-                child: Text(
-                  groupName,
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      groupName,
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    Text(
+                      '$students طالب نشط',
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.55),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Text(
-                  '$students طالب',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.green,
+              // Expected teacher share badge
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'المتوقع لك',
+                    style: TextStyle(
+                      fontSize: 10.sp,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.55),
+                    ),
                   ),
-                ),
+                  Text(
+                    '${formatCurrency(expectedTeacherTotal)} ج.م',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF4CAF50),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
 
           SizedBox(height: 16.h),
 
-          // Revenue Progress Bar
-          if (isIndependent)
-            _buildRevenueBar(
-              context, 
-              collected, 
-              expectedTeacherTotal > collected ? expectedTeacherTotal - collected : 0,
-            )
-          else
-            _buildRevenueBar(context, teacherTotal, centerTotal),
+          // ── Collection Progress ───────────────────────────────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'تحصيل الطلاب',
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
+                ),
+              ),
+              Text(
+                '${formatCurrency(collected)} / ${formatCurrency(expectedRevenue)} ج.م',
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.75),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 6.h),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6.r),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 8.h,
+              backgroundColor: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.1),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+            ),
+          ),
 
-          SizedBox(height: 16.h),
+          SizedBox(height: 14.h),
 
-          // Details Row
+          // ── Detail Chips ──────────────────────────────────────────────────
           Row(
             children: [
               _buildDetailChip(
                 context,
-                'المحصّل',
+                'محصّل',
                 '${formatCurrency(collected)} ج.م',
-                Theme.of(context).colorScheme.primary,
+                const Color(0xFF4CAF50),
               ),
               SizedBox(width: 6.w),
               _buildDetailChip(
                 context,
                 'نصيبك (${percentage.toInt()}%)',
                 '${formatCurrency(teacherTotal)} ج.م',
-                Colors.green,
+                Theme.of(context).colorScheme.primary,
               ),
               SizedBox(width: 6.w),
               isIndependent
                   ? _buildDetailChip(
                       context,
-                      'متبقي لم يُحصّل',
-                      '${formatCurrency(expectedTeacherTotal > collected ? expectedTeacherTotal - collected : 0)} ج.م',
+                      'متبقي',
+                      '${formatCurrency(remaining)} ج.م',
                       Colors.orange.shade600,
                     )
                   : _buildDetailChip(
@@ -223,6 +287,7 @@ class TeacherPaymentsGroupBreakdown extends StatelessWidget {
       ),
     ).animate(delay: Duration(milliseconds: 100 * index)).fadeIn().slideX(begin: 0.1);
   }
+
 
   Widget _buildRevenueBar(BuildContext context, double teacherShare, double centerShare) {
     final total = teacherShare + centerShare;

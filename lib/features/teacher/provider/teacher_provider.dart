@@ -171,7 +171,20 @@ class TeacherProvider extends ChangeNotifier {
         return;
       }
 
-      // 2. Load Students + Enrollment + Stats ALL in parallel
+      // 2. Load Enrollment first to determine if Independent Teacher
+      try {
+        _currentEnrollment = await _repository.getTeacherEnrollment(
+          centerId: centerId,
+          teacherUserId: teacherUserId,
+          teacherTableId: teacherId,
+        );
+      } catch (e) {
+        debugPrint('⚠️ [TeacherProvider] Enrollment load failed: $e');
+      }
+
+      final isIndependent = _currentEnrollment?.salaryType == 'independent';
+
+      // 3. Load Students + Stats in parallel
       // NOTE: Students uses preloaded groups to avoid duplicate getTeacherGroups call
       try {
         final now = DateTime.now();
@@ -180,11 +193,7 @@ class TeacherProvider extends ChangeNotifier {
             teacherId: teacherId,
             centerId: centerId,
             preloadedGroups: _groups,
-          ),
-          _repository.getTeacherEnrollment(
-            centerId: centerId,
-            teacherUserId: teacherUserId,
-            teacherTableId: teacherId,
+            isIndependent: isIndependent,
           ),
           _repository.getTeacherDashboardStats(
             teacherId: teacherId,
@@ -200,11 +209,11 @@ class TeacherProvider extends ChangeNotifier {
         ]);
 
         _students = results[0] as List<Map<String, dynamic>>;
-        _currentEnrollment = results[1] as TeacherEnrollmentModel?;
-        _dashboardStats = results[2] as Map<String, dynamic>;
-        _salaryData = results[3] as Map<String, dynamic>;
+        _dashboardStats = results[1] as Map<String, dynamic>;
+        _salaryData = results[2] as Map<String, dynamic>;
         
         _actualCollectedPerGroup.clear();
+        _expectedRevenuePerGroup.clear();
         final salaryType = _salaryData!['salary_type'] ?? 'fixed';
         final items = (salaryType == 'percentage' || salaryType == 'independent')
             ? (_salaryData!['percentage_items'] as List? ?? [])
@@ -216,13 +225,17 @@ class TeacherProvider extends ChangeNotifier {
           final groupId = item['group_id'] as String?;
           final groupName = item['group'] as String?;
           final collected = (item['collected'] as num?)?.toDouble() ?? 0.0;
+          final expected = (item['expected_revenue'] as num?)?.toDouble() ?? 
+                           (item['expected_total'] as num?)?.toDouble() ?? 0.0;
           
           if (groupId != null) {
             _actualCollectedPerGroup[groupId] = collected;
+            if (expected > 0) _expectedRevenuePerGroup[groupId] = expected;
           } else if (groupName != null) {
             final matchedGroup = _groups.where((g) => g.groupName == groupName).firstOrNull;
             if (matchedGroup != null) {
               _actualCollectedPerGroup[matchedGroup.id] = collected;
+              if (expected > 0) _expectedRevenuePerGroup[matchedGroup.id] = expected;
             }
           }
         }
@@ -267,6 +280,9 @@ class TeacherProvider extends ChangeNotifier {
   Map<String, double> _actualCollectedPerGroup = {};
   Map<String, double> get actualCollectedPerGroup => _actualCollectedPerGroup;
 
+  Map<String, double> _expectedRevenuePerGroup = {};
+  Map<String, double> get expectedRevenuePerGroup => _expectedRevenuePerGroup;
+
   /// Calculate Financials for a Group (Projected vs Actual)
   Map<String, double> calculateGroupFinancials(GroupModel group, {bool isIndependent = false}) {
     // Dynamic student count fallback: check provider's students list if group.currentStudents is 0
@@ -275,8 +291,10 @@ class TeacherProvider extends ChangeNotifier {
         : getStudentCountForGroup(group.id);
     final monthlyFee = group.monthlyFee ?? 0;
     
-    // Projected
-    final projectedTotalIncome = dynamicStudentCount * monthlyFee;
+    // Projected (Dynamic invoice-based expected revenue fallback to static count * fee)
+    final staticProjected = dynamicStudentCount * monthlyFee;
+    final projectedTotalIncome = _expectedRevenuePerGroup[group.id] ?? 
+        (staticProjected > 0 ? staticProjected : 0.0);
     double projectedTeacherShare = 0;
     double projectedCenterShare = 0;
     
@@ -349,13 +367,10 @@ class TeacherProvider extends ChangeNotifier {
         total += calculateGroupFinancials(group, isIndependent: isIndependent)['actual_teacher_share'] ?? 0;
       }
     }
-    // NOTE: For fixed salary, the actual collected doesn't affect the fixed salary amount directly,
-    // but the center usually pays it at the end of the month. We can return 0 or the fixed amount.
-    // For a teacher, their "actual" fixed salary is determined by payment transfers, not student payments.
+    // For fixed salary: the teacher is owed their fixed amount regardless of collection.
+    // We return the fixed salary amount so the UI shows the correct expected payout.
     if (_currentEnrollment?.salaryType == 'fixed' && !isIndependent) {
-      // Here we might just return the fixed salary as projected, but "actual" means what's in their pocket.
-      // For now, we will return 0 since we track student payments, not teacher salaries.
-      total += 0;
+      total += _currentEnrollment!.salaryAmount ?? 0;
     }
     
     return total;

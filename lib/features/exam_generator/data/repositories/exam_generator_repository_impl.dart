@@ -230,7 +230,7 @@ class ExamGeneratorRepositoryImpl implements ExamGeneratorRepository {
 
       final totalMarks = editedQuestions.fold<int>(
         0,
-        (sum, q) => sum + ((q['marks'] as int?) ?? 2),
+        (sum, q) => sum + (((q['marks'] as num?)?.toInt()) ?? 2),
       );
 
       // 1. Save to ai_generated_exams

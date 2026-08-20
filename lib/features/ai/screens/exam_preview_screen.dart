@@ -237,7 +237,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
       _editControllers[id]!['opt_$i'] = TextEditingController(text: options[i]);
     }
 
-    _editCorrectAnswers[id] = q['correct_answer'] as int? ?? 0;
+    _editCorrectAnswers[id] = (q['correct_answer'] as num?)?.toInt() ?? 0;
 
     setState(() {
       _editingIds.add(id);

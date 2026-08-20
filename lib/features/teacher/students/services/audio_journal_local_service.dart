@@ -32,6 +32,7 @@ class AudioJournalLocalService {
     required String studentId,
     required String title,
     required int durationSeconds,
+    String? filePath,
   }) async {
     try {
       final file = await _getFile();
@@ -48,6 +49,7 @@ class AudioJournalLocalService {
         'student_id': studentId,
         'title': title,
         'duration_seconds': durationSeconds,
+        'file_path': filePath,
         'date': DateTime.now().toIso8601String(),
       });
 

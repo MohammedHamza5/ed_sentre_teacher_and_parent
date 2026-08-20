@@ -11,20 +11,24 @@ class AssistantRepositoryImpl implements AssistantRepository {
   @override
   AsyncResult<({bool hasDebt, double debtAmount, String monthYear, String? invoiceId})> fetchStudentStatusLite(String studentId, String centerId) async {
     try {
+      final now = DateTime.now();
       final response = await _client.rpc(
-        'check_student_financial_status_lite',
+        'get_student_unified_financial_status',
         params: {
           'p_student_id': studentId,
           'p_center_id': centerId,
+          'p_month': now.month,
+          'p_year': now.year,
         },
       );
       
       final data = response as Map<String, dynamic>;
-      if (data['success'] == true) {
+      // get_student_unified_financial_status returns total_due instead of debt_amount
+      if (data['has_debt'] != null) {
         return Result.success((
           hasDebt: data['has_debt'] == true,
-          debtAmount: (data['debt_amount'] as num?)?.toDouble() ?? 0.0,
-          monthYear: data['month_year'] as String? ?? '',
+          debtAmount: (data['total_due'] as num?)?.toDouble() ?? 0.0,
+          monthYear: '${now.month}/${now.year}',
           invoiceId: data['invoice_id'] as String?,
         ));
       } else {

@@ -282,7 +282,7 @@ class AiExamProvider extends ChangeNotifier {
           editedQuestions ?? (_exam?['questions'] as List<dynamic>? ?? []);
       final totalMarks = questions.fold<int>(
         0,
-        (sum, q) => sum + ((q as Map)['marks'] as int? ?? 2),
+        (sum, q) => sum + ((((q as Map)['marks'] as num?)?.toInt()) ?? 2),
       );
 
       // 1. حفظ في `ai_generated_exams`

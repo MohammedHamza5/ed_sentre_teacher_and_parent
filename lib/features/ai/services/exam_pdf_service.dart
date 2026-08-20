@@ -197,7 +197,7 @@ class ExamPdfService {
     final text = question['text']?.toString() ?? 'سؤال بدون نص';
     final marks = (question['marks'] as num? ?? 2).toInt();
     final options = (question['options'] as List?)?.cast<String>() ?? [];
-    final correctIndex = (question['correct_answer'] as int?) ?? 0;
+    final correctIndex = ((question['correct_answer'] as num?)?.toInt()) ?? 0;
     final explanation = question['explanation']?.toString() ?? '';
 
     final letters = ['أ', 'ب', 'ج', 'د', 'هـ'];
