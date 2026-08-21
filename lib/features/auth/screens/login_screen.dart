@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../core/config/app_colors.dart';
-import '../../../../core/config/app_config.dart';
 import '../../../../shared/models/models.dart';
 import '../provider/auth_provider.dart';
 
@@ -392,69 +391,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ],
                             ),
-                          ),
-
-                          SizedBox(height: 24.h),
-                          const Divider(),
-                          SizedBox(height: 16.h),
-                          Text(
-                            'الدخول التجريبي السريع (Demo Mode)',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green[700],
-                            ),
-                          ),
-                          SizedBox(height: 12.h),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: () async {
-                                    final auth = context.read<AuthProvider>();
-                                    final router = GoRouter.of(context);
-                                    setState(() => _isLoading = true);
-                                    AppConfig.isDemoMode = true;
-                                    final success = await auth.signInWithIdentifier('demo_teacher', 'demo');
-                                    if (!mounted) return;
-                                    setState(() => _isLoading = false);
-                                    if (success) {
-                                      router.go('/teacher');
-                                    }
-                                  },
-                                  icon: const Icon(Icons.school, size: 18),
-                                  label: const Text('معلم تجريبي'),
-                                  style: OutlinedButton.styleFrom(
-                                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                                    side: BorderSide(color: Colors.green[300]!),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 12.w),
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: () async {
-                                    final auth = context.read<AuthProvider>();
-                                    final router = GoRouter.of(context);
-                                    setState(() => _isLoading = true);
-                                    AppConfig.isDemoMode = true;
-                                    final success = await auth.signInWithIdentifier('demo_parent', 'demo');
-                                    if (!mounted) return;
-                                    setState(() => _isLoading = false);
-                                    if (success) {
-                                      router.go('/parent');
-                                    }
-                                  },
-                                  icon: const Icon(Icons.family_restroom, size: 18),
-                                  label: const Text('ولي أمر تجريبي'),
-                                  style: OutlinedButton.styleFrom(
-                                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                                    side: BorderSide(color: Colors.green[300]!),
-                                  ),
-                                ),
-                              ),
-                            ],
                           ),
                         ],
                       ),
