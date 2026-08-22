@@ -2,7 +2,7 @@ name: ed_sentre_techer_and_parent
 description: "EdSentre - Teacher & Parent Mobile App for Educational Center Management"
 publish_to: "none"
 
-version: 1.0.1+6
+version: 1.0.1+7
 
 environment:
   sdk: ^3.8.1
