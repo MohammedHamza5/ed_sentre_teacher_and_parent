@@ -1,4 +1,4 @@
-plugins {
+﻿plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
     id("com.google.gms.google-services")
@@ -28,7 +28,7 @@ android {
         applicationId = "com.tech.ed_sentre_techer_and_parent"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 24
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -62,3 +62,4 @@ dependencies {
 tasks.matching { it.name.contains("AarMetadata") }.configureEach {
     enabled = false
 }
+

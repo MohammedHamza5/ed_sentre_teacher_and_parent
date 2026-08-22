@@ -111,14 +111,44 @@ class _SubmissionsScreenState extends State<SubmissionsScreen>
 
       if (mounted) {
         setState(() {
-          _submissions = results[0] as List<SubmissionModel>;
+          _allStudents = results[1] as List<Map<String, dynamic>>;
+          
+          final Map<String, String> studentNames = {
+            for (var s in _allStudents) 
+              if (s['student_user_id'] != null)
+                s['student_user_id'].toString(): s['student_name']?.toString() ?? 'طالب'
+          };
+
+          _submissions = (results[0] as List<SubmissionModel>).map((sub) {
+            if (sub.studentName == null || sub.studentName == 'طالب' || sub.studentName!.isEmpty) {
+              final fallbackName = studentNames[sub.studentUserId];
+              if (fallbackName != null) {
+                return SubmissionModel(
+                  id: sub.id,
+                  assignmentId: sub.assignmentId,
+                  studentUserId: sub.studentUserId,
+                  submissionText: sub.submissionText,
+                  fileUrls: sub.fileUrls,
+                  submittedAt: sub.submittedAt,
+                  score: sub.score,
+                  feedback: sub.feedback,
+                  gradedBy: sub.gradedBy,
+                  gradedAt: sub.gradedAt,
+                  status: sub.status,
+                  studentName: fallbackName,
+                  studentAvatar: sub.studentAvatar,
+                );
+              }
+            }
+            return sub;
+          }).toList();
+
           // Sort submissions by graded status, then by date
           _submissions.sort((a, b) {
             if (a.isGraded && !b.isGraded) return 1;
             if (!a.isGraded && b.isGraded) return -1;
             return b.submittedAt.compareTo(a.submittedAt);
           });
-          _allStudents = results[1] as List<Map<String, dynamic>>;
           _isLoading = false;
         });
       }

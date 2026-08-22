@@ -42,7 +42,8 @@ mixin TeacherReportsMixin on BaseRepository {
             students!inner(
               id,
               user_id,
-              users:user_id(full_name, avatar_url)
+              full_name,
+              avatar_url
             ),
             groups!student_group_enrollments_group_id_fkey(
               id,
@@ -73,7 +74,6 @@ mixin TeacherReportsMixin on BaseRepository {
         if (processedStudents.contains(studentId)) continue;
         processedStudents.add(studentId);
 
-        final user = student['users'] as Map<String, dynamic>?;
         final studentUserId = student['user_id'] as String?;
 
         final attendanceResponse = await client
@@ -121,8 +121,8 @@ mixin TeacherReportsMixin on BaseRepository {
         studentsPerformance.add({
           'id': studentId,
           'user_id': studentUserId,
-          'name': user?['full_name'] ?? 'طالب',
-          'avatar': user?['avatar_url'],
+          'name': student['full_name'] ?? 'طالب',
+          'avatar': student['avatar_url'],
           'attendance': attendanceRate.round(),
           'assignments': assignmentAvg.round(),
           'overall': overall.round(),

@@ -44,10 +44,9 @@ class _AIStudentAnalysisScreenState extends State<AIStudentAnalysisScreen> {
       _students = students
           .map(
             (s) => {
-              'id': s['id'] ?? s['student_id'] ?? '',
-              'name':
-                  s['name'] ?? s['full_name'] ?? s['student_name'] ?? 'طالب',
-              'avatar': s['avatar_url'] ?? '',
+              'id': s['student_id'] ?? s['id'] ?? '',
+              'name': s['students']?['full_name'] ?? s['name'] ?? s['full_name'] ?? s['student_name'] ?? 'طالب',
+              'avatar': s['students']?['avatar_url'] ?? s['avatar_url'] ?? '',
               'grade': s['grade_level'] ?? '',
             },
           )
